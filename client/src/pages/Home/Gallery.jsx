@@ -7,7 +7,7 @@ const Gallery = () => {
         <div>
           <img
             className="h-auto max-w-full rounded-lg"
-            src="https://flowbite.s3.amazonaws.com/docs/gallery/featured/image.jpg"
+            src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719392871/nfpydfecvgbw7ro5f0ee.jpg"
             alt=""
           />
         </div>
@@ -15,35 +15,35 @@ const Gallery = () => {
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719127292/irlga3gzcjnos6pdksbg.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719127002/jhro4bzrprizocr28lbo.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719126674/yifzqnhza7krnrgrnmkr.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-4.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719127438/ga4pojcylsnwmje3cmsw.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-5.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719127992/gy3s1yugypmmyoblavwk.jpg"
               alt=""
             />
           </div>
@@ -57,44 +57,21 @@ const Gallery = () => {
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719133086/jk1ecgk4pcem70b8xtuc.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-1.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719129754/spzirvoqrh2pc2zombtx.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-2.jpg"
-              alt=""
-            />
-          </div>
-        </div>
-        <div className="grid gap-4">
-          <div>
-            <img
-              className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-3.jpg"
-              alt=""
-            />
-          </div>
-          <div>
-            <img
-              className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-4.jpg"
-              alt=""
-            />
-          </div>
-          <div>
-            <img
-              className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-5.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719128917/lfjw0uvhzzv3sercnbjb.jpg"
               alt=""
             />
           </div>
@@ -103,21 +80,21 @@ const Gallery = () => {
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-6.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719130959/vb7hizjizthul8p3zvg4.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-7.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719132774/qulnqgubxkqrzketlx6t.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-8.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719129277/fqogqmvusopeo5qlgt2l.jpg"
               alt=""
             />
           </div>
@@ -126,21 +103,44 @@ const Gallery = () => {
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-9.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719132915/licrq9b5l4ebdr4ivckj.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-10.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719130706/pd6vx8qtgurzicm0nlc0.jpg"
               alt=""
             />
           </div>
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://flowbite.s3.amazonaws.com/docs/gallery/masonry/image-11.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719129099/tf9d84ilwzdegc0nmcuk.jpg"
+              alt=""
+            />
+          </div>
+        </div>
+        <div className="grid gap-4">
+          <div>
+            <img
+              className="h-auto max-w-full rounded-lg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719130086/vhbd7ey5gisljfyp3tt2.jpg"
+              alt=""
+            />
+          </div>
+          <div>
+            <img
+              className="h-auto max-w-full rounded-lg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719133659/zrqevro9wnu4fur4zqxg.jpg"
+              alt=""
+            />
+          </div>
+          <div>
+            <img
+              className="h-auto max-w-full rounded-lg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719128399/nxog0z4uvsnpo5w0ysc6.jpg"
               alt=""
             />
           </div>

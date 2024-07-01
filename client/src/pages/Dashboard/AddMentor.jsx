@@ -1,7 +1,7 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import React, { useState } from "react";
 import axios from "axios";
-import { ROLES } from "../../constants/Dashboard";
+import { BRANCH, ROLES } from "../../constants/Dashboard";
 import "react-datepicker/dist/react-datepicker.css";
 import { BASE_URL } from "../../Service/helper";
 
@@ -15,6 +15,7 @@ const AddMentor = () => {
     phone: "",
     role: "",
     photo: "",
+    branch: "",
   });
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,9 +25,9 @@ const AddMentor = () => {
     formData.append("phone", credentials.phone);
     formData.append("regnumber", credentials.regnumber);
     formData.append("password", credentials.password);
+    formData.append("branch", credentials.branch);
     formData.append("role", credentials.role);
     formData.append("photo", credentials.photo);
-
     axios
       .post(`${BASE_URL}/createUser`, formData)
       .then((res) => {
@@ -41,6 +42,7 @@ const AddMentor = () => {
             phone: "",
             regnumber: "",
             password: "",
+            branch: "",
             role: "",
             photo: "",
           });
@@ -169,6 +171,30 @@ const AddMentor = () => {
                         onChange={onChange}
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
+                    </div>
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label
+                      htmlFor="branch"
+                      className="block text-sm font-medium leading-6 text-gray-900"
+                    >
+                      Branch
+                    </label>
+                    <div className="mt-2">
+                      <select
+                        name="branch"
+                        id="branch"
+                        value={credentials.branch}
+                        onChange={onChange}
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                      >
+                        <option value="">Select Branch</option>
+                        {Object.values(BRANCH).map((branch, index) => (
+                          <option key={index} value={branch}>
+                            {branch}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                   <div className="sm:col-span-3">

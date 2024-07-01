@@ -6,7 +6,9 @@ import { classes, months } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useSelector } from "react-redux";
 import moment from "moment";
-import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaTimes } from "react-icons/fa";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Attendance = () => {
   const navigate = useNavigate();
@@ -27,27 +29,30 @@ const Attendance = () => {
       fetchAttendanceData(credentials.class);
     }
   }, [credentials]);
+
   const fetchAttendanceData = async (value) => {
     try {
-      const response = await axios.get(`${BASE_URL}/monthTotalAttendance`, {
-        params: {
-          classId: credentials.class,
-          month: credentials.month,
-        },
-      });
-      if (response.status === 200 && response.data.students.length > 0) {
-        const completeAttendance = response.data;
-        if (completeAttendance ) {
-          setStudentsAttendance(completeAttendance);
-          fetchStudents(completeAttendance.students);
-          setStatus("True");
+      if (credentials.class && credentials.month) {
+        const response = await axios.get(`${BASE_URL}/monthTotalAttendance`, {
+          params: {
+            classId: credentials.class,
+            month: credentials.month,
+          },
+        });
+        if (response.status === 200 && response.data.students.length > 0) {
+          const completeAttendance = response.data;
+          if (completeAttendance) {
+            setStudentsAttendance(completeAttendance);
+            fetchStudents(completeAttendance.students);
+            setStatus("True");
+          } else {
+            setStatus("False");
+            console.error("Attendance data structure invalid");
+          }
         } else {
           setStatus("False");
-          console.error("Attendance data structure invalid");
+          console.error("No attendance data or invalid response");
         }
-      } else {
-        setStatus("False");
-        console.error("No attendance data or invalid response");
       }
     } catch (error) {
       setStatus("False");
@@ -57,26 +62,23 @@ const Attendance = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     fetchAttendanceData();
   };
 
   const onChange = (e) => {
     const { name, value } = e.target;
     setCredentials({ ...credentials, [name]: value });
-    if (name === "class"||name === "month") {
-      //   fetchStudents(value);
+    if (name === "class" || name === "month") {
       fetchAttendanceData(value);
     }
   };
 
   const fetchStudents = (value) => {
     axios
-      .post(`${BASE_URL}/studentTable`,{
-          value:value,       
+      .post(`${BASE_URL}/studentTable`, {
+        value: value,
       })
       .then((response) => {
-        // console.log(response.data);
         setStudents(response.data); // Set the students data in state
       })
       .catch((error) => {
@@ -88,23 +90,76 @@ const Attendance = () => {
     if (!studentsAttendance || !studentsAttendance.students) {
       return "";
     }
-    const attendanceRecord = studentsAttendance.students.find(student => 
-      moment(student.date).date() === day
-    )?.attendance.find(att => att.studentId === studentId);
-    
+    const attendanceRecord = studentsAttendance.students
+      .find((student) => moment(student.date).date() === day)
+      ?.attendance.find((att) => att.studentId === studentId);
+
     return attendanceRecord ? attendanceRecord.status : "";
   };
+  const month = `${
+    months.find((m) => m.value === credentials.month.split("-")[1])?.label
+  } ${credentials.month.split("-")[0]}`;
+  const generatePDF = () => {
+    // Initialize jsPDF
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
 
+    // Define the columns and rows
+    const columns = ["Student Name"];
+    const daysInMonth = moment(credentials.month, "YYYY-MM").daysInMonth();
+    for (let i = 1; i <= daysInMonth; i++) {
+      columns.push(i);
+    }
+    columns.push("Total");
 
-  
+    const rows = students.map((student) => {
+      let presentCount = 0;
+      const row = [student.name];
+      for (let i = 1; i <= daysInMonth; i++) {
+        const attendanceStatus = getAttendanceForStudent(student._id, i);
+        if (attendanceStatus === "present") presentCount++;
+        row.push(
+          attendanceStatus === "present"
+            ? "P"
+            : attendanceStatus === "absent"
+            ? "A"
+            : ""
+        );
+      }
+      row.push(presentCount);
+      return row;
+    });
 
+    // Add the title
+    const title = `Attendance for Class ${credentials.class} in ${month}`;
+    doc.text(title, 14, 20);
 
+    // Add the table to the PDF
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+      startY: 30,
+      styles: {
+        fontSize: 8,
+      },
+      columnStyles: {
+        0: { cellWidth: 35 }, // Adjust width for the first column (Student Name)
+        // Adjust other columns if needed
+      },
+      theme: "grid",
+      margin: { top: 30, left: 10, right: 10 },
+    });
+
+    // Save the PDF
+    doc.save(`Attendance-Class ${credentials.class}-${month}`);
+  };
   return (
     <DashboardLayout>
-      
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit} encType="multipart/form-data">
-
           <div className="space-y-8">
             <div className="border-b border-gray-900/10 pb-8">
               <h2 className="text-base font-bold leading-7 text-gray-900">
@@ -159,51 +214,94 @@ const Attendance = () => {
               </div>
             </div>
           </div>
-          {status === "False" && <div className="text-black text-center p-4 text-lg font-bold">No attendance record found.</div>}
+          {status === "False" && (
+            <div className="text-black text-center p-4 text-lg font-bold">
+              No attendance record found.
+            </div>
+          )}
           {status === "True" && (
             <div className="overflow-x-auto">
-              <h2 className="text-lg font-semibold mb-4">
-                Attendance for Class {credentials.class} in{" "}
-                {months.find((m) => m.value === credentials.month.split("-")[1])?.label}{" "+credentials.month.split("-")[0]}
-              </h2>
-              <table className="min-w-full bg-gray-100">
-                <thead className="bg-gray-800 text-white">
-                  <tr>
-                    <th className="py-3 px-4">Student Name</th>
-                    {/* Generate table headers for each day of the month */}
-                    {Array.from({
-                      length: moment(credentials.month, "YYYY-MM").daysInMonth(),
-                    }).map((_, index) => (
-                      <th key={index} className="py-3 px-4">
-                        {index + 1} {/* Day number */}
-                      </th>
-                    ))}
-                    <th className="py-3 px-4">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.map(student=>{
-                  let presentCount = 0;
-                  return(
-                    <tr key={student._id}>
-                      <td className="py-2 px-4 ">{student.name}</td>
-                      {Array.from({
-                        length: moment(credentials.month, "YYYY-MM").daysInMonth(),
-                      },(_,index)=>{
-                        const attendanceStatus = getAttendanceForStudent(student._id, index + 1); 
-                        if(attendanceStatus=="present") presentCount++;
-                        const stat=attendanceStatus?attendanceStatus=="present"?<FaCheck style={{ color: 'green' }}/>:<FaTimes style={{ color: 'red' }}/>:"";
-                        return(
-                        <td key={index} className="py-2 px-4 ">
-                          {stat}
-                        </td>
-                        
-                      )})}
-                      <td className="py-2 px-4">{presentCount}</td>
-                    </tr>
-                  )})}
-                </tbody>
-              </table>
+              <div className="shadow-md sm:rounded-lg">
+                <h2 className="text-lg font-semibold mb-4 sticky top-0 bg-white z-20">
+                  Attendance for Class {credentials.class} in {month}
+                </h2>
+                <button
+                  onClick={generatePDF}
+                  className="mb-4 p-2 bg-blue-500 text-white rounded"
+                >
+                  Download as PDF
+                </button>
+                <div className="overflow-y-auto max-h-96 md:max-h-screen">
+                  <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
+                    <thead className="text-xs  uppercase bg-gray-800 text-white sticky top-0 z-20">
+                      <tr>
+                        <th className="py-3 px-4 sticky left-0 bg-gray-800 z-20">
+                          Student Name
+                        </th>
+                        {/* Generate table headers for each day of the month */}
+                        {Array.from({
+                          length: moment(
+                            credentials.month,
+                            "YYYY-MM"
+                          ).daysInMonth(),
+                        }).map((_, index) => (
+                          <th key={index} className="py-3 px-4">
+                            {index + 1} {/* Day number */}
+                          </th>
+                        ))}
+                        <th className="py-3 px-4">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {students.map((student) => {
+                        let presentCount = 0;
+                        return (
+                          <tr
+                            key={student._id}
+                            className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800  dark:border-gray-700"
+                          >
+                            <td className="py-2 px-4 sticky left-0 bg-gray-800 text-white z-10">
+                              {student.name}
+                            </td>
+                            {Array.from(
+                              {
+                                length: moment(
+                                  credentials.month,
+                                  "YYYY-MM"
+                                ).daysInMonth(),
+                              },
+                              (_, index) => {
+                                const attendanceStatus =
+                                  getAttendanceForStudent(
+                                    student._id,
+                                    index + 1
+                                  );
+                                if (attendanceStatus === "present")
+                                  presentCount++;
+                                const stat = attendanceStatus ? (
+                                  attendanceStatus === "present" ? (
+                                    <FaCheck style={{ color: "green" }} />
+                                  ) : (
+                                    <FaTimes style={{ color: "red" }} />
+                                  )
+                                ) : (
+                                  ""
+                                );
+                                return (
+                                  <td key={index} className="py-2 px-4 ">
+                                    {stat}
+                                  </td>
+                                );
+                              }
+                            )}
+                            <td className="py-2 px-4">{presentCount}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
         </form>

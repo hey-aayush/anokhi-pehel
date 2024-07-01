@@ -21,6 +21,7 @@ import "jspdf-autotable";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../../components/Spinner.jsx";
+import Pagination from "../../components/Dashboard/Pagination.jsx";
 
 const Student = () => {
   const navigate = useNavigate();
@@ -31,7 +32,9 @@ const Student = () => {
     useState(false);
   const [isFilterByLocationDropdownOpen, setFilterByLOcationDropdownOpen] =
     useState(false);
-
+  const initialUsers = 40;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage, setUsersPerPage] = useState(initialUsers);
   //Actions
   const toggleActionsDropdown = () => {
     setActionsDropdownOpen(!isActionsDropdownOpen);
@@ -142,6 +145,38 @@ const Student = () => {
     return userName.includes(filterName.toLowerCase());
   });
 
+  //Pagination
+  // Calculate the indices for the current page
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredStudents.slice(
+    indexOfFirstUser,
+    indexOfLastUser
+  );
+
+  // Function to handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredStudents.length / usersPerPage);
+
+  const handleUsersPerPageChange = (e) => {
+    setUsersPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
   const handleDownloadTable = () => {
     const doc = new jsPDF();
 
@@ -197,7 +232,7 @@ const Student = () => {
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
         <Header category="Academics" title="Students" />
         <div className="mx-auto max-w-screen-xl">
-          <div className="bg-white  relative shadow-md sm:rounded-lg overflow-hidden">
+          <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
               <div className="w-full md:w-1/2">
                 <form className="flex items-center">
@@ -395,7 +430,7 @@ const Student = () => {
                   </tr>
                 </thead>
                 <tbody className="border-b">
-                  {filteredStudents.map((student) => (
+                  {currentUsers.map((student) => (
                     <tr key={student._id} className="border-x">
                       <th
                         scope="row"
@@ -466,6 +501,17 @@ const Student = () => {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              onPreviousPage={handlePreviousPage}
+              onNextPage={handleNextPage}
+              initialUsers={initialUsers}
+              usersPerPage={usersPerPage}
+              handleUsersPerPageChange={handleUsersPerPageChange}
+              totalUsers={filteredStudents.length}
+            />
           </div>
         </div>
       </div>

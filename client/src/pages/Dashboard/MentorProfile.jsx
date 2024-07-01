@@ -46,6 +46,18 @@ const Student = () => {
       console.error("Error deleting user:", error);
     }
   };
+  const onClick2 = async () => {
+    try {
+      if (userId) {
+        // Pass userId as a parameter to the navigate function
+        await navigate(`/editProfile?mentor._id=${userId}`);
+      } else {
+        console.log("userId is not available");
+      }
+    } catch (error) {
+      console.error("Error navigating:", error);
+    }
+  };
   useEffect(() => {
     if (userId) {
       axios
@@ -99,7 +111,7 @@ const Student = () => {
             <div className="mentor-card flex items-center">
               <img
                 src={`${SERVER_URL}/images/${mentor?.photo}`}
-                className="mentor-photo h-40 w-40 rounded-full"
+                className="mentor-photo h-40 w-40 rounded-full object-cover"
                 alt="Student"
               />
 
@@ -145,6 +157,19 @@ const Student = () => {
                 width="5px"
                 height="10px"
                 custumFunc={onClick1}
+              />
+            )}
+          </div>
+          <div className=" justify-center items-center">
+            {user?.isAdmin === true && (
+              <Button
+                color="white"
+                bgColor={currentColor}
+                text="Edit Profile"
+                borderRadius="8px"
+                width="5px"
+                height="10px"
+                custumFunc={onClick2}
               />
             )}
           </div>

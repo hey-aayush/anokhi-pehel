@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL, SERVER_URL } from "../../Service/helper";
 import { FiEdit } from "react-icons/fi";
+import { BRANCH } from "../../constants/Dashboard";
 const Student = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -233,7 +234,9 @@ const Student = () => {
                         type="text"
                         className="block flex-1 rounded-full bg-grey-900 py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                         value={
-                          editedValue !== null ? editedValue : mentor.socialMedia?.instagram
+                          editedValue !== null
+                            ? editedValue
+                            : mentor.socialMedia?.instagram
                         } // Ensure the value is controlled
                         onChange={(e) => setEditedValue(e.target.value)} // Update the state on change
                       />
@@ -247,7 +250,9 @@ const Student = () => {
                     </>
                   ) : (
                     <>
-                       <span className="text-blue-600">{mentor.socialMedia?.instagram}</span>
+                      <span className="text-blue-600">
+                        {mentor.socialMedia?.instagram}
+                      </span>
                       <span className="ml-1">
                         <FiEdit
                           className="text-blue-600 cursor-pointer"
@@ -256,7 +261,6 @@ const Student = () => {
                       </span>
                     </>
                   )}
-                  
                 </p>
                 <p className="flex items-center">
                   <span className="font-semibold">Linkedin Id:</span>{" "}
@@ -266,7 +270,9 @@ const Student = () => {
                         type="text"
                         className="block flex-1 rounded-full bg-grey-900 py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                         value={
-                          editedValue !== null ? editedValue : mentor.socialMedia?.linkedin
+                          editedValue !== null
+                            ? editedValue
+                            : mentor.socialMedia?.linkedin
                         } // Ensure the value is controlled
                         onChange={(e) => setEditedValue(e.target.value)} // Update the state on change
                       />
@@ -280,7 +286,9 @@ const Student = () => {
                     </>
                   ) : (
                     <>
-                       <span className="text-blue-600">{mentor.socialMedia?.linkedin}</span>
+                      <span className="text-blue-600">
+                        {mentor.socialMedia?.linkedin}
+                      </span>
                       <span className="ml-1">
                         <FiEdit
                           className="text-blue-600 cursor-pointer"
@@ -289,11 +297,49 @@ const Student = () => {
                       </span>
                     </>
                   )}
-                  
                 </p>
+                <p className="flex items-center">
+                  <span className="font-semibold">Branch:</span>{" "}
+                  {editingField === "branch" ? (
+                    <>
+                      <div className="mt-2">
+                        <select
+                          name="role"
+                          id="role"
+                          value={
+                            editedValue !== null ? editedValue : mentor?.branch
+                          }
+                          onChange={(e) => setEditedValue(e.target.value)}
+                          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                        >
+                          <option value="">Select Role</option>
+                          {Object.values(BRANCH).map((role, index) => (
+                            <option key={index} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                
-
+                      <button
+                        className="bg-blue-600 text-white px-3 py-1 rounded-md ml-2"
+                        onClick={() => handleSave("branch")} // Call handleSave with the field name
+                      >
+                        Save
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-blue-600">{mentor?.branch}</span>
+                      <span className="ml-1">
+                        <FiEdit
+                          className="text-blue-600 cursor-pointer"
+                          onClick={() => handleEdit("branch")}
+                        />
+                      </span>
+                    </>
+                  )}
+                </p>
               </div>
             </div>
           ) : (

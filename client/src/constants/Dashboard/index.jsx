@@ -120,10 +120,10 @@ export const modes = [
 ];
 
 export const ROLES = {
-  FINAL_YEAR_COORDINATOR: 'Final Year Coordinator',
-  ADMIN: 'Admin',
-  COORDINATOR: 'Coordinator',
-  ALUMNI: 'Alumni'
+  FINAL_YEAR_COORDINATOR: "Final Year Coordinator",
+  ADMIN: "Admin",
+  COORDINATOR: "Coordinator",
+  ALUMNI: "Alumni",
 };
 
 export const day = [
@@ -152,29 +152,16 @@ export const subjects = [
   { id: "Others", subject: "Others" },
 ];
 
-//Branch IDs of Batch 25
-export const branch25=[
-  {id:0,branch:"Biotechnology"},
-  {id:1, branch:"Civil Engineering"},
-  {id:2,branch:"Electrical Engineering"},
-  {id:3,branch:"Mechanical Enginnering"},
-  {id:4,branch:"Computer Science and Enginnering"},
-  {id:5,branch:"Electronics and Communication Engineering"},
-  {id:6,branch:"Production and Industrial Engineering"},
-  {id:7,branch:"Information Technology"},
-  {id:8,branch:"Chemical Engineering"},
-]
-
-//Branch IDs of Batch 24
-export const branch24=[
-  {id:0,branch:"Biotechnology"},
-  {id:1, branch:"Civil Engineering"},
-  {id:2,branch:"Electrical Engineering"},
-  {id:3,branch:"Mechanical Enginnering"},
-  {id:4,branch:"Computer Science and Enginnering"},
-  {id:5,branch:"Electronics and Communication Engineering"},
-  {id:6,branch:"Production and Industrial Engineering"},
-  {id:7,branch:""},
-  {id:8,branch:"Information Technology"},
-  {id:9,branch:"Chemical Engineering"},
-]
+export const BRANCH = {
+  CSE: "Computer Science and Engineering",
+  ECE: "Electronics and Communication Engineering",
+  CE: "Civil Engineering",
+  IT: "Information Technology",
+  BT: "Biotechnology",
+  CHE: "Chemical Engineering",
+  EE: "Electrical Engineering",
+  PIE: "Production and Industrial Engineering",
+  ME: "Mechanical Engineering",
+  ECM: "Engineering and Computational Mechanics",
+  MSE: "Materials Engineering",
+};

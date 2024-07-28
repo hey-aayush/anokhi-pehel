@@ -14,19 +14,15 @@ const Blog = () => {
     return isExpanded ? description : `${description.slice(0, 100)}...`;
   };
 
-  const getTimeDifference = (date) => {
-    const now = new Date();
-    const postDate = new Date(date);
-    const differenceInMs = now - postDate;
-    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-    return `${differenceInDays} days ago`;
-  };
-
   const closeModal = () => {
     setExpandedBlogId(null);
   };
 
-  const expandedBlog = blogData.blogs.find((blog) => blog.id === expandedBlogId);
+  const sortBlogsByDate = (blogs) => {
+    return blogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  };
+
+  const sortedBlogs = sortBlogsByDate(blogData.blogs);
 
   return (
     <HomePageLayout>
@@ -41,9 +37,8 @@ const Blog = () => {
             Blogs
           </h3>
           <div className={`grid gap-12 sm:grid-cols-2 lg:grid-cols-3 ${expandedBlogId ? 'blur-sm' : ''}`}>
-            {blogData.blogs.map((blog) => {
+            {sortedBlogs.map((blog) => {
               const isExpanded = expandedBlogId === blog.id;
-              const timeDifference = getTimeDifference(blog.createdAt);
               return (
                 <div key={blog.id} className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                   <a href={blog.link}>
@@ -66,18 +61,13 @@ const Blog = () => {
                       </svg>
                     </button>
                   </div>
-                  {isExpanded && (
-                    <div className="text-gray-600 mt-4 ml-2">
-                      <span>{timeDifference}</span>
-                    </div>
-                  )}
                 </div>
               );
             })}
           </div>
         </div>
         {expandedBlogId && (
-          <Modal isOpen={!!expandedBlogId} onClose={closeModal} blog={expandedBlog} />
+          <Modal isOpen={!!expandedBlogId} onClose={closeModal} blog={blogData.blogs.find(blog => blog.id === expandedBlogId)} />
         )}
       </section>
     </HomePageLayout>

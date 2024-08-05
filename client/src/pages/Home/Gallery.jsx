@@ -94,7 +94,7 @@ const Gallery = () => {
           <div>
             <img
               className="h-auto max-w-full rounded-lg"
-              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1719129277/fqogqmvusopeo5qlgt2l.jpg"
+              src="https://res.cloudinary.com/dyuzmmpzb/image/upload/v1722846570/ap_news_znmrdr.jpg"
               alt=""
             />
           </div>

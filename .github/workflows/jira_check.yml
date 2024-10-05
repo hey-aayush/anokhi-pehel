@@ -1,0 +1,16 @@
+name: Check for Jira Task
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  check-jira-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Jira Task
+        run: |
+          if [[ ! "${{ github.event.pull_request.title }}" =~ APW-[0-9]+ ]] && [[ ! "${{ github.event.pull_request.body }}" =~ APW-[0-9]+ ]]; then
+            echo "Error: No Jira task referenced in PR title or description. It should be in the format APW-<number>."
+            exit 1
+          fi

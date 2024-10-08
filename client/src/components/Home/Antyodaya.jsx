@@ -14,7 +14,7 @@ const Antyodaya = () => {
       {/* Image Section - Adjusted to be on the left */}
       <div className={`${styles.flexCenter} sm:mr-10 mr-0 sm:mt-0 mt-10`}>
         <img
-          src={Antyodayavid}
+          src={antyodaya}
           alt="Antyodaya"
           className="w-[400px] h-[270px] object-cover rounded-lg"
         />

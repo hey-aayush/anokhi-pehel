@@ -1,43 +1,212 @@
 import styles from "../../style";
-import React from "react";
+import  "../../style.css";
+import React, { useState, useEffect } from "react";
 import HomePageLayout from "../../components/Home/HomePageLayout";
-import {Antyodaya2k23} from "../../assets/Home"; // Make sure this path is correct
+import { Antyodayavid, AboutAntyodaya } from "../../assets/Home"; // Ensure this path is correct
+import { event,event1,event2,event3,event4} from "../../assets/Home/AntyodayaSponser/AtyodayaEvent";
+import Slider from "react-slick";
+import {demo} from "../../assets/Home/AntyodayaSponser";
+const Data = [
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+  {
+    name: "Coming Soon",
+    img: demo,
+  },
+]
+const eventImages = [event, event1, event2, event3, event4];
+const events = [event, event1, event2, event3, event4];
+const settings = {
+  dots: true,
+  infinite: true,
+  slidesToShow: 1, // Display one image at a time
+  slidesToScroll: 1,
+  autoplay: true,
+  speed: 2000,
+  autoplaySpeed: 3000,
+  cssEase: "linear",
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        slidesToShow: 1,
+      },
+    },
+    {
+      breakpoint: 768,
+      settings: {
+        slidesToShow: 1,
+      },
+    },
+    {
+      breakpoint: 480,
+      settings: {
+        slidesToShow: 1,
+      },
+    },
+  ],
+};
 
-const Antodaya = () => (
+const Antodaya = () => {
+
+  useEffect(() => {
+    const scrollers = document.querySelectorAll(".scroller");
+  
+    // If a user hasn't opted in for reduced motion, then we add the animation
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      addAnimation();
+    }
+  
+    function addAnimation() {
+      scrollers.forEach((scroller) => {
+        // add data-animated="true" to every .scroller on the page
+        scroller.setAttribute("data-animated", true);
+  
+        // Make an array from the elements within .scroller-inner
+        const scrollerInner = scroller.querySelector(".scroller__inner");
+        const scrollerContent = Array.from(scrollerInner.children);
+  
+        // For each item in the array, clone it
+        // add aria-hidden to it
+        // add it into the .scroller-inner
+        scrollerContent.forEach((item) => {
+          const duplicatedItem = item.cloneNode(true);
+          duplicatedItem.setAttribute("aria-hidden", true);
+          scrollerInner.appendChild(duplicatedItem);
+        });
+      });
+    }
+  }, []);
+  
+  return (
   <HomePageLayout>
-    <div
-      className={`bg-primary ${styles.flexStart}`}
-      style={{
-        backgroundImage: `url(${Antyodaya2k23})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        opacity: 0.9, // Adjust the opacity as needed
-      }}
-    >
-      <div className="bg-black bg-opacity-50 w-full h-full p-10">
-        <div className={`${styles.boxWidth}`}>
-          {/* Antyodaya Section */}
-          <div className="container m-auto md:my-12 p-2 lg:px-40">
-            <div className="justify-center items-center text-center md:p-4 p-2 lg:text-4xl font-medium text-3xl text-white">
-              Antyodaya
+    <div className={`relative ${styles.flexStart}`}>
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        className="inset-0 w-auto h-auto min-w-full min-h-full max-w-none" // Ensure natural size and responsiveness
+        style={{ objectFit: "cover" }} // Cover the viewport while maintaining aspect ratio
+      >
+        <source src={Antyodayavid} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      {/* About Antyodaya Image */}
+    </div>
+    <div className="relative z-10 flex justify-center ">
+      <div className="container m-auto md:my-12 p-2 lg:px-40">
+        <div className="justify-center items-center text-center md:p-4 p-2 lg:text-4xl font-medium text-3xl">
+          About Antyodaya
+        </div>
+        <div className="flex mb-8 md:mb-12 px-3 justify-center">
+          <div className="w-16 h-1 rounded-full bg-teal-500 inline-flex"></div>
+        </div>
+        <div className="text-gray-900 body-font w-full mb-4">
+          <div className=" w-full p-1 mb-8">
+            <div className="border-2 border-teal-200 p-2 h-full rounded-2xl bg-stone-50 hover:bg-teal-400 shadow-inner ">
+              <p className="leading-relaxed p-4 md:p-4 lg:p-12 font-base md:font-medium text-center hover: sm:text-xl text-base">
+                Antyodaya is the annual festival of Anokhi पहल, celebrated every
+                year on Children's Day at MNNIT since 2018. The festival
+                includes a variety of competitions, such as science exhibitions,
+                debates, quizzes, and a range of cultural activities and
+                performances.
+              </p>
+              <p className="leading-relaxed  font-base md:font-medium text-center hover:t sm:text-xl text-base mb-8">
+                Students from Anokhi पहल, along with many schools across
+                Prayagraj, participate in these events, making Antyodaya a
+                vibrant and inclusive celebration.
+              </p>
             </div>
-            <p className="text-center mt-4 text-lg text-white">
-              Antyodaya is the annual festival of <strong>Anokhi Pehel</strong>,
-              a community-driven initiative aimed at empowering children from
-              marginalized communities. The event provides an incredible
-              platform for these children to showcase their talents, interact
-              with students from over 30 schools, and compete in a variety of
-              cultural, educational, science, and art events. It is a
-              celebration of creativity, learning, and community spirit,
-              allowing students to overcome barriers, learn new skills, and gain
-              confidence.
-            </p>
           </div>
         </div>
       </div>
     </div>
+    <div>
+      <h2
+        className="text-[2rem] sm:text-[3rem] tracking-wider text-gray-900 font-bold flex justify-center  "
+        style={{
+          fontWeight: "bolder",
+          textAlign: "center",
+          textShadow: "0 0 10px white", // Add white shadow with 10px blur
+        }}
+      >
+        Our  Sponsors
+      </h2>
+      <div
+        className="scroller mt-[10%] "
+        data-direction="left"
+        data-speed="slow"
+      >
+        <div className="scroller__inner">
+          {Data.map((item, index) => (
+            <div key={index} className="photo-container">
+              <img
+                src={item.img}
+                height="20"
+                width="20"
+                className="rounded-full lg:h-300 lg:w-300 sm:h-50 sm:w-50"
+                alt={item.name}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+    <div >
+    <h2
+        className="text-[2rem] sm:text-[3rem] tracking-wider text-gray-900 font-bold flex justify-center mb-10  "
+        style={{
+          fontWeight: "bolder",
+          textAlign: "center",
+          textShadow: "0 0 10px white", // Add white shadow with 10px blur
+        }}
+      >Events in Antyodaya</h2>
+      <Slider {...settings}>
+        {eventImages.map((img, index) => (
+          <div key={index} className="flex justify-center">
+            <img
+            
+              // className="w-full h-auto object-cover"
+              // className="w-full h-auto object-cover lg:max-w-[70%] md:max-w-[85%] sm:max-w-[90%]" 
+              className="mx-auto w-full h-auto object-cover lg:max-w-[80%] md:max-w-[85%] sm:max-w-[90%]"
+              src={img}
+              alt={`Event ${index + 1}`}
+            />
+          </div>
+        ))}
+      </Slider>
+    </div>
+    
   </HomePageLayout>
-);
+  );
+};
 
 export default Antodaya;

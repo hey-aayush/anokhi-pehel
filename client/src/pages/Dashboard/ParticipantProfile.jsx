@@ -21,16 +21,15 @@ const Student = () => {
         .get(`${BASE_URL}/getParticipantByUserId?studentid=${studentId}`)
         .then((res) => {
           setStudent(res.data);
-        //    console.log(res.data.poc);
+          
           // Fetch POC name
           if (res.data.poc) {
             axios
-      .get(`${BASE_URL}/getPocById?pocId=${res.data.poc}`)
-      .then((pocRes) => {
-       
-        setPocName(pocRes.data.nameOfPoc); // Set POC name
-        setPocContact(pocRes.data.contact); // Set POC contact
-      })
+              .get(`${BASE_URL}/getPocById?pocId=${res.data.poc}`)
+              .then((pocRes) => {
+                setPocName(pocRes.data.nameOfPoc); // Set POC name
+                setPocContact(pocRes.data.contact); // Set POC contact
+              })
               .catch((err) => console.error("Error fetching POC:", err));
           }
 
@@ -114,14 +113,23 @@ const Student = () => {
                   </p>
 
                   {/* Events */}
-                  <p>
-                    <span className="font-semibold">Events:</span>{" "}
-                    <ul className="text-blue-600">
-                      {eventNames.map((eventName, index) => (
-                        <li key={index}>{eventName}</li>
-                      ))}
-                    </ul>
-                  </p>
+                  <div className="mt-4">
+                    <h4 className="font-semibold">Events:</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {eventNames.length > 0 ? (
+                        eventNames.map((eventName, index) => (
+                          <div
+                            key={index}
+                            className="bg-white border rounded-lg shadow p-4 transition duration-300 hover:shadow-lg"
+                          >
+                            <p className="text-blue-600">{eventName}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-red-500">No events found.</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (

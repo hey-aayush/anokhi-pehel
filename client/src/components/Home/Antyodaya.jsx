@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "../../style";
 import { useNavigate } from "react-router-dom";
-import { antyodaya } from "../../assets/Home"; // Assuming this is the correct image path
+import { antyodaya, Antyodayavid } from "../../assets/Home"; // Assuming this is the correct image path
 import Button from "./Button"; // Uncomment if you use the button component
 
 const Antyodaya = () => {
@@ -14,7 +14,7 @@ const Antyodaya = () => {
       {/* Image Section - Adjusted to be on the left */}
       <div className={`${styles.flexCenter} sm:mr-10 mr-0 sm:mt-0 mt-10`}>
         <img
-          src={antyodaya}
+          src={Antyodayavid}
           alt="Antyodaya"
           className="w-[400px] h-[270px] object-cover rounded-lg"
         />

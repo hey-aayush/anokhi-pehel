@@ -143,7 +143,12 @@ const Attendance = () => {
                   {students.map((student) => (
                     <tr key={student._id}>
                       <td className="font-bold text-gray-900">
-                        {student.name}
+                        <button
+                          onClick={() => navigate(`/studentProfile?student._id=${student._id}`)}
+                          className="flex flex-center py-2 px-4 text-green-600 hover:bg-green-200"
+                        >
+                          {student.name}
+                        </button>
                       </td>
 
                       <td className="px-3 py-1 flex justify-center">

@@ -79,7 +79,13 @@ const Attendance = () => {
         value: value,
       })
       .then((response) => {
-        setStudents(response.data); // Set the students data in state
+        // Sort students by name in alphabetical order
+        const sortedStudents = response.data.sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        });
+
+        // Set the sorted students data in state
+        setStudents(sortedStudents);
       })
       .catch((error) => {
         console.error("Error fetching students:", error);
@@ -261,7 +267,14 @@ const Attendance = () => {
                             className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800  dark:border-gray-700"
                           >
                             <td className="py-2 px-4 sticky left-0 bg-gray-800 text-white z-10">
-                              {student.name}
+                             
+                              <button
+                                onClick={() => navigate(`/studentProfile?student._id=${student._id}`)}
+                                className="flex flex-center py-2 px-4 text-green-600 hover:bg-green-200"
+                              >
+                                {student.name}
+                              </button>
+
                             </td>
                             {Array.from(
                               {

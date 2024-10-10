@@ -1,0 +1,24 @@
+name: Restrict Changes to Specific File
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-file-modification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check for Changes to Restricted File
+        id: check_file_change
+        run: |
+          RESTRICTED_FILE="client/src/Service/helper.js"
+          git diff --name-only HEAD^ HEAD | grep $RESTRICTED_FILE && echo "File modified" || echo "No modification"
+      
+      - name: Fail if Restricted File Changed
+        if: steps.check_file_change.outputs.result == 'File modified'
+        run: |
+          echo "Error: Changes to the restricted file are not allowed."
+          exit 1

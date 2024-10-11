@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { classes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useSelector } from "react-redux";
+import StudentProfileModal from "../../Modals/studentProfileModal";
 const Attendance = () => {
   const navigate = useNavigate();
   const [showStudentList, setShowStudentList] = useState(false);
@@ -15,6 +16,8 @@ const Attendance = () => {
   });
   const [attendanceData, setAttendanceData] = useState({});
   const [students, setStudents] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+  const [selectedStudent, setSelectedStudent] = useState(null); // State for selected student
   const onChange = (e) => {
     const { name, value } = e.target;
     setCredentials({ ...credentials, [name]: value });
@@ -22,6 +25,12 @@ const Attendance = () => {
       setShowStudentList(true);
       fetchStudents(value);
     }
+  };
+
+  const openModal = (student) => {
+    console.log("Opening modal with student data:", student);
+    setSelectedStudent(student); // Set the selected student
+    setIsModalOpen(true); // Open the modal
   };
 
   const fetchStudents = (selectedClass) => {
@@ -142,13 +151,11 @@ const Attendance = () => {
                 <tbody>
                   {students.map((student) => (
                     <tr key={student._id}>
-                      <td className="font-bold text-gray-900">
-                        <button
-                          onClick={() => navigate(`/studentProfile?student._id=${student._id}`)}
-                          className="flex flex-center py-2 px-4 text-green-600 hover:bg-green-200"
-                        >
-                          {student.name}
-                        </button>
+                      <td
+                        className="px-6 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white cursor-pointer"
+                        onClick={() => openModal(student)} // Open modal on student name click
+                      >
+                        {student.name}
                       </td>
 
                       <td className="px-3 py-1 flex justify-center">
@@ -217,6 +224,13 @@ const Attendance = () => {
           </div>
         </form>
       </div>
+      {isModalOpen && selectedStudent && (
+        <StudentProfileModal
+          student={selectedStudent}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)} // Close the modal on dismiss
+        />
+      )}
     </DashboardLayout>
   );
 };

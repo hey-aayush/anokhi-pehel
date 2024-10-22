@@ -5,39 +5,35 @@ import HomePageLayout from "../../components/Home/HomePageLayout";
 import { Antyodayavid, AboutAntyodaya, AboutAntyodayaFrame } from "../../assets/Home"; // Ensure this path is correct
 import { event,event1,event2,event3,event4} from "../../assets/Home/AntyodayaSponser/AtyodayaEvent";
 import Slider from "react-slick";
-import {demo} from "../../assets/Home/AntyodayaSponser";
+import {bob,alumni,ieee,umeed,radio,vinayak,mtt} from "../../assets/Home/AntyodayaSponser";
 const Data = [
   {
-    name: "Coming Soon",
-    img: demo,
+    name: "umeed",
+    img: umeed,
   },
   {
-    name: "Coming Soon",
-    img: demo,
+    name: "alumni",
+    img: alumni,
   },
   {
-    name: "Coming Soon",
-    img: demo,
+    name: "bob",
+    img: bob,
   },
   {
-    name: "Coming Soon",
-    img: demo,
+    name: "vinayak",
+    img: vinayak,
   },
   {
-    name: "Coming Soon",
-    img: demo,
+    name: "ieee",
+    img: ieee,
   },
   {
-    name: "Coming Soon",
-    img: demo,
+    name: "mtt",
+    img: mtt,
   },
   {
-    name: "Coming Soon",
-    img: demo,
-  },
-  {
-    name: "Coming Soon",
-    img: demo,
+    name: "radio",
+    img: radio,
   },
 ]
 const eventImages = [event, event1, event2, event3, event4];

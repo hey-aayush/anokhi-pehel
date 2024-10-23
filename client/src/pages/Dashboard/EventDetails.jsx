@@ -112,11 +112,12 @@ const Student = () => {
     doc.setFontSize(12);
 
     // Start the table at the specified coordinates
-    const tableColumn = ["Name", "Class", "School", "Contact"];
+    const tableColumn = ["S.No.","Name", "Class", "School", "Contact"];
     const tableRows = [];
 
-    filteredParticipants.forEach((participant) => {
+    filteredParticipants.forEach((participant,index) => {
       tableRows.push([
+        index+1,
         participant.name,
         participant.class,
         participant.school,
@@ -219,6 +220,7 @@ const Student = () => {
   <table className="w-full text-sm text-left text-gray-500  ">
     <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-x border-t">
       <tr className="bg-blue-900 text-white">
+        <th scope="col" className="px-4 py-3">S.No.</th>
         <th scope="col" className="px-4 py-3">Name</th>
         <th scope="col" className="px-4 py-3">Class</th>
         <th scope="col" className="px-4 py-3">School</th>
@@ -226,8 +228,9 @@ const Student = () => {
       </tr>
     </thead>
     <tbody className="border-b">
-      {filteredParticipants.map((participant) => (
+      {filteredParticipants.map((participant,index) => (
         <tr key={participant._id} className="hover:bg-gray-200">
+          <td scope="row" className="px-4 py-3">{index+1}</td>
           <td scope="row" className="px-4 py-3">{participant.name}</td>
           <td scope="row" className="px-4 py-3">{participant.class}</td>
           <td scope="row" className="px-4 py-3">{participant.school}</td>

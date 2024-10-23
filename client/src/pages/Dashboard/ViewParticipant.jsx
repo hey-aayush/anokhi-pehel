@@ -192,8 +192,9 @@ filteredStudents = filteredStudents.filter((user) => {
     const doc = new jsPDF();
 
     doc.autoTable({
-      head: [["Name", "Class", "Phone", "Location", "Mode", "School"]],
-      body: filteredStudents.map((student) => [
+      head: [["S.No.","Name", "Class", "Phone", "Location", "Mode", "School"]],
+      body: filteredStudents.map((student,index) => [
+        index+1,
         student.name,
         student.class,
         student.phone,
@@ -244,7 +245,7 @@ filteredStudents = filteredStudents.filter((user) => {
     <DashboardLayout>
       {isLoading && <Spinner />}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
-        <Header category="Antyodaya2k23" title="Participants" />
+        <Header category="Antyodaya2k24" title="Participants" />
         <div className="mx-auto max-w-screen-xl">
           <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -392,6 +393,9 @@ filteredStudents = filteredStudents.filter((user) => {
               <table className="w-full text-sm text-left text-gray-500 ">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-x border-t">
                   <tr>
+                  <th scope="col" className="px-4 py-3">
+                      S.No.
+                    </th>
                     <th scope="col" className="px-4 py-3">
                       Name
                     </th>
@@ -412,8 +416,9 @@ filteredStudents = filteredStudents.filter((user) => {
                   </tr>
                 </thead>
                 <tbody className="border-b">
-                  {currentUsers.map((student) => (
+                  {currentUsers.map((student,index) => (
                     <tr key={student._id} className="border-x">
+                    <td className="px-4 py-3">{indexOfFirstUser+index+1}</td>
                       <th
                         scope="row"
                         className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap "

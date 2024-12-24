@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.post("/sendEmail", async (req, res) => {
   const { name, email, message, tel, address, alumni } = req.body;
-g
+
  
 
 

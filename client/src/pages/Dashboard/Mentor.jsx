@@ -15,6 +15,8 @@ import { ROLES } from "../../constants/Dashboard/index.jsx";
 
 const Mentor = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isAcceptingResponse, setIsAcceptingResponse] = useState(false);
+
   const currentColor = "#03C9D7";
   let navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
@@ -30,7 +32,7 @@ const Mentor = () => {
   const [filterRegnumber, setFilterRegnumber] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(initialUsers);
-
+  const [inActiveUsers, setInActiveUsers] = useState([]);
   //Fetch mentor and Alumni data
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +40,7 @@ const Mentor = () => {
         setIsLoading(true);
         const response = await axios.get(`${BASE_URL}/teamList`);
         const mentors = response.data.filter(
-          (mentor) => mentor.role != ROLES.ALUMNI
+          (mentor) => mentor.role != ROLES.ALUMNI && mentor.isActive
         );
         setMentors(mentors);
         // console.log(users);
@@ -53,6 +55,69 @@ const Mentor = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchInActiveUsers = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`${BASE_URL}/getInactiveUsers`);
+
+        setInActiveUsers(response.data);
+        // console.log(users);
+      } catch (error) {
+        setIsLoading(false);
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInActiveUsers();
+  }, []);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/settings`);
+        if (response.data) {
+          const setting = response.data.find(
+            (item) => item.key === "isAcceptingResponse"
+          );
+          if (setting) {
+            setIsAcceptingResponse(setting.value); // Set the fetched setting value
+            console.log(isAcceptingResponse);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching settings", error);
+      }
+    };
+    fetchSettings();
+  }, []);
+  // Handle toggle change
+  const handleToggle = async (checked) => {
+    const updatedValue = !isAcceptingResponse;
+    setIsAcceptingResponse(updatedValue);
+    //setIsAcceptingResponse(checked);
+    try {
+      // Send the updated setting value to the backend
+      await axios.post(`${BASE_URL}/updateSettings`, {
+        key: "isAcceptingResponse",
+        value: updatedValue,
+      });
+      //setIsAcceptingResponse(!isAcceptingResponse);
+    } catch (error) {
+      console.error("Error updating setting", error);
+    }
+  };
+
+  const handleStatus = async (userId) => {
+    try {
+      await axios.post(`${BASE_URL}/updateActiveStatus/${userId}`);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating Status", error);
+    }
+  };
   //Filter Mentors
   const filteredUsers = users.filter((user) => {
     const userName = user.name ? user.name.toLowerCase() : "";
@@ -121,15 +186,32 @@ const Mentor = () => {
         <Header category="Academics" title="Mentors" />
         <div>
           {user?.isAdmin === true && (
-            <Button
-              color="white"
-              bgColor={currentColor}
-              text="Add Mentor"
-              borderRadius="8px"
-              width="5px"
-              height="10px"
-              custumFunc={onClick}
-            />
+            <div>
+              <Button
+                color="white"
+                bgColor={currentColor}
+                text="Add Mentor"
+                borderRadius="8px"
+                width="5px"
+                height="10px"
+                custumFunc={onClick}
+              />
+
+              <label className="ml-2 inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isAcceptingResponse}
+                  className="sr-only peer"
+                  onChange={handleToggle}
+                />
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                  {isAcceptingResponse
+                    ? "Accepting Responses"
+                    : "Not Accepting Responses"}
+                </span>
+              </label>
+            </div>
           )}
         </div>
       </div>
@@ -232,6 +314,53 @@ const Mentor = () => {
           </button>
         </div>
       </div>
+
+      {user?.isAdmin === true && (
+        <div>
+          <h2 className="text-center text-xl font-bold tracking-tight text-slate-900">
+            Inactive Users
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-500 ">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-x border-t">
+                <tr>
+                  <th className="px-4 py-2">Name</th>
+                  <th className="px-4 py-2">Reg Number</th>
+                  <th className="px-4 py-2">Phone</th>
+                  <th className="px-4 py-2">Email</th>
+                  <th className="px-4 py-2">Profile</th>
+                  <tr className="px-4 py-2">Status</tr>
+                </tr>
+              </thead>
+              <tbody className="border-b">
+                {inActiveUsers.map((user) => (
+                  <tr key={user._id} className="border-x">
+                    <td className="border px-4 py-2">{user.name}</td>
+                    <td className="border px-4 py-2">{user.regnumber}</td>
+                    <td className="border px-4 py-2">{user.phone}</td>
+                    <td className="border px-4 py-2">{user.email}</td>
+                    <td className="border px-4 py-2">
+                      <Link to={`/mentorProfile?mentor._id=${user._id}`}>
+                        <button className="bg-transparent hover:bg-blue-500 text-blue-700 font-normal hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+                          Profile
+                        </button>
+                      </Link>
+                    </td>
+                    <td className="border px-4 py-2">
+                      <button
+                        className="bg-transparent hover:bg-blue-500 text-blue-700 font-normal hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+                        onClick={() => handleStatus(user._id)}
+                      >
+                        Activate
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

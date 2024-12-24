@@ -58,6 +58,18 @@ const Student = () => {
       console.error("Error navigating:", error);
     }
   };
+  const onClick3 = async () => {
+    try {
+      if (userId) {
+        await axios.post(`${BASE_URL}/updateActiveStatus/${userId}`);
+        window.location.reload();
+      } else {
+        console.log("userId is not available");
+      }
+    } catch (error) {
+      console.error("Error updating user status:", error);
+    }
+  };
   useEffect(() => {
     if (userId) {
       axios
@@ -172,6 +184,30 @@ const Student = () => {
                 custumFunc={onClick2}
               />
             )}
+          </div>
+          <div className=" justify-center items-center">
+            {user?.isAdmin === true &&
+              (mentor?.isActive ? (
+                <Button
+                  color="white"
+                  bgColor={currentColor1}
+                  text="Deactivate Profile"
+                  borderRadius="8px"
+                  width="5px"
+                  height="10px"
+                  custumFunc={onClick3}
+                />
+              ) : (
+                <Button
+                  color="white"
+                  bgColor={currentColor}
+                  text="Activate Profile"
+                  borderRadius="8px"
+                  width="5px"
+                  height="10px"
+                  custumFunc={onClick3}
+                />
+              ))}
           </div>
         </div>
 

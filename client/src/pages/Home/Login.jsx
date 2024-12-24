@@ -12,28 +12,33 @@ export default function Login() {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   let navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
   const handleSubmit = async (e) => {
     try {
       // console.log(credentials);
       dispatch(showLoading());
       const response = await axios.post(`${BASE_URL}/login`, credentials);
       // console.log(response.data);
-      window.location.reload();
+      // window.location.reload();
       dispatch(hideLoading());
       if (response.data.success) {
         localStorage.setItem("token", response.data.authToken);
         message.success("Login successfully!!!");
-        navigate("/Dashboard");
+        // navigate("/Dashboard");
       } else {
-        message.error("Login failed");
-        navigate("/login");
+        message.error(response.data.error);
+        // navigate("/login");
       }
     } catch (err) {
       console.log(err);
       message.error("Login failed");
       navigate("/login");
     } finally {
-      window.location.reload();
+      dispatch(hideLoading());
+      // window.location.reload();
     }
   };
 
@@ -85,23 +90,56 @@ export default function Login() {
                 >
                   Password
                 </label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="••••••••"
-                  value={credentials.password}
-                  onChange={onChange}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  required=""
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    id="password"
+                    placeholder="••••••••"
+                    value={credentials.password}
+                    onChange={onChange}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-none dark:text-gray-400 dark:hover:text-gray-300"
+                  >
+                    <svg
+                      className="shrink-0 size-3.5"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {showPassword ? (
+                        <>
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </>
+                      ) : (
+                        <>
+                          <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                          <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                          <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                          <line x1="2" x2="22" y1="2" y2="22"></line>
+                        </>
+                      )}
+                    </svg>
+                  </button>
+                </div>
               </div>
               <Button
                 text="Sign in"
                 styles="w-full bg-primary-600"
                 func={handleSubmit}
               />
-              
+
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                 Forgot Password?{" "}
                 <a

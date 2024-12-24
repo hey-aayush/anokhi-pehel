@@ -37,10 +37,10 @@ import ChangeRole from "./pages/Dashboard/ChangeRole";
 import EditStudent from "./pages/Dashboard/EditStudent";
 import ForgotPassword from "./pages/Home/ForgotPassword";
 import Alumni from "./pages/Dashboard/Alumni";
-import Notice from "./pages/Dashboard/Notice"
-import BackToSchool from "./pages/Home/BackToSchool"
-import Admission from "./pages/Dashboard/Admission"
-import AdmittedStudents from "./pages/Dashboard/AdmittedStudents"
+import Notice from "./pages/Dashboard/Notice";
+import BackToSchool from "./pages/Home/BackToSchool";
+import Admission from "./pages/Dashboard/Admission";
+import AdmittedStudents from "./pages/Dashboard/AdmittedStudents";
 import AdmittedStudentProfile from "./pages/Dashboard/AdmittedStudentProfile";
 import Antyodaya from "./pages/Home/Antyodaya";
 import AtyodayaDashboard from "./pages/Dashboard/AntyodayaDashboard";
@@ -50,11 +50,12 @@ import EventDetails from "./pages/Dashboard/EventDetails";
 import EditEvent from "./pages/Dashboard/EditEvent";
 import AddPoc from "./pages/Dashboard/AddPoc";
 import ViewPoc from "./pages/Dashboard/ViewPoc";
-import AddAtyodayaParticipant from "./pages/Dashboard/AddAntyodayaParticipant"
+import AddAtyodayaParticipant from "./pages/Dashboard/AddAntyodayaParticipant";
 import ViewParticipants from "./pages/Dashboard/ViewParticipant";
 import ParticipantProfile from "./pages/Dashboard/ParticipantProfile";
 import Issue from "./pages/Dashboard/Issue";
-import Winners from "./pages/Dashboard/Winners"
+import JoinAsMentor from "./pages/Home/JoinAsMentor";
+import Winners from "./pages/Dashboard/Winners";
 const App = () => {
   const { loading } = useSelector((state) => state.alerts);
 
@@ -81,7 +82,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/editStudent"
               element={
@@ -139,7 +139,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-           <Route
+            <Route
               path="/viewParticipants"
               element={
                 <ProtectedRoute>
@@ -171,7 +171,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-<Route
+            <Route
               path="/Admission"
               element={
                 <ProtectedRoute>
@@ -181,14 +181,12 @@ const App = () => {
             />
             <Route
               path="/AddAdmission"
-
               element={
                 <ProtectedRoute>
                   <Admission />
                 </ProtectedRoute>
               }
             />
-            
             <Route
               path="/editEvent"
               element={
@@ -217,7 +215,7 @@ const App = () => {
               path="/Antyodaya-Dashboard"
               element={
                 <ProtectedRoute>
-                  <AtyodayaDashboard/>
+                  <AtyodayaDashboard />
                 </ProtectedRoute>
               }
             />
@@ -261,7 +259,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            
             <Route
               path="/admittedStudentProfile"
               element={
@@ -286,7 +283,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            
             <Route
               path="/mentorProfile"
               element={
@@ -295,7 +291,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            
             <Route
               path="/eventManagement"
               element={
@@ -344,7 +339,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
             <Route
               path="/Students"
               element={
@@ -399,6 +393,14 @@ const App = () => {
                 <ProtectedRoute>
                   <AddMentors />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Join"
+              element={
+                <PublicRoute>
+                  <JoinAsMentor />
+                </PublicRoute>
               }
             />
             <Route

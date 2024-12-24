@@ -21,14 +21,21 @@ const login = async (req, res) => {
     let user = await User.findOne({ email });
     if (!user) {
       return res
-        .status(400)
+        .status(200)
         .json({ success, error: "Try Logging in with correct credentials" });
+    }
+
+    if (!user.isActive) {
+      return res.status(200).json({
+        success,
+        error: "Your account is not active. Please contact admin.",
+      });
     }
 
     const pwdCompare = await bcrypt.compare(password, user.password);
     if (!pwdCompare) {
       return res
-        .status(400)
+        .status(200)
         .json({ success, error: "Try Logging in with correct credentials" });
     }
 

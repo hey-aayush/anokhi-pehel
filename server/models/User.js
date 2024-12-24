@@ -50,6 +50,10 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 module.exports = mongoose.model("user", UserSchema);

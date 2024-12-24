@@ -43,6 +43,7 @@ router.route("/createUser").post(upload.single("photo"), async (req, res) => {
   const photo = req.file.filename;
   const Ppassword = req.body.password;
   const branch = req.body.branch;
+  const isActive = req.body.isActive;
   const saltRounds = 10;
 
   try {
@@ -64,6 +65,7 @@ router.route("/createUser").post(upload.single("photo"), async (req, res) => {
       email,
       photo,
       branch,
+      isActive,
     };
 
     const newUser = new User(newUserData);
@@ -166,6 +168,49 @@ router.post("/updateUserRole", async (req, res) => {
   } catch (error) {
     console.error("Error updating user role:", error);
     return res.status(500).json({ error: "Internal server error" });
+  }
+});
+router.get("/activeStatus/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(user.isActive);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/updateActiveStatus/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const activeStatus = user.isActive;
+    user.isActive = !activeStatus;
+    await user.save();
+    return res
+      .status(200)
+      .json({ message: "User Status updated successfully" });
+  } catch (error) {
+    console.error("Error updating active status of user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/getInactiveUsers", async (req, res) => {
+  try {
+    const users = await User.find({ isActive: false });
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

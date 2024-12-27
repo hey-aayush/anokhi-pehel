@@ -4,14 +4,28 @@ const dotenv = require("dotenv");
 const app = express();
 const cors = require("cors");
 const path = require("path");
+
+// Load environment variables from .env file
 dotenv.config();
-const PORT = process.env.PORT;
+
+
+
+
+
+
+// Use port from environment or default to 5000 if undefined
+const PORT = process.env.PORT || 5000;  
+
 const mongoDB = require("./config/db");
 const router = require("./routers");
+const emailRoutes = require("./routers/emailRoutes");
+
+// Connect to MongoDB
 mongoDB();
 
 app.use(cors());
 
+// Allow CORS for your frontend
 app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Origin",
@@ -19,7 +33,7 @@ app.use((req, res, next) => {
   );
   res.header(
     "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE" // Include DELETE here
+    "GET, POST, PUT, PATCH, DELETE"
   );
   res.header(
     "Access-Control-Allow-Headers",
@@ -27,22 +41,34 @@ app.use((req, res, next) => {
   );
   next();
 });
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   next();
 });
+
 app.use(express.json());
+
+// Serve images
 app.use("/images", express.static("images"));
 app.use("/antyodayaImages",express.static("antyodayaImages"));
 // Routes
 app.use("/api/v1/user", router);
+app.use("/api/v1/email", emailRoutes);
 
-// Serve your static files from the Vite build
+// Serve static files from Vite build
 app.use(express.static(path.join(__dirname, "../client/dist")));
+
+// Send the frontend HTML file
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
+// Start the server
 app.listen(PORT, () => {
-  console.log(`server is running at ${PORT}`.bgCyan.white);
+  console.log(`Server is running at port ${PORT}`.bgCyan.white);
 });
+
+
+
+

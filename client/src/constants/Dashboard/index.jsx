@@ -6,7 +6,7 @@ import { MdSimCardAlert } from "react-icons/md";
 import { GiGamepadCross, GiTeacher, GiChart, GiPencil, GiInspiration } from "react-icons/gi";
 import { FaBook } from "react-icons/fa";
 
-export const links = [
+export const links = (user) => [
   {
     title: "Academics",
     links: [
@@ -75,7 +75,15 @@ export const links = [
       },
     ],
   },
-];
+  
+  // Show Admin section only if user is an admin
+  user && user.isAdmin && {
+    title: "Admin",
+    links: [
+      { name: "Blogs", icon: <BiSolidSpreadsheet /> },
+    ],
+  },
+].filter(Boolean); // Filter out null/undefined values
 export const classes = [
   { id: "Nursery", name: "Nursery" },
   { id: "1", name: "1" },

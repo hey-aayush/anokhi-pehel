@@ -13,4 +13,5 @@ router.use(require("./AdmissionRoute"));
 router.use(require("./antyodayaRoute"));
 router.use(require("./issue"));
 router.use(require("./settingsRoute"));
+router.use(require("./blogRoute"));
 module.exports = router;

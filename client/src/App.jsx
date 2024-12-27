@@ -56,6 +56,7 @@ import ParticipantProfile from "./pages/Dashboard/ParticipantProfile";
 import Issue from "./pages/Dashboard/Issue";
 import JoinAsMentor from "./pages/Home/JoinAsMentor";
 import Winners from "./pages/Dashboard/Winners";
+import BlogForm from "./pages/Home/BlogForm";
 const App = () => {
   const { loading } = useSelector((state) => state.alerts);
 
@@ -71,6 +72,30 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blog-form"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <BlogForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Blogs"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <Blog />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blog-form/:id"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <BlogForm />
                 </ProtectedRoute>
               }
             />

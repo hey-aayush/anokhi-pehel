@@ -5,12 +5,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { hideLoading, showLoading } from "../redux/features/alertSlice";
 import { setUser } from "../redux/features/userSlice";
 import { BASE_URL } from "../../src/Service/helper";
+import PageNotFound from "../pages/Error404";
 
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, adminOnly = false }) {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
 
   const token = localStorage.getItem("token"); // Retrieve the stored token from localStorage
+
   const getUser = async () => {
     try {
       dispatch(showLoading());
@@ -20,6 +22,7 @@ export default function ProtectedRoute({ children }) {
         },
       });
       dispatch(hideLoading());
+
       // Check if the response is successful and the user is active
       if (res.data.success) {
         const fetchedUser = res.data.data;
@@ -48,9 +51,14 @@ export default function ProtectedRoute({ children }) {
     if (!user) getUser();
   }, []);
 
-  if (localStorage.getItem("token")) {
-    return children;
-  } else {
+  if (!localStorage.getItem("token")) {
     return <Navigate to="/login" />;
   }
+
+  // Admin-specific check
+  if (adminOnly && user && !user.isAdmin) {
+    return <PageNotFound /> 
+  }
+
+  return children;
 }

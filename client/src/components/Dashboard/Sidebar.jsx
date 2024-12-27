@@ -9,7 +9,7 @@ const Sidebar = () => {
   const { activeMenu, screenSize } = useSelector(
     (state) => state.dashboardContext
   );
-  const { user } = useSelector((state) => state.user);
+  const { user } = useSelector((state) => state.user); 
   const dispatch = useDispatch();
   const currentColor = "#03C9D7";
 
@@ -24,8 +24,11 @@ const Sidebar = () => {
   const normalLink =
     "flex items-center gap-5 pl-4 pt-3 pb-2.5 rounded-lg text-md text-gray-600 hover:text-black hover:bg-light-gray m-2";
 
+  // Get the links by passing the user object
+  const sidebarLinks = links(user); // Call the links function with the user object
+
   return (
-    <div className="ml-3 h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10 ">
+    <div className="ml-3 h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10">
       {activeMenu && (
         <>
           <div className="flex justify-between items-center">
@@ -45,8 +48,8 @@ const Sidebar = () => {
               <MdOutlineCancel />
             </button>
           </div>
-          <div className="mt-10 ">
-            {links.map((item) => (
+          <div className="mt-10">
+            {sidebarLinks.map((item) => (
               <div key={item.title}>
                 <p className="text-gray-600 m-3 mt-4 uppercase font-bold hover:text-black">
                   {item.title}
@@ -63,7 +66,7 @@ const Sidebar = () => {
                     }
                   >
                     {link.icon}
-                    <span className="capitalize ">{link.name}</span>
+                    <span className="capitalize">{link.name}</span>
                   </NavLink>
                 ))}
               </div>

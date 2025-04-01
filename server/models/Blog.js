@@ -19,10 +19,6 @@ const BlogSchema = new Schema({
       type: String,
       required: true, 
     },
-    link:{
-      type: String,
-      required: true, 
-    },
     instagramPostLink:{
       type: String, 
     },

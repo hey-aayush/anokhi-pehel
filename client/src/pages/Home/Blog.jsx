@@ -139,7 +139,7 @@ const Blog = () => {
                     key={blog._id}
                     className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
                   >
-                    <a href={blog.link}>
+                    <a>
                       <img
                         className="w-full object-cover rounded-t-lg bg-white"
                         src={blog.imageUrl}

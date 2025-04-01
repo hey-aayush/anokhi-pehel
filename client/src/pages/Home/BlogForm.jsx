@@ -11,7 +11,6 @@ const BlogForm = () => {
         title: '',
         imageUrl: '',
         description: '',
-        link: '',
         instagramPostLink: '',
         linkedinPostLink: '',
         facebookPostLink: '',
@@ -114,19 +113,6 @@ const BlogForm = () => {
                                     name="description"
                                     id="description"
                                     value={blog.description}
-                                    onChange={handleChange}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                />
-                            </div>
-                            <div className="sm:col-span-6">
-                                <label htmlFor="link" className="block text-sm font-medium leading-6 text-gray-900">
-                                    Blog Link
-                                </label>
-                                <input
-                                    type="url"
-                                    name="link"
-                                    id="link"
-                                    value={blog.link}
                                     onChange={handleChange}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 />

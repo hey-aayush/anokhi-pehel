@@ -1,7 +1,12 @@
 import { quotes } from "../../assets/Home";
 
 const FeedbackCard = ({ content, name, title, img }) => (
-  <div className="flex justify-between flex-col px-10 py-12 rounded-[20px]  max-w-[370px] md:mr-10 sm:mr-5 mr-0 my-5 feedback-card">
+  <div
+    className="flex justify-between flex-col px-10 py-12 rounded-[20px] 
+    max-w-[370px] md:mr-10 sm:mr-5 mr-0 my-5 feedback-card 
+    bg-white border-2 border-transparent hover:border-teal-400 
+    hover:scale-105 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg"
+  >
     <img
       src={quotes}
       alt="double_quotes"

@@ -1,12 +1,12 @@
 import styles from "../../style";
-import { study, class1, ANOKHIPEHEL } from "../../assets/Home";
+import { ANOKHIPEHEL } from "../../assets/Home";
 
 const Hero = () => {
   return (
     <div
-      className={`relative ${styles.flexStart} overflow-hidden rounded-lg mb-10`} // Apply rounded corners and hidden overflow
+      className={`relative ${styles.flexStart} overflow-hidden mb-10 border-4 border-teal-500`}
       style={{
-        borderRadius: "40px", // Smooth curves
+        borderRadius: "40px", // Rounded corners
       }}
     >
       {/* Video Background */}
@@ -14,14 +14,15 @@ const Hero = () => {
         autoPlay
         loop
         muted
-        className="inset-0 w-full h-full object-cover lg:w-[1400px] lg:h-[700px]" // Responsive width and height for large screens
-        style={{ objectFit: "cover" }} // Cover the viewport while maintaining aspect ratio
+        className="w-full h-full object-cover lg:w-[1400px] lg:h-[700px]"
+        style={{
+          borderRadius: "36px", // Slightly smaller to avoid spilling over border
+          objectFit: "cover",
+        }}
       >
         <source src={ANOKHIPEHEL} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
-
-      {/* About Antyodaya Image */}
     </div>
   );
 };

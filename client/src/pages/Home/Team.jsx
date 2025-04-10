@@ -37,7 +37,6 @@ const Team = () => {
     fetchUsers();
   }, []);
 
-  //Pagination
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
@@ -96,38 +95,44 @@ const Team = () => {
     <HomePageLayout>
       <section className="bg-white">
         <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-6">
-          <h2 className="mb-6 text-4xl tracking-tight font-extrabold text-gray-900">
-            Our Team
-          </h2>
-          <div className="mx-auto mb-9 max-w-screen-sm lg:mb-16">
-            <div className="grid gap-8 lg:gap-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-              {feedback.map((person) => (
-                <div
-                  key={person._id}
-                  className="text-center text-gray-500 transition ease-in-out delay-150 cursor-pointer hover:-translate-y-2 hover:scale-110 duration-500"
-                >
-                  <img
-                    className="mx-auto mb-4 w-36 h-36 rounded-full object-cover"
-                    src={person.img}
-                    alt="Profile Avatar"
-                  />
-                  <h3 className="mb-1 text-2xl font-bold tracking-tight text-gray-900">
-                    <a href="#">{person.name}</a>
-                  </h3>
-                  <p>{person.title}</p>
-                </div>
-              ))}
-            </div>
+          
+          <div className="group inline-block relative">
+            <h2 className="mb-2 text-4xl tracking-tight font-extrabold text-gray-900">
+              Our Team
+            </h2>
+            <span className="block w-24 h-1 bg-[#00b386] mx-auto origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></span>
           </div>
-          <div>
+
+          {/* Feedback team members */}
+          <div className="mt-12 flex flex-wrap justify-center gap-8">
+            {feedback.map((person) => (
+              <div
+                key={person._id}
+                className="text-center text-gray-500 transition ease-in-out delay-150 cursor-pointer hover:-translate-y-2 hover:scale-110 duration-500"
+              >
+                <img
+                  className="mx-auto mb-4 w-36 h-36 rounded-full object-cover"
+                  src={person.img}
+                  alt="Profile Avatar"
+                />
+                <h3 className="mb-1 text-2xl font-bold tracking-tight text-gray-900">
+                  <a href="#">{person.name}</a>
+                </h3>
+                <p>{person.title}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Final year Coordinators */}
+          <div className="mt-20">
             <h3 className="mb-6 text-2xl tracking-tight text-gray-900">
               Final year Coordinators
             </h3>
-            <div className="grid gap-8 lg:gap-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div className="flex flex-wrap justify-center gap-8">
               {currentUsers.map((user) => (
                 <div
                   key={user._id}
-                  className="text-center text-gray-500 transition ease-in-out delay-150 cursor-pointer hover:-translate-y-2 hover:scale-110 duration-500 "
+                  className="text-center text-gray-500 transition ease-in-out delay-150 cursor-pointer hover:-translate-y-2 hover:scale-110 duration-500"
                 >
                   <img
                     className="mx-auto mb-4 w-36 h-36 rounded-full object-cover"
@@ -172,6 +177,7 @@ const Team = () => {
               ))}
             </div>
 
+            {/* Pagination */}
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -186,6 +192,8 @@ const Team = () => {
           </div>
         </div>
       </section>
+
+      {/* Alumni Slider */}
       <section className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-6">
         <h2 className="mb-4 text-4xl tracking-tight text-gray-900">Alumni</h2>
         <Slider {...settings}>

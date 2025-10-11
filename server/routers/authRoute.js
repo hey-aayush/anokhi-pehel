@@ -7,6 +7,7 @@ const {
   forgotPassword,
   resetPassword,
 } = require("../controller/authController");
+
 const cors = require("cors");
 
 router.use(cors());
@@ -25,5 +26,6 @@ router.get("/userData", getUserData);
 router.post("/forgot-password", forgotPassword);
 
 router.get("/reset-password/:id/:token", resetPassword);
+
 
 module.exports = router;

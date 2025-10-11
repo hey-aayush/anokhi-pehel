@@ -8,6 +8,7 @@ const {
   verifyToken,
   generateTempToken,
 } = require("../config/secret");
+const transporter = require("../config/mailer.js");
 
 const login = async (req, res) => {
   let success = false;
@@ -77,17 +78,6 @@ const getUserData = async (req, res) => {
   }
 };
 
-//Authenticate the email id and password from which mail will be sent
-var transporter = nodemailer.createTransport({
-  //service: 'gmail',
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // Use `true` for port 465, `false` for all other ports
-  auth: {
-    user: process.env.email,
-    pass: process.env.password,
-  },
-});
 
 //Generate link with temporary token to reset the password
 const forgotPassword = async (req, res) => {
@@ -220,4 +210,6 @@ const resetPassword = async (req, res) => {
     res.status(500).send("Something went wrong");
   }
 };
+
+
 module.exports = { login, getUserData, forgotPassword, resetPassword };

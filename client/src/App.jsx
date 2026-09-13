@@ -421,14 +421,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/Join"
-              element={
-                <PublicRoute>
-                  <JoinAsMentor />
-                </PublicRoute>
-              }
-            />
+            <Route path="/Join" element={<JoinAsMentor />} />
             <Route
               path="/login"
               element={
@@ -472,9 +465,7 @@ const App = () => {
             <Route
               path="/"
               element={
-                
-                  <HomePage />
-              
+                <HomePage />
               }
             />
             <Route

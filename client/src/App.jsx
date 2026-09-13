@@ -422,14 +422,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/Join"
-              element={
-                <PublicRoute>
-                  <JoinAsMentor />
-                </PublicRoute>
-              }
-            />
+            <Route path="/Join" element={<JoinAsMentor />} />
             <Route
               path="/login"
               element={
@@ -446,62 +439,13 @@ const App = () => {
                 </PublicRoute>
               }
             />
-            <Route
-              path="/blog"
-              element={
-                <PublicRoute>
-                  <Blog />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/gallery"
-              element={
-                <PublicRoute>
-                  <Gallery />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/team"
-              element={
-                <PublicRoute>
-                  <Team />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/"
-              element={
-                
-                  <HomePage />
-              
-              }
-            />
-            <Route
-              path="/connectWithUs"
-              element={
-                <PublicRoute>
-                  <ConnectWithUs />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/backToSchool"
-              element={
-                <PublicRoute>
-                  <BackToSchool />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/Antyodaya"
-              element={
-                <PublicRoute>
-                  <Antyodaya />s
-                </PublicRoute>
-              }
-            />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/connectWithUs" element={<ConnectWithUs />} />
+            <Route path="/backToSchool" element={<BackToSchool />} />
+            <Route path="/Antyodaya" element={<Antyodaya />} />
             <Route path="*" element={<PageNotFound />} />
           </Routes>
         )}

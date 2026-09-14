@@ -11,6 +11,7 @@ const AddPoc = () => {
   const { user } = useSelector((state) => state.user);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [credentials, setCredentials] = useState({
@@ -21,8 +22,8 @@ const AddPoc = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // Send the topic data to the server using Axios
     axios
       .post(`${BASE_URL}/addPoc`, credentials)
       .then((response) => {
@@ -49,6 +50,9 @@ const AddPoc = () => {
         console.error(error);
         setErrorMessage("Failed to save Point of Contact");
         setShowError(true);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   };
 
@@ -151,9 +155,10 @@ const AddPoc = () => {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={isSubmitting}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

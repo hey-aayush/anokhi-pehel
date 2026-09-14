@@ -12,6 +12,7 @@ const AddAntyodayaParticipant = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [warningDetails, setWarningDetails] = useState("");
@@ -94,6 +95,7 @@ const AddAntyodayaParticipant = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("name", credentials.name);
     formData.append("class", credentials.class);
@@ -127,6 +129,8 @@ const AddAntyodayaParticipant = () => {
       setErrorMessage("ALL INPUT IS NOT FILLED");
       setShowError(true);
       console.error("error", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -456,9 +460,10 @@ const AddAntyodayaParticipant = () => {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={isSubmitting}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

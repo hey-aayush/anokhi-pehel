@@ -6,9 +6,18 @@ import "react-datepicker/dist/react-datepicker.css";
 import { BASE_URL } from "../../Service/helper";
 import PageNotFound from "../Error404";
 import { useSelector } from "react-redux";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
+import WarningModel from "../../components/Models/WarningModel";
 
 const AddMentor = () => {
   const { user } = useSelector((state) => state.user);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [warningDetails, setWarningDetails] = useState("");
   const [credentials, setCredentials] = useState({
     name: "",
     email: "",
@@ -26,16 +35,14 @@ const AddMentor = () => {
     e.preventDefault();
     const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/.*$/;
     if (linkedinRegex.test(credentials.linkedin)) {
-      alert(
-        "Please provide only the LinkedIn ID (e.g., 'username') and not the full link."
-      );
+      setWarningDetails("Please provide only the LinkedIn ID (e.g., 'username') and not the full link.");
+      setShowWarning(true);
       return;
     }
     const instagramRegex = /^(https?:\/\/)?(www\.)?instagram\.com\/.*$/;
     if (instagramRegex.test(credentials.instagram)) {
-      alert(
-        "Please provide only the Instagram ID (e.g., 'username') and not the full link."
-      );
+      setWarningDetails("Please provide only the Instagram ID (e.g., 'username') and not the full link.");
+      setShowWarning(true);
       return;
     }
     const formData = new FormData();
@@ -58,11 +65,13 @@ const AddMentor = () => {
           res.data.message ===
           "User with this registration number already exists"
         ) {
-          alert("User with this registration number already exists");
+          setErrorMessage("User with this registration number already exists");
+          setShowError(true);
+          return;
         }
         if (res.data === "Mentor Added") {
-          alert("Mentor submitted successfully!");
-
+          setSuccessMessage("Mentor submitted successfully!");
+          setShowSuccess(true);
           setCredentials({
             name: "",
             email: "",
@@ -80,6 +89,8 @@ const AddMentor = () => {
       })
       .catch((err) => {
         console.log("error", err);
+        setErrorMessage("Failed to create mentor");
+        setShowError(true);
       });
   };
   const onChange = (e) => {
@@ -93,6 +104,30 @@ const AddMentor = () => {
     <>
       {user?.isAdmin === true ? (
         <DashboardLayout>
+          {showSuccess && (
+            <SuccessMessageModel
+              message={successMessage}
+              onClose={() => setShowSuccess(false)}
+            />
+          )}
+          {showError && (
+            <ErrorMessageModel
+              isOpen={showError}
+              onClose={() => setShowError(false)}
+              onRetry={() => setShowError(false)}
+              title="Submission Failed"
+              message={errorMessage}
+            />
+          )}
+          {showWarning && (
+            <WarningModel
+              isOpen={showWarning}
+              onClose={() => setShowWarning(false)}
+              onConfirm={() => setShowWarning(false)}
+              title="Invalid social profile input"
+              details={warningDetails}
+            />
+          )}
           <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
             <form onSubmit={handleSubmit} encType="multipart/form-data">
               <div className="space-y-8">

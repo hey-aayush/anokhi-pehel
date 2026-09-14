@@ -4,11 +4,18 @@ import axios from "axios";
 import { classes, locations, modes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
-import { showLoading, hideLoading } from "../../redux/features/alertSlice";
-import { useDispatch } from "react-redux";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
+import WarningModel from "../../components/Models/WarningModel";
 
 const AddAntyodayaParticipant = () => {
-  const dispatch = useDispatch();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [warningDetails, setWarningDetails] = useState("");
   const [credentials, setCredentials] = useState({
     name: "",
     class: "",
@@ -43,13 +50,11 @@ const AddAntyodayaParticipant = () => {
         console.log("Events (current year only):", currentYearEvents);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        dispatch(hideLoading());
       }
     };
 
     fetchPocAndEventData();
-  }, [dispatch]);
+  }, []);
 
   // Resizing and setting photo
   const resizeImage = (file) => {
@@ -90,7 +95,7 @@ const AddAntyodayaParticipant = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(showLoading());
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("name", credentials.name);
     formData.append("class", credentials.class);
@@ -104,7 +109,8 @@ const AddAntyodayaParticipant = () => {
     try {
       const res = await axios.post(`${BASE_URL}/addParticipants`, formData);
       if (res.data === "Participant Added") {
-        alert("Participant submitted successfully!");
+        setSuccessMessage("Participant submitted successfully!");
+        setShowSuccess(true);
         setCredentials({
           name: "",
           class: "",
@@ -116,13 +122,15 @@ const AddAntyodayaParticipant = () => {
           events: [],
         });
       } else {
-        alert(res.data);
+        setErrorMessage(res.data);
+        setShowError(true);
       }
     } catch (err) {
-      alert("ALL INPUT IS NOT FILLED");
+      setErrorMessage("ALL INPUT IS NOT FILLED");
+      setShowError(true);
       console.error("error", err);
     } finally {
-      dispatch(hideLoading());
+      setIsSubmitting(false);
     }
   };
 
@@ -167,7 +175,8 @@ const AddAntyodayaParticipant = () => {
   
       // Check if the max number of events (3) is reached
       if (prevCredentials.events.length >= 3) {
-        alert("You can only select up to 3 events.");
+        setWarningDetails("You can only select up to 3 events.");
+        setShowWarning(true);
         return prevCredentials;
       }
   
@@ -187,6 +196,30 @@ const AddAntyodayaParticipant = () => {
   
   return (
     <DashboardLayout>
+      {showSuccess && (
+        <SuccessMessageModel
+          message={successMessage}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
+      {showError && (
+        <ErrorMessageModel
+          isOpen={showError}
+          onClose={() => setShowError(false)}
+          onRetry={() => setShowError(false)}
+          title="Submission Failed"
+          message={errorMessage}
+        />
+      )}
+      {showWarning && (
+        <WarningModel
+          isOpen={showWarning}
+          onClose={() => setShowWarning(false)}
+          onConfirm={() => setShowWarning(false)}
+          title="Event Selection Warning"
+          details={warningDetails}
+        />
+      )}
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="space-y-8">
@@ -427,9 +460,10 @@ const AddAntyodayaParticipant = () => {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={isSubmitting}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

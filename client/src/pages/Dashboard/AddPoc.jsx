@@ -4,9 +4,16 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useSelector } from "react-redux";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 const AddPoc = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [credentials, setCredentials] = useState({
     school: "",
     nameOfPoc: "",
@@ -15,34 +22,37 @@ const AddPoc = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // Send the topic data to the server using Axios
     axios
       .post(`${BASE_URL}/addPoc`, credentials)
       .then((response) => {
         console.log(response);
         if (response.data === "Added") {
-          alert("Poc Added successfully");
-          navigate("/Antyodaya-Dashboard");
+          setSuccessMessage("Poc Added successfully");
+          setShowSuccess(true);
           setCredentials({
             school: "",
-    nameOfPoc: "",
-   contact:"",
+            nameOfPoc: "",
+            contact: "",
           });
         } else {
-          alert("Poc Updated");
-          navigate("/Antyodaya-Dashboard");
+          setSuccessMessage("Poc Updated");
+          setShowSuccess(true);
           setCredentials({
             school: "",
-    nameOfPoc: "",
-   contact:"",
+            nameOfPoc: "",
+            contact: "",
           });
         }
-
-        // Handle the response from the server as needed
       })
       .catch((error) => {
         console.error(error);
+        setErrorMessage("Failed to save Point of Contact");
+        setShowError(true);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   };
 
@@ -53,6 +63,21 @@ const AddPoc = () => {
 
   return (
     <DashboardLayout>
+      {showSuccess && (
+        <SuccessMessageModel
+          message={successMessage}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
+      {showError && (
+        <ErrorMessageModel
+          isOpen={showError}
+          onClose={() => setShowError(false)}
+          onRetry={() => setShowError(false)}
+          title="Submission Failed"
+          message={errorMessage}
+        />
+      )}
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="space-y-8">
@@ -130,9 +155,10 @@ const AddPoc = () => {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={isSubmitting}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

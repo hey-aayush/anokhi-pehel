@@ -6,9 +6,15 @@ import { useNavigate } from "react-router-dom";
 import { event } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useSelector } from "react-redux";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 const AddEvent = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [credentials, setCredentials] = useState({
     eventName: "",
     eventGroup: "",
@@ -22,24 +28,18 @@ const AddEvent = () => {
     festName: "Antyodaya2k24",
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Send the topic data to the server using Axios
+  const submitEvent = () => {
     axios
       .post(`${BASE_URL}/addEvent`, credentials)
       .then((response) => {
         console.log(response);
 
-        // Check if the event was added successfully based on status code
         if (response.status === 201) {
-          alert("Event submitted successfully");
-          navigate("/Antyodaya-Dashboard");
-          // Reset the form credentials
+          setSuccessMessage("Event submitted successfully");
+          setShowSuccess(true);
           setCredentials({
             eventName: "",
             eventGroup: "",
-            // eventDepartment: "",
             location: "",
             time: "",
             coordinator: "",
@@ -48,13 +48,11 @@ const AddEvent = () => {
             festName: "",
           });
         } else {
-          // Handle any other response that isn't a 201
-          alert("Event updated");
-          navigate("/Antyodaya-Dashboard");
+          setSuccessMessage("Event updated");
+          setShowSuccess(true);
           setCredentials({
             eventName: "",
             eventGroup: "",
-            // eventDepartment: "",
             location: "",
             time: "",
             coordinator: "",
@@ -66,21 +64,20 @@ const AddEvent = () => {
       })
       .catch((error) => {
         console.error("Error occurred:", error);
-
-        // Check for server errors
         if (error.response) {
-          // If the server responded with a status other than 2xx
-          alert(
-            `Error: ${error.response.data.message || "Something went wrong"}`
-          );
+          setErrorMessage(`Error: ${error.response.data.message || "Something went wrong"}`);
         } else if (error.request) {
-          // If no response was received from the server
-          alert("Error: No response from server. Please try again later.");
+          setErrorMessage("Error: No response from server. Please try again later.");
         } else {
-          // Catch any other errors in the request setup
-          alert("Error: Failed to send request.");
+          setErrorMessage("Error: Failed to send request.");
         }
+        setShowError(true);
       });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submitEvent();
   };
 
   const onChange = (e) => {
@@ -90,6 +87,21 @@ const AddEvent = () => {
 
   return (
     <DashboardLayout>
+      {showSuccess && (
+        <SuccessMessageModel
+          message={successMessage}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
+      {showError && (
+        <ErrorMessageModel
+          isOpen={showError}
+          onClose={() => setShowError(false)}
+          onRetry={submitEvent}
+          title="Submission Failed"
+          message={errorMessage}
+        />
+      )}
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="space-y-8">

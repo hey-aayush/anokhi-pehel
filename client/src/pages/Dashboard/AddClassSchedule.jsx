@@ -6,9 +6,18 @@ import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
 import { useSelector } from "react-redux";
 import PageNotFound from "../Error404";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
+import WarningModel from "../../components/Models/WarningModel";
 const AddClassSchedule = () => {
   const [userNames, setUserNames] = useState([]);
   const { user } = useSelector((state) => state.user);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [warningDetails, setWarningDetails] = useState("");
   const daysOfWeek = [
     "Sunday",
     "Monday",
@@ -51,9 +60,9 @@ const AddClassSchedule = () => {
       .post(`${BASE_URL}/addClassSchedule`, schedule)
       .then((res) => {
         console.log(res);
-        // Check if the response indicates success (you should have a proper way to determine success)
         if (res.data === "Schedule Added") {
-          alert("Schedule Added successfully!");
+          setSuccessMessage("Schedule Added successfully!");
+          setShowSuccess(true);
           setSchedule({
             className: "",
             schedule: daysOfWeek.map((day) => ({
@@ -63,10 +72,14 @@ const AddClassSchedule = () => {
               mentor1: "",
             })),
           });
+        } else {
+          setErrorMessage("Schedule Already exist!");
+          setShowError(true);
         }
       })
       .catch((err) => {
-        alert("Schedule Already exist!");
+        setWarningDetails("Schedule Already exist!");
+        setShowWarning(true);
         console.log("error", err);
       });
   };
@@ -84,6 +97,30 @@ const AddClassSchedule = () => {
     <>
       {user?.isAdmin === true ? (
         <DashboardLayout>
+          {showSuccess && (
+            <SuccessMessageModel
+              message={successMessage}
+              onClose={() => setShowSuccess(false)}
+            />
+          )}
+          {showError && (
+            <ErrorMessageModel
+              isOpen={showError}
+              onClose={() => setShowError(false)}
+              onRetry={() => setShowError(false)}
+              title="Submission Failed"
+              message={errorMessage}
+            />
+          )}
+          {showWarning && (
+            <WarningModel
+              isOpen={showWarning}
+              onClose={() => setShowWarning(false)}
+              onConfirm={() => setShowWarning(false)}
+              title="Schedule Warning"
+              details={warningDetails}
+            />
+          )}
           <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
             <form onSubmit={handleSubmit} encType="multipart/form-data">
               {/* ... other form elements */}

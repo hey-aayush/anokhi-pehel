@@ -22,6 +22,7 @@ const AddAntyodayaParticipant = () => {
   });
   const [pocList, setPocList] = useState([]);
   const [eventList, setEventList] = useState([]);
+  const [participantList, setParticipantList] = useState([]);
   const [imageSize, setImageSize] = useState("");
   const WIDTH = 800;
 
@@ -31,6 +32,7 @@ const AddAntyodayaParticipant = () => {
       try {
         const pocResponse = await axios.get(`${BASE_URL}/pocList`);
         const eventResponse = await axios.get(`${BASE_URL}/getEvents`);
+        const participantResponse = await axios.get(`${BASE_URL}/participantList`);
         const currentYear = new Date().getFullYear();
 
         // Filter POCs by current year
@@ -38,6 +40,7 @@ const AddAntyodayaParticipant = () => {
         const currentYearEvents = eventResponse.data.filter(event => event.year === currentYear);
         setPocList(currentYearPocs);
         setEventList(currentYearEvents);
+        setParticipantList(participantResponse.data || []);
 
         console.log("POCs (current year only):", currentYearPocs);
         console.log("Events (current year only):", currentYearEvents);
@@ -88,8 +91,42 @@ const AddAntyodayaParticipant = () => {
     });
   };
 
+  const isDanceEvent = (event) => {
+    return Boolean(event?.eventName && event.eventName.toLowerCase().includes("dance"));
+  };
+
+  const getDanceParticipantsCount = (event) => {
+    if (!credentials.poc && !credentials.school) return 0;
+    const currentYear = new Date().getFullYear();
+    return participantList.filter((p) => {
+      if (!p) return false;
+      const matchesYear = p.year === currentYear || !p.year;
+      const matchesPoc = credentials.poc && (p.poc === credentials.poc || p.poc?._id === credentials.poc);
+      const matchesSchool = credentials.school && typeof p.school === "string" && typeof credentials.school === "string" && p.school.trim().toLowerCase() === credentials.school.trim().toLowerCase();
+      const matchesPocOrSchool = matchesPoc || matchesSchool;
+
+      const hasEvent = p.events && Array.isArray(p.events) && (
+        p.events.includes(event._id) ||
+        p.events.some((e) => e === event._id || e?._id === event._id)
+      );
+      return matchesYear && matchesPocOrSchool && hasEvent;
+    }).length;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate Dance limit before submission
+    for (const eventId of credentials.events) {
+      const selectedEvent = eventList.find((ev) => ev._id === eventId);
+      if (selectedEvent && isDanceEvent(selectedEvent)) {
+        const count = getDanceParticipantsCount(selectedEvent);
+        if (count >= 3) {
+          alert(`Cannot add participant. Maximum limit (3) for "${selectedEvent.eventName}" has already been reached for this POC/school.`);
+          return;
+        }
+      }
+    }
     dispatch(showLoading());
     const formData = new FormData();
     formData.append("name", credentials.name);
@@ -115,6 +152,12 @@ const AddAntyodayaParticipant = () => {
           poc: "",
           events: [],
         });
+        try {
+          const updatedParticipants = await axios.get(`${BASE_URL}/participantList`);
+          setParticipantList(updatedParticipants.data || []);
+        } catch (fetchErr) {
+          console.error("Error refreshing participant list:", fetchErr);
+        }
       } else {
         alert(res.data);
       }
@@ -163,6 +206,21 @@ const AddAntyodayaParticipant = () => {
           ...prevCredentials,
           events: prevCredentials.events.filter((eventId) => eventId !== selectedEventId),
         };
+      }
+
+      // Check if selecting a dance event without selecting POC / School first
+      if (isDanceEvent(selectedEvent) && !prevCredentials.poc && !prevCredentials.school) {
+        alert("Please select a Point of Contact (POC) / School first to verify Dance event availability.");
+        return prevCredentials;
+      }
+
+      // Check if Dance quota (max 3 per school/POC) is already reached
+      if (isDanceEvent(selectedEvent)) {
+        const danceCount = getDanceParticipantsCount(selectedEvent);
+        if (danceCount >= 3) {
+          alert(`Maximum 3 participants from this School / POC are allowed for "${selectedEvent.eventName}". Limit reached (${danceCount}/3).`);
+          return prevCredentials;
+        }
       }
   
       // Check if the max number of events (3) is reached
@@ -392,16 +450,41 @@ const AddAntyodayaParticipant = () => {
                           {events
                             .sort((a, b) => a.eventName.localeCompare(b.eventName))
                             .map((event) => {
+                              const isDance = isDanceEvent(event);
+                              const danceCount = isDance ? getDanceParticipantsCount(event) : 0;
+                              const isQuotaFull = isDance && danceCount >= 3;
+                              const isChecked = credentials.events.includes(event._id);
+
                               return (
-                                <div key={event._id} className="flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    value={event._id}
-                                    onChange={() => handleEventChange(event, group)}
-                                    checked={credentials.events.includes(event._id)}
-                                    className="mr-2"
-                                  />
-                                  <label className="text-sm text-gray-900">{event.eventName}</label>
+                                <div key={event._id} className="flex items-center justify-between py-1 max-w-md">
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      value={event._id}
+                                      onChange={() => handleEventChange(event, group)}
+                                      checked={isChecked}
+                                      disabled={isQuotaFull && !isChecked}
+                                      className="mr-2 disabled:opacity-50"
+                                    />
+                                    <label className={`text-sm ${isQuotaFull && !isChecked ? "text-gray-400 cursor-not-allowed" : "text-gray-900 cursor-pointer"}`}>
+                                      {event.eventName}
+                                    </label>
+                                  </div>
+                                  {isDance && (credentials.poc || credentials.school) && (
+                                    <span
+                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                        isQuotaFull
+                                          ? "bg-red-100 text-red-700"
+                                          : danceCount === 2
+                                          ? "bg-amber-100 text-amber-700"
+                                          : "bg-emerald-100 text-emerald-700"
+                                      }`}
+                                    >
+                                      {isQuotaFull
+                                        ? "School quota full (3/3)"
+                                        : `School quota: ${danceCount}/3`}
+                                    </span>
+                                  )}
                                 </div>
                               );
                             })}

@@ -19,6 +19,17 @@ import {
   FaAddressBook,
 } from "react-icons/fa";
 
+const extractYear = (val) => {
+  if (!val) return null;
+  const str = String(val);
+  const kMatch = str.match(/\b2[kK](\d{2})\b/);
+  if (kMatch) return 2000 + Number(kMatch[1]);
+  const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+  if (match) return Number(match[1]);
+  const num = Number(val);
+  return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+};
+
 const AntyodayaDashboard = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
@@ -50,10 +61,31 @@ const AntyodayaDashboard = () => {
         axios.get(`${BASE_URL}/getEventsWithWinners`),
       ]);
 
-      setEvents(eventsResponse.data || []);
-      setPoc(pocResponse.data || []);
-      setParticipants(participantsResponse.data || []);
-      setWinners(winnersResponse.data || []);
+      const fetchedEvents = eventsResponse.data || [];
+      const fetchedPoc = pocResponse.data || [];
+      const fetchedParticipants = participantsResponse.data || [];
+      const fetchedWinners = winnersResponse.data || [];
+
+      setEvents(fetchedEvents);
+      setPoc(fetchedPoc);
+      setParticipants(fetchedParticipants);
+      setWinners(fetchedWinners);
+
+      // Determine years with data (strictly based on Events and POCs)
+      const yearsWithData = Array.from(
+        new Set(
+          [
+            ...fetchedEvents.map((e) => extractYear(e.year || e.festName)),
+            ...fetchedPoc.map((pc) => extractYear(pc.year)),
+          ].filter(Boolean)
+        )
+      ).sort((a, b) => b - a);
+
+      if (yearsWithData.length > 0) {
+        setSelectedYear(yearsWithData[0]);
+      } else {
+        setSelectedYear("all");
+      }
     } catch (err) {
       console.error("Dashboard error:", err);
       setError("Failed to fetch Antyodaya dashboard data. Please try again.");
@@ -66,17 +98,6 @@ const AntyodayaDashboard = () => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
-
-  const extractYear = (val) => {
-    if (!val) return null;
-    const str = String(val);
-    const kMatch = str.match(/\b2[kK](\d{2})\b/);
-    if (kMatch) return 2000 + Number(kMatch[1]);
-    const match = str.match(/\b(19\d{2}|20\d{2})\b/);
-    if (match) return Number(match[1]);
-    const num = Number(val);
-    return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
-  };
 
   const countWinners = (eventsList) => {
     let count = 0;
@@ -111,11 +132,8 @@ const AntyodayaDashboard = () => {
   const allYears = Array.from(
     new Set(
       [
-        currentYear,
         ...events.map((e) => extractYear(e.year || e.festName)),
-        ...participants.map((p) => extractYear(p.year)),
         ...poc.map((pc) => extractYear(pc.year)),
-        ...winners.map((w) => extractYear(w.year || w.festName)),
       ].filter(Boolean)
     )
   ).sort((a, b) => b - a);

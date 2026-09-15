@@ -11,6 +11,17 @@ import {
 } from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
+const extractYear = (val) => {
+  if (!val) return null;
+  const str = String(val);
+  const kMatch = str.match(/\b2[kK](\d{2})\b/);
+  if (kMatch) return 2000 + Number(kMatch[1]);
+  const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+  if (match) return Number(match[1]);
+  const num = Number(val);
+  return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+};
+
 const ViewPocList = () => {
   const [pocList, setPocList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,11 +30,24 @@ const ViewPocList = () => {
   const [selectedSession, setSelectedSession] = useState([]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
+  const currentYear = new Date().getFullYear();
+
   useEffect(() => {
     const fetchPocData = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/pocList`);
-        setPocList(response.data);
+        const data = response.data || [];
+        setPocList(data);
+
+        const yearsWithData = Array.from(
+          new Set(data.map((p) => extractYear(p.year)).filter(Boolean))
+        ).sort((a, b) => b - a);
+
+        if (yearsWithData.includes(currentYear)) {
+          setSelectedSession([currentYear]);
+        } else if (yearsWithData.length > 0) {
+          setSelectedSession([yearsWithData[0]]);
+        }
       } catch (error) {
         console.error("Error fetching POC details:", error);
       }
@@ -47,27 +71,12 @@ const ViewPocList = () => {
     if (isFilterBySessionDropdownOpen)
       setIsFilterBySessionDropdownOpen(false);
   };
-
-  const extractYear = (val) => {
-    if (!val) return null;
-    const str = String(val);
-    const kMatch = str.match(/\b2[kK](\d{2})\b/);
-    if (kMatch) return 2000 + Number(kMatch[1]);
-    const match = str.match(/\b(19\d{2}|20\d{2})\b/);
-    if (match) return Number(match[1]);
-    const num = Number(val);
-    return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
-  };
-
-  const currentYear = new Date().getFullYear();
   const availableSessions = Array.from(
     new Set(
-      [
-        currentYear,
-        ...(Array.isArray(pocList)
-          ? pocList.map((p) => extractYear(p.year))
-          : []),
-      ].filter(Boolean)
+      (Array.isArray(pocList)
+        ? pocList.map((p) => extractYear(p.year))
+        : []
+      ).filter(Boolean)
     )
   ).sort((a, b) => b - a);
 
@@ -166,7 +175,14 @@ const ViewPocList = () => {
   return (
     <DashboardLayout>
       <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
-        <Header category="Antyodaya2k25" title="Point of Contact of Schools" />
+        <Header
+          category={
+            selectedSession.length === 1
+              ? `Antyodaya ${selectedSession[0]}`
+              : "Antyodaya"
+          }
+          title="Point of Contact of Schools"
+        />
       </div>
       <div className="m-2 md:m-0 mt-0 p-2 md:p-7 bg-white rounded-3xl">
         <h2 className="text-center text-xl font-bold tracking-tight text-slate-900">

@@ -14,6 +14,17 @@ import {
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Spinner from "../../components/Spinner";
 
+const extractYear = (val) => {
+  if (!val) return null;
+  const str = String(val);
+  const kMatch = str.match(/\b2[kK](\d{2})\b/);
+  if (kMatch) return 2000 + Number(kMatch[1]);
+  const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+  if (match) return Number(match[1]);
+  const num = Number(val);
+  return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+};
+
 const EventPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +36,7 @@ const EventPage = () => {
       useState(false);
   const [selectedSession, setSelectedSession] = useState([]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
-  
+  const currentYear = new Date().getFullYear();
 
   let navigate = useNavigate();
   const currentColor = "#03C9D7";
@@ -35,11 +46,25 @@ const EventPage = () => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/getEvents`);
-        const sortedEvents = response.data.sort((a, b) =>
+        const data = response.data || [];
+        const sortedEvents = data.sort((a, b) =>
           a.eventGroup.localeCompare(b.eventGroup)
         ); // Sort events by eventGroup
         setEvents(sortedEvents); // Set the sorted events
-        // setFilteredEvents(sortedEvents); // Initialize filtered events with sorted list
+
+        const yearsWithData = Array.from(
+          new Set(
+            sortedEvents
+              .map((e) => extractYear(e.year || e.festName))
+              .filter(Boolean)
+          )
+        ).sort((a, b) => b - a);
+
+        if (yearsWithData.includes(currentYear)) {
+          setSelectedSession([currentYear]);
+        } else if (yearsWithData.length > 0) {
+          setSelectedSession([yearsWithData[0]]);
+        }
       } catch (error) {
         setError("Failed to fetch events.");
         console.error(error);
@@ -50,16 +75,6 @@ const EventPage = () => {
 
     fetchEvents();
   }, []);
-
-  // useEffect(() => {
-  //   const filtered = events
-  //     .filter((event) =>
-  //       event.eventName.toLowerCase().includes(searchEventName.toLowerCase()) &&
-  //       event.coordinator.toLowerCase().includes(searchCoordinator.toLowerCase())
-  //     );
-  //   setFilteredEvents(filtered);
-  // }, [searchEventName, searchCoordinator, events]);
-
 
   if (error) {
     return <div>{error}</div>;
@@ -75,27 +90,12 @@ const EventPage = () => {
     if (isFilterBySessionDropdownOpen)
       setIsFilterBySessionDropdownOpen(false);
   };
-
-  const extractYear = (val) => {
-    if (!val) return null;
-    const str = String(val);
-    const kMatch = str.match(/\b2[kK](\d{2})\b/);
-    if (kMatch) return 2000 + Number(kMatch[1]);
-    const match = str.match(/\b(19\d{2}|20\d{2})\b/);
-    if (match) return Number(match[1]);
-    const num = Number(val);
-    return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
-  };
-
-  const currentYear = new Date().getFullYear();
   const availableSessions = Array.from(
     new Set(
-      [
-        currentYear,
-        ...(Array.isArray(events)
-          ? events.map((e) => extractYear(e.year || e.festName))
-          : []),
-      ].filter(Boolean)
+      (Array.isArray(events)
+        ? events.map((e) => extractYear(e.year || e.festName))
+        : []
+      ).filter(Boolean)
     )
   ).sort((a, b) => b - a);
 
@@ -200,7 +200,14 @@ const EventPage = () => {
     <DashboardLayout>
       {loading && <Spinner />}
     <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
-        <Header category="Antyodaya2k25" title="Events" />
+        <Header
+          category={
+            selectedSession.length === 1
+              ? `Antyodaya ${selectedSession[0]}`
+              : "Antyodaya"
+          }
+          title="Events"
+        />
         <div>
             {user?.isAdmin === true && (
                 <Button

@@ -23,6 +23,17 @@ import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../../components/Spinner.jsx";
 import Pagination from "../../components/Dashboard/Pagination.jsx";
 
+const extractYear = (val) => {
+  if (!val) return null;
+  const str = String(val);
+  const kMatch = str.match(/\b2[kK](\d{2})\b/);
+  if (kMatch) return 2000 + Number(kMatch[1]);
+  const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+  if (match) return Number(match[1]);
+  const num = Number(val);
+  return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+};
+
 const Participants = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +49,7 @@ const Participants = () => {
   const initialUsers = 40;
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(initialUsers);
+  const currentYear = new Date().getFullYear();
 
   
   //Actions
@@ -86,8 +98,18 @@ const Participants = () => {
       try {
         setIsLoading(true);
         const response = await axios.get(`${BASE_URL}/participantList`);
-        setStudents(response.data);
-         console.log(response.data);
+        const data = response.data || [];
+        setStudents(data);
+
+        const yearsWithData = Array.from(
+          new Set(data.map((s) => extractYear(s.year)).filter(Boolean))
+        ).sort((a, b) => b - a);
+
+        if (yearsWithData.includes(currentYear)) {
+          setSelectedSession([currentYear]);
+        } else if (yearsWithData.length > 0) {
+          setSelectedSession([yearsWithData[0]]);
+        }
       } catch (error) {
         console.log(error);
       } finally {
@@ -121,27 +143,12 @@ const Participants = () => {
       setSelectedClasses([]);
     }
   };
-
-  const extractYear = (val) => {
-    if (!val) return null;
-    const str = String(val);
-    const kMatch = str.match(/\b2[kK](\d{2})\b/);
-    if (kMatch) return 2000 + Number(kMatch[1]);
-    const match = str.match(/\b(19\d{2}|20\d{2})\b/);
-    if (match) return Number(match[1]);
-    const num = Number(val);
-    return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
-  };
-
-  const currentYear = new Date().getFullYear();
   const availableSessions = Array.from(
     new Set(
-      [
-        currentYear,
-        ...(Array.isArray(students)
-          ? students.map((s) => extractYear(s.year))
-          : []),
-      ].filter(Boolean)
+      (Array.isArray(students)
+        ? students.map((s) => extractYear(s.year))
+        : []
+      ).filter(Boolean)
     )
   ).sort((a, b) => b - a);
 
@@ -395,7 +402,14 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
     <DashboardLayout>
       {isLoading && <Spinner />}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
-        <Header category="Antyodaya2k25" title="Participants" />
+        <Header
+          category={
+            selectedSession.length === 1
+              ? `Antyodaya ${selectedSession[0]}`
+              : "Antyodaya"
+          }
+          title="Participants"
+        />
         <div className="mx-auto max-w-screen-xl">
           <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">

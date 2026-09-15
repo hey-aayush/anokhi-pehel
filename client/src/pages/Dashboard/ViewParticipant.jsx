@@ -114,6 +114,37 @@ const Participants = () => {
     }
   };
 
+  const handleSelectAllClasses = (e) => {
+    if (e.target.checked) {
+      setSelectedClasses(classes.map((c) => c.id));
+    } else {
+      setSelectedClasses([]);
+    }
+  };
+
+  const extractYear = (val) => {
+    if (!val) return null;
+    const str = String(val);
+    const kMatch = str.match(/\b2[kK](\d{2})\b/);
+    if (kMatch) return 2000 + Number(kMatch[1]);
+    const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+    if (match) return Number(match[1]);
+    const num = Number(val);
+    return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+  };
+
+  const currentYear = new Date().getFullYear();
+  const availableSessions = Array.from(
+    new Set(
+      [
+        currentYear,
+        ...(Array.isArray(students)
+          ? students.map((s) => extractYear(s.year))
+          : []),
+      ].filter(Boolean)
+    )
+  ).sort((a, b) => b - a);
+
   const handleSessionBoxChange = (e) => {
     const { value, checked } = e.target;
     const year = Number(value);
@@ -122,6 +153,14 @@ const Participants = () => {
       setSelectedSession((prev) => [...prev, year]);
     } else {
       setSelectedSession((prev) => prev.filter((y) => y !== year));
+    }
+  };
+
+  const handleSelectAllSessions = (e) => {
+    if (e.target.checked) {
+      setSelectedSession([...availableSessions]);
+    } else {
+      setSelectedSession([]);
     }
   };
 
@@ -166,9 +205,10 @@ if (selectedClasses.length > 0) {
 }
 
 if(selectedSession.length > 0){
-  filteredStudents = filteredStudents.filter((student) =>
-    selectedSession.includes(student.year)
-  );
+  filteredStudents = filteredStudents.filter((student) => {
+    const y = extractYear(student.year);
+    return y ? selectedSession.includes(y) : false;
+  });
 }
 
 // Filter by student name and school
@@ -490,19 +530,37 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                     {isFilterByClassDropdownOpen && (
                       <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow ">
                         <ul className="space-y-2 text-sm h-48 p-2 overflow-y-auto">
+                          <li className="flex items-center pb-2 mb-1 border-b border-gray-300">
+                            <input
+                              id="select-all-classes"
+                              type="checkbox"
+                              className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2 cursor-pointer"
+                              onChange={handleSelectAllClasses}
+                              checked={
+                                classes.length > 0 &&
+                                selectedClasses.length === classes.length
+                              }
+                            />
+                            <label
+                              htmlFor="select-all-classes"
+                              className="ml-2 text-sm font-semibold text-gray-900 cursor-pointer"
+                            >
+                              Select All
+                            </label>
+                          </li>
                           {classes.map((item, index) => (
                             <li key={index} className="flex items-center">
                               <input
                                 id={item.id}
                                 type="checkbox"
                                 value=""
-                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500  focus:ring-2"
+                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500  focus:ring-2 cursor-pointer"
                                 onChange={handleClassCheckboxChange}
                                 checked={selectedClasses.includes(item.id)}
                               />
                               <label
                                 htmlFor={item.id}
-                                className="ml-2 text-sm font-medium text-gray-900"
+                                className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
                               >
                                 {item.name}
                               </label>
@@ -530,21 +588,39 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                   <div>
                     {isFilterBySessionDropdownOpen && (
                       <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow">
-                        <ul className="space-y-2 text-sm">
-                          {[2024, 2025].map((year) => (
+                        <ul className="space-y-2 text-sm max-h-60 overflow-y-auto p-1">
+                          <li className="flex items-center pb-2 mb-1 border-b border-gray-300">
+                            <input
+                              id="select-all-sessions"
+                              type="checkbox"
+                              className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2 outline-none cursor-pointer"
+                              onChange={handleSelectAllSessions}
+                              checked={
+                                availableSessions.length > 0 &&
+                                selectedSession.length === availableSessions.length
+                              }
+                            />
+                            <label
+                              htmlFor="select-all-sessions"
+                              className="ml-2 text-sm font-semibold text-gray-900 cursor-pointer"
+                            >
+                              Select All
+                            </label>
+                          </li>
+                          {availableSessions.map((year) => (
                             <li key={year} className="flex items-center">
                               <input
-                                id={year}
+                                id={`session-${year}`}
                                 type="checkbox"
                                 name="session"
                                 value={year}
-                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500  focus:ring-2 outline-none"
+                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500  focus:ring-2 outline-none cursor-pointer"
                                 onChange={handleSessionBoxChange}
                                 checked={selectedSession.includes(year)}
                               />
                               <label
-                                htmlFor={year}
-                                className="ml-2 text-sm font-medium text-gray-900"
+                                htmlFor={`session-${year}`}
+                                className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
                               >
                                 {year}
                               </label>

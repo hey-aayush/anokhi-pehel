@@ -39,16 +39,37 @@ const ViewPocList = () => {
 
   const toggleFilterBySessionDropdown = () => {
     setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
-    if (isFilterBySessionDropdownOpen)
-      setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
-    if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
+    if (isActionsDropdownOpen) setActionsDropdownOpen(false);
   };
 
-    const toggleActionsDropdown = () => {
-      setActionsDropdownOpen(!isActionsDropdownOpen);
-      if (isFilterBySessionDropdownOpen)
-        setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
-    };
+  const toggleActionsDropdown = () => {
+    setActionsDropdownOpen(!isActionsDropdownOpen);
+    if (isFilterBySessionDropdownOpen)
+      setIsFilterBySessionDropdownOpen(false);
+  };
+
+  const extractYear = (val) => {
+    if (!val) return null;
+    const str = String(val);
+    const kMatch = str.match(/\b2[kK](\d{2})\b/);
+    if (kMatch) return 2000 + Number(kMatch[1]);
+    const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+    if (match) return Number(match[1]);
+    const num = Number(val);
+    return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+  };
+
+  const currentYear = new Date().getFullYear();
+  const availableSessions = Array.from(
+    new Set(
+      [
+        currentYear,
+        ...(Array.isArray(pocList)
+          ? pocList.map((p) => extractYear(p.year))
+          : []),
+      ].filter(Boolean)
+    )
+  ).sort((a, b) => b - a);
 
   const handleSessionBoxChange = (e) => {
     const { value, checked } = e.target;
@@ -58,6 +79,14 @@ const ViewPocList = () => {
       setSelectedSession((prev) => [...prev, year]);
     } else {
       setSelectedSession((prev) => prev.filter((y) => y !== year));
+    }
+  };
+
+  const handleSelectAllSessions = (e) => {
+    if (e.target.checked) {
+      setSelectedSession([...availableSessions]);
+    } else {
+      setSelectedSession([]);
     }
   };
 
@@ -82,9 +111,10 @@ const ViewPocList = () => {
   });
 
   if(selectedSession.length > 0){
-    sortedPocList = sortedPocList.filter((poc) =>
-      selectedSession.includes(poc.year)
-    );
+    sortedPocList = sortedPocList.filter((poc) => {
+      const y = extractYear(poc.year);
+      return y ? selectedSession.includes(y) : false;
+    });
   }
 
   // Function to delete a POC
@@ -177,21 +207,39 @@ const ViewPocList = () => {
               
               {isFilterBySessionDropdownOpen && (
                 <div className="absolute right-0 mt-2 p-3 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-100">
-                  <ul className="space-y-2 text-sm">
-                    {[2024, 2025].map((year) => (
+                  <ul className="space-y-2 text-sm max-h-60 overflow-y-auto">
+                    <li className="flex items-center pb-2 mb-1 border-b border-gray-200">
+                      <input
+                        id="select-all-sessions-poc"
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        onChange={handleSelectAllSessions}
+                        checked={
+                          availableSessions.length > 0 &&
+                          selectedSession.length === availableSessions.length
+                        }
+                      />
+                      <label
+                        htmlFor="select-all-sessions-poc"
+                        className="ml-2 text-sm font-semibold text-gray-900 cursor-pointer"
+                      >
+                        Select All
+                      </label>
+                    </li>
+                    {availableSessions.map((year) => (
                       <li key={year} className="flex items-center">
                         <input
-                          id={year}
+                          id={`session-${year}`}
                           type="checkbox"
                           name="session"
                           value={year}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                           onChange={handleSessionBoxChange}
                           checked={selectedSession.includes(year)}
                         />
                         <label
-                          htmlFor={year}
-                          className="ml-2 text-sm font-medium text-gray-900"
+                          htmlFor={`session-${year}`}
+                          className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
                         >
                           {year}
                         </label>

@@ -4,23 +4,22 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { BASE_URL } from "../../Service/helper.js";
 import axios from "axios";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 
 import {
   FaUsers,
   FaCalendarAlt,
   FaSchool,
   FaTrophy,
-  FaPlus,
   FaArrowRight,
   FaUserPlus,
-  FaList,
   FaCalendarPlus,
   FaClipboardList,
   FaUserTie,
   FaAddressBook,
 } from "react-icons/fa";
 
-const Dashboard = () => {
+const AntyodayaDashboard = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
 
@@ -29,214 +28,354 @@ const Dashboard = () => {
   const [winners, setWinners] = useState([]);
   const [poc, setPoc] = useState([]);
 
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [
+        eventsResponse,
+        pocResponse,
+        participantsResponse,
+        winnersResponse,
+      ] = await Promise.all([
+        axios.get(`${BASE_URL}/getEvents`),
+        axios.get(`${BASE_URL}/pocList`),
+        axios.get(`${BASE_URL}/participantList`),
+        axios.get(`${BASE_URL}/getEventsWithWinners`),
+      ]);
+
+      setEvents(eventsResponse.data || []);
+      setPoc(pocResponse.data || []);
+      setParticipants(participantsResponse.data || []);
+      setWinners(winnersResponse.data || []);
+    } catch (err) {
+      console.error("Dashboard error:", err);
+      setError("Failed to fetch Antyodaya dashboard data. Please try again.");
+      setShowErrorModal(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const [
-          eventsResponse,
-          pocResponse,
-          participantsResponse,
-          winnersResponse,
-        ] = await Promise.all([
-          axios.get(`${BASE_URL}/getEvents`),
-          axios.get(`${BASE_URL}/pocList`),
-          axios.get(`${BASE_URL}/participantList`),
-          axios.get(`${BASE_URL}/getEventsWithWinners`),
-        ]);
-
-        setEvents(eventsResponse.data);
-        setPoc(pocResponse.data);
-        setParticipants(participantsResponse.data);
-        setWinners(winnersResponse.data);
-      } catch (error) {
-        console.log("Dashboard error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, []);
 
-  const stats = [
+  const extractYear = (val) => {
+    if (!val) return null;
+    const str = String(val);
+    const kMatch = str.match(/\b2[kK](\d{2})\b/);
+    if (kMatch) return 2000 + Number(kMatch[1]);
+    const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+    if (match) return Number(match[1]);
+    const num = Number(val);
+    return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+  };
+
+  const countWinners = (eventsList) => {
+    let count = 0;
+    const winnerKeys = [
+      "h6to8firstPlace",
+      "h6to8secondPlace",
+      "h6to8thirdPlace",
+      "h6to8fourthPlace",
+      "h9to12firstPlace",
+      "h9to12secondPlace",
+      "h9to12thirdPlace",
+      "h9to12fourthPlace",
+      "e6to8firstPlace",
+      "e6to8secondPlace",
+      "e6to8thirdPlace",
+      "e6to8fourthPlace",
+      "e9to12firstPlace",
+      "e9to12secondPlace",
+      "e9to12thirdPlace",
+      "e9to12fourthPlace",
+    ];
+    eventsList.forEach((ev) => {
+      winnerKeys.forEach((k) => {
+        if (ev[k] && ev[k].trim() !== "" && ev[k].toLowerCase() !== "n/a") {
+          count++;
+        }
+      });
+    });
+    return count;
+  };
+
+  const allYears = Array.from(
+    new Set(
+      [
+        currentYear,
+        ...events.map((e) => extractYear(e.year || e.festName)),
+        ...participants.map((p) => extractYear(p.year)),
+        ...poc.map((pc) => extractYear(pc.year)),
+        ...winners.map((w) => extractYear(w.year || w.festName)),
+      ].filter(Boolean)
+    )
+  ).sort((a, b) => b - a);
+
+  const filteredParticipants =
+    selectedYear === "all"
+      ? participants
+      : participants.filter(
+          (p) => extractYear(p.year) === Number(selectedYear)
+        );
+
+  const filteredEvents =
+    selectedYear === "all"
+      ? events
+      : events.filter(
+          (e) => extractYear(e.year || e.festName) === Number(selectedYear)
+        );
+
+  const filteredPoc =
+    selectedYear === "all"
+      ? poc
+      : poc.filter((p) => extractYear(p.year) === Number(selectedYear));
+
+  const filteredWinnerEvents =
+    selectedYear === "all"
+      ? winners
+      : winners.filter(
+          (w) => extractYear(w.year || w.festName) === Number(selectedYear)
+        );
+
+  const totalWinnersCount = countWinners(filteredWinnerEvents);
+
+  const actions = [
     {
-      title: "Participants",
-      value: participants.length,
-      subtitle: "Registered participants",
-      icon: FaUsers,
-      iconBg: "bg-blue-50",
-      iconColor: "text-blue-600",
-    },
-    {
-      title: "Events",
-      value: events.length,
-      subtitle: "Total events",
-      icon: FaCalendarAlt,
+      title: "Add Participant",
+      description: "Register a new participant for events",
+      icon: FaUserPlus,
+      action: () => navigate("/addParticipant"),
       iconBg: "bg-indigo-50",
       iconColor: "text-indigo-600",
     },
     {
-      title: "Schools",
-      value: poc.length,
-      subtitle: "Registered schools",
-      icon: FaSchool,
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-600",
-    },
-    {
-      title: "Winners",
-      value: winners.length,
-      subtitle: "Across all events",
-      icon: FaTrophy,
-      iconBg: "bg-amber-50",
-      iconColor: "text-amber-600",
-    },
-  ];
-
-  const quickActions = [
-    {
-      title: "Add Participant",
-      description: "Register a new participant",
-      icon: FaUserPlus,
-      action: () => navigate("/addParticipant"),
-      primary: true,
-    },
-    {
       title: "View Participants",
-      description: "Manage registered participants",
+      description: "Manage registered participants and details",
       icon: FaUsers,
       action: () => navigate("/viewParticipants"),
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
     },
     {
       title: "Add Event",
-      description: "Create and manage events",
+      description: "Create and configure new festival events",
       icon: FaCalendarPlus,
       action: () => navigate("/addEvent"),
       adminOnly: true,
-      primary: true,
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
     },
     {
       title: "Check Events",
-      description: "View upcoming and past events",
+      description: "View scheduled upcoming and past events",
       icon: FaClipboardList,
       action: () => navigate("/checkEvents"),
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
     },
-  ];
-
-  const managementActions = [
     {
       title: "Add School POC",
-      description: "Add a point of contact for a school",
+      description: "Register a point of contact for a school",
       icon: FaUserTie,
       action: () => navigate("/addPoc"),
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
     },
     {
       title: "View School POC",
-      description: "View and manage school contacts",
+      description: "View and manage school contact information",
       icon: FaAddressBook,
       action: () => navigate("/viewPoc"),
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
     },
     {
       title: "Winner List",
-      description: "View winners from all events",
+      description: "View and export winners across all events",
       icon: FaTrophy,
       action: () => navigate("/viewWinners"),
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
     },
   ];
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-slate-50 px-4 py-5 md:px-8 lg:px-10">
+      <ErrorMessageModel
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        onRetry={() => {
+          setShowErrorModal(false);
+          fetchDashboardData();
+        }}
+        title="Dashboard Error"
+        message={error}
+      />
 
-        {/* Header */}
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="m-3 sm:m-4 md:m-10 mt-20 sm:mt-24 p-4 sm:p-5 md:p-6 bg-white rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm">
+        <div>
+          <h1 className="text-base sm:text-lg md:text-xl font-bold text-slate-800">
+            Welcome Back, {user ? user.name : "Mentor"}!
+          </h1>
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+            Antyodaya Annual Fest Management — Manage events, student participants, school POCs, and winners
+          </p>
+        </div>
+      </div>
 
-            <div>
-              <p className="mb-1 text-sm font-semibold text-indigo-600">
-                Antyodaya Dashboard
-              </p>
-
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-                Welcome back, {user?.name || "User"} 
-              </h1>
-
-              <p className="mt-2 max-w-2xl text-sm text-slate-500">
-                Manage participants, events, schools and winners from one place.
-              </p>
-            </div>
-
-            {user?.isAdmin === true && (
-              <button
-                onClick={() => navigate("/addEvent")}
-                className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98]"
-              >
-                <FaPlus className="text-xs" />
-                Add Event
-              </button>
-            )}
+      <div className="w-full px-3 sm:px-4 md:px-10 pb-10 space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-end px-0.5">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 hover:border-slate-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-sm transition-all">
+            <FaCalendarAlt className="text-indigo-600 text-xs shrink-0" />
+            <span className="text-slate-500 text-[11px] sm:text-xs font-medium">
+              Year:
+            </span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-transparent font-semibold text-slate-800 border-0 border-none outline-none focus:outline-none focus:ring-0 cursor-pointer text-xs pr-1 shadow-none"
+              aria-label="Filter stats by year"
+            >
+              <option value="all">All Years</option>
+              {allYears.map((yr) => (
+                <option key={yr} value={yr}>
+                  {yr}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-
-            return (
+        {loading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {[1, 2, 3, 4].map((item) => (
               <div
-                key={stat.title}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5"
+                key={item}
+                className="bg-white p-4 sm:p-5 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm space-y-2.5"
               >
-                <div className="flex items-start justify-between">
-
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.iconBg}`}
-                  >
-                    <Icon className={`text-lg ${stat.iconColor}`} />
-                  </div>
-
-                  <FaArrowRight className="text-xs text-slate-300" />
+                <div className="flex justify-between items-center">
+                  <div className="h-3 bg-slate-200 rounded w-16"></div>
+                  <div className="h-7 w-7 bg-slate-200 rounded-lg"></div>
                 </div>
-
-                <p className="mt-4 text-sm font-medium text-slate-500">
-                  {stat.title}
-                </p>
-
-                <p className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
-                  {loading ? "..." : stat.value}
-                </p>
-
-                <p className="mt-1 text-xs text-slate-400">
-                  {stat.subtitle}
-                </p>
+                <div className="h-7 bg-slate-200 rounded w-14"></div>
+                <div className="h-2.5 bg-slate-100 rounded w-24"></div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white p-4 sm:p-5 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium text-[11px] sm:text-xs">
+                  Participants
+                </span>
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <FaUsers className="text-xs sm:text-sm" />
+                </div>
+              </div>
 
-        {/* Quick Actions */}
-        <section className="mb-8">
+              <div className="mt-2 sm:mt-3">
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 tracking-tight block">
+                  {filteredParticipants.length}
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium block mt-0.5 truncate">
+                  {selectedYear === "all"
+                    ? "All-time registered"
+                    : `Registered for ${selectedYear}`}
+                </span>
+              </div>
+            </div>
 
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-slate-900">
-              Quick Actions
+            <div className="bg-white p-4 sm:p-5 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium text-[11px] sm:text-xs">
+                  Events
+                </span>
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <FaCalendarAlt className="text-xs sm:text-sm" />
+                </div>
+              </div>
+
+              <div className="mt-2 sm:mt-3">
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 tracking-tight block">
+                  {filteredEvents.length}
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium block mt-0.5 truncate">
+                  {selectedYear === "all"
+                    ? "Total active events"
+                    : `Competitions in ${selectedYear}`}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 sm:p-5 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium text-[11px] sm:text-xs">
+                  Schools
+                </span>
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <FaSchool className="text-xs sm:text-sm" />
+                </div>
+              </div>
+
+              <div className="mt-2 sm:mt-3">
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 tracking-tight block">
+                  {filteredPoc.length}
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium block mt-0.5 truncate">
+                  {selectedYear === "all"
+                    ? "Partner institutions"
+                    : `Connected POCs in ${selectedYear}`}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 sm:p-5 rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium text-[11px] sm:text-xs">
+                  Winners
+                </span>
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <FaTrophy className="text-xs sm:text-sm" />
+                </div>
+              </div>
+
+              <div className="mt-2 sm:mt-3">
+                <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 tracking-tight block">
+                  {totalWinnersCount}
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium block mt-0.5 truncate">
+                  {selectedYear === "all"
+                    ? "Across all competitions"
+                    : `Awarded in ${selectedYear}`}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-4 sm:p-5 md:p-6">
+          <div className="border-b border-slate-100 pb-3 sm:pb-3.5 mb-3.5 sm:mb-4">
+            <h2 className="text-sm sm:text-base md:text-lg font-bold text-slate-800">
+              Actions & Management
             </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Frequently used dashboard actions
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+              Quick shortcuts to manage participants, events, school contacts, and competition results
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
-            {quickActions
-              .filter(
-                (item) => !item.adminOnly || user?.isAdmin === true
-              )
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
+            {actions
+              .filter((item) => !item.adminOnly || user?.isAdmin === true)
               .map((item) => {
                 const Icon = item.icon;
 
@@ -244,114 +383,32 @@ const Dashboard = () => {
                   <button
                     key={item.title}
                     onClick={item.action}
-                    className={`group flex items-center gap-4 rounded-2xl border p-5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-                      item.primary
-                        ? "border-indigo-600 bg-indigo-600"
-                        : "border-slate-200 bg-white"
-                    }`}
+                    className="flex items-center gap-3 sm:gap-3.5 rounded-xl md:rounded-2xl border border-slate-200 bg-slate-50/50 p-3 sm:p-4 text-left hover:bg-slate-100/80 cursor-pointer"
                   >
-
                     <div
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                        item.primary
-                          ? "bg-white/15 text-white"
-                          : "bg-indigo-50 text-indigo-600"
-                      }`}
+                      className={`flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl ${item.iconBg} ${item.iconColor}`}
                     >
-                      <Icon className="text-lg" />
+                      <Icon className="text-sm sm:text-base" />
                     </div>
 
-                    <div className="flex-1">
-
-                      <h3
-                        className={`font-semibold ${
-                          item.primary
-                            ? "text-white"
-                            : "text-slate-900"
-                        }`}
-                      >
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-xs sm:text-sm text-slate-800 truncate">
                         {item.title}
                       </h3>
-
-                      <p
-                        className={`mt-1 text-sm ${
-                          item.primary
-                            ? "text-indigo-100"
-                            : "text-slate-500"
-                        }`}
-                      >
+                      <p className="mt-0.5 text-[11px] sm:text-xs text-slate-500 truncate">
                         {item.description}
                       </p>
-
                     </div>
 
-                    <FaArrowRight
-                      className={`text-sm transition-transform duration-200 group-hover:translate-x-1 ${
-                        item.primary
-                          ? "text-white"
-                          : "text-slate-300 group-hover:text-indigo-500"
-                      }`}
-                    />
-
+                    <FaArrowRight className="text-xs text-indigo-400 shrink-0" />
                   </button>
                 );
               })}
           </div>
-        </section>
-
-        {/* Management */}
-        <section>
-
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-slate-900">
-              Management
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Manage schools, contacts and event results
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
-            {managementActions.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <button
-                  key={item.title}
-                  onClick={item.action}
-                  className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md"
-                >
-
-                  <div className="mb-5 flex items-center justify-between">
-
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-indigo-600">
-                      <Icon className="text-lg" />
-                    </div>
-
-                    <FaArrowRight className="text-sm text-slate-300 transition group-hover:translate-x-1 group-hover:text-indigo-500" />
-
-                  </div>
-
-                  <h3 className="font-semibold text-slate-900">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {item.description}
-                  </p>
-
-                </button>
-              );
-            })}
-
-          </div>
-        </section>
-
+        </div>
       </div>
     </DashboardLayout>
   );
 };
 
-export default Dashboard;
+export default AntyodayaDashboard;

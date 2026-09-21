@@ -144,7 +144,7 @@ const AddAntyodayaParticipant = () => {
       if (selectedEvent && isDanceEvent(selectedEvent)) {
         const count = getDanceParticipantsCount(selectedEvent);
         if (count >= 3) {
-          setErrorMessage(`Cannot add participant. Maximum limit (3) for "${selectedEvent.eventName}" has already been reached for this POC.`);
+          setErrorMessage(`Cannot add participant. Maximum limit (3) for "${selectedEvent.eventName}" has already been reached for this School.`);
           setShowError(true);
           return;
         }
@@ -236,7 +236,7 @@ const AddAntyodayaParticipant = () => {
 
       // Check if selecting a dance event without selecting POC / School first
       if (isDanceEvent(selectedEvent) && !prevCredentials.poc && !prevCredentials.school) {
-        setErrorMessage("Please select a Point of Contact (POC) / School first to verify Dance event availability.");
+        setErrorMessage("Please select a School first to verify Dance event availability.");
         setShowError(true);
         return prevCredentials;
       }
@@ -245,7 +245,7 @@ const AddAntyodayaParticipant = () => {
       if (isDanceEvent(selectedEvent)) {
         const danceCount = getDanceParticipantsCount(selectedEvent);
         if (danceCount >= 3) {
-          setErrorMessage(`Maximum 3 participants from this POC are allowed for "${selectedEvent.eventName}". Limit reached (${danceCount}/3).`);
+          setErrorMessage(`Maximum 3 participants from this School are allowed for "${selectedEvent.eventName}". Limit reached (${danceCount}/3).`);
           setShowError(true);
           return prevCredentials;
         }

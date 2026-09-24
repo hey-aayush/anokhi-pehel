@@ -74,6 +74,7 @@ const Participants = () => {
     if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
   };
   const [students, setStudents] = useState([]);
+  const [events, setEvents] = useState([]);
   const [filterName, setFilterName] = useState("");
   const [filterSchool, setFilterSchool] = useState(""); 
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -85,9 +86,12 @@ const Participants = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`${BASE_URL}/participantList`);
-        setStudents(response.data);
-         console.log(response.data);
+        const [participantsResponse, eventsResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/participantList`),
+          axios.get(`${BASE_URL}/getEvents`),
+        ]);
+        setStudents(participantsResponse.data);
+        setEvents(eventsResponse.data);
       } catch (error) {
         console.log(error);
       } finally {
@@ -266,6 +270,13 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
 
   // Download Excel workbook with multiple sheets (one per school)
   const handleDownloadExcelBySchool = () => {
+    const eventGroups = [...new Set(
+      events.map((event) => event.eventGroup).filter(Boolean)
+    )].sort();
+    const eventsById = new Map(
+      events.map((event) => [String(event._id), event])
+    );
+
     // Get unique schools from filtered students
     const uniqueSchools = [...new Set(filteredStudents.map(student => student.school))].sort();
     
@@ -281,15 +292,27 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
       
       // Prepare data with headers
       const sheetData = [
-        ["S.No.", "Name", "Class", "Phone", "School", "Year"],
-        ...schoolStudents.map((student, index) => [
-          index + 1,
-          student.name,
-          student.class,
-          student.phone,
-          student.school,
-          student.year
-        ])
+        ["S.No.", "Name", "Class", "Phone", "School", "Year", ...eventGroups],
+        ...schoolStudents.map((student, index) => {
+          const eventsByGroup = (Array.isArray(student.events) ? student.events : [])
+            .map((eventId) => eventsById.get(String(eventId)))
+            .filter(Boolean)
+            .reduce((groups, event) => {
+              if (!groups[event.eventGroup]) groups[event.eventGroup] = [];
+              groups[event.eventGroup].push(event.eventName);
+              return groups;
+            }, {});
+
+          return [
+            index + 1,
+            student.name,
+            student.class,
+            student.phone,
+            student.school,
+            student.year,
+            ...eventGroups.map((group) => (eventsByGroup[group] || []).join(", ")),
+          ];
+        })
       ];
       
       // Create worksheet

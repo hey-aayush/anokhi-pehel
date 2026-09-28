@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Attendance = require("../models/Attendance");
-const moment = require("moment");
-const { monthlyAttendance, lastFiveDaysAttendance } = require("../controller/attendanceController");
+const {
+  monthlyAttendance,
+  lastFiveDaysAttendance,
+  getAttendance,
+  getAttendanceTotal,
+} = require("../controller/attendanceController");
 
 router.post("/submitAttendance", async (req, res) => {
   try {
@@ -74,81 +78,9 @@ router.post("/submitAttendance", async (req, res) => {
   }
 });
 
-router.get("/attendance", async (req, res) => {
-  const { classId } = req.query;
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
-  // console.log("vivek");
-  try {
-    // Find attendance records for the given classId and today's date
-    const attendanceRecords = await Attendance.find({
-      classId,
-      date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
-    });
+router.get("/attendance", getAttendance);
 
-    if (attendanceRecords.length > 0) {
-      // Calculate total students and total present students
-      let totalStudents = 0;
-      let totalPresentStudents = 0;
-
-      attendanceRecords.forEach((record) => {
-        totalStudents += record.attendance.length; // Increment total students by the attendance count
-        totalPresentStudents += record.attendance.filter(
-          (item) => item.status === "present"
-        ).length; // Count present students
-      });
-
-      res.status(200).json({
-        totalStudents,
-        totalPresentStudents,
-      });
-    } else {
-      res.status(404).json({
-        error:
-          "Attendance data not found for the given classId and today's date",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching attendance:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.get("/attendanceTotal", async (req, res) => {
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
-
-  try {
-    // Find attendance records for the given classId and today's date
-    const attendanceRecords = await Attendance.find({
-      date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
-    });
-
-    if (attendanceRecords.length > 0) {
-      // Calculate total students and total present students
-      let totalStudents = 0;
-      let totalPresentStudents = 0;
-
-      attendanceRecords.forEach((record) => {
-        totalStudents += record.attendance.length; // Increment total students by the attendance count
-        totalPresentStudents += record.attendance.filter(
-          (item) => item.status === "present"
-        ).length; // Count present students
-      });
-
-      res.status(200).json({
-        totalStudents,
-        totalPresentStudents,
-      });
-    } else {
-      res.status(404).json({
-        error:
-          "Attendance data not found for the given classId and today's date",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching attendance:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+router.get("/attendanceTotal", getAttendanceTotal);
 
 router.get("/totalAttendance", async (req, res) => {
   const { classId, date } = req.query;

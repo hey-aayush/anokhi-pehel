@@ -1,5 +1,6 @@
 const express = require("express");
 const Topic = require("../models/Topic");
+const { getTopicCovered } = require("../controller/topicController");
 const router = express.Router();
 
 
@@ -56,22 +57,6 @@ router.get("/topics", async (req, res) => {
   }
 });
 
-router.get("/topicCovered", async (req, res) => {
-  const { classId } = req.query;
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
-
-  try {
-    // Assuming you have imported the Topic model correctly
-    const topicsCovered = await Topic.find({
-      classId,
-      date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
-    });
-
-    res.status(200).json({ topicsCovered });
-  } catch (error) {
-    console.error("Error fetching topics covered:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+router.get("/topicCovered", getTopicCovered);
 
 module.exports = router;

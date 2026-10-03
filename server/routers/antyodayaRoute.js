@@ -7,6 +7,7 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const POC = require("../models/PointOfContact");
+const { addParticipants } = require("../controller/antyodayaController");
 // Middleware setup
 const app = express();
 app.use(cors());
@@ -261,46 +262,7 @@ router.get("/getEventByEventId", async (req, res) => {
   
   app.use("/uploads", express.static("uploads"));
 
-  router.post("/addParticipants", upload.single("photo"), async (req, res) => {
-    try {
-      const { name, class: studentClass, phone, school, address, poc, events } = req.body;
-      const eventList = events ? events.split(',') : [];
-  
-      // Create a new participant
-      const newParticipant = new Participant({
-        name,
-        class: studentClass,
-        phone,
-        school,
-        address,
-        photo: req.file.filename,
-        poc,
-        events: eventList,
-      });
-  
-      // Save participant to the database
-      const savedParticipant = await newParticipant.save();
-  
-      // Update the event documents to add this participant to the respective events
-      console.log("Event List:", eventList);
-
-await Event.updateMany(
-  { _id: { $in: eventList } }, // Match events by their IDs
-  { $push: { participants: savedParticipant._id } } // Add the participant's ID to the participants array
-);
-
-
-
-
-      
-  
-      return res.status(201).send("Participant Added");
-    } catch (error) {
-      console.error("Error adding participant:", error);
-      return res.status(500).send("Internal Server Error");
-    }
-  });
-  
+  router.post("/addParticipants", upload.single("photo"), addParticipants);
   
   router.post("/getParticipantsByIds", async (req, res) => {
     try {

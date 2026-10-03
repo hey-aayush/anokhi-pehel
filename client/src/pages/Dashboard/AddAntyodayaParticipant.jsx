@@ -4,11 +4,10 @@ import axios from "axios";
 import { classes, locations, modes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
-import { showLoading, hideLoading } from "../../redux/features/alertSlice";
-import { useDispatch } from "react-redux";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
+import SuccessMessage from "../../components/Models/SuccessMessageModel";
 
 const AddAntyodayaParticipant = () => {
-  const dispatch = useDispatch();
   const [credentials, setCredentials] = useState({
     name: "",
     class: "",
@@ -22,7 +21,12 @@ const AddAntyodayaParticipant = () => {
   });
   const [pocList, setPocList] = useState([]);
   const [eventList, setEventList] = useState([]);
+  const [participantList, setParticipantList] = useState([]);
   const [imageSize, setImageSize] = useState("");
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const WIDTH = 800;
 
   useEffect(() => {
@@ -31,6 +35,7 @@ const AddAntyodayaParticipant = () => {
       try {
         const pocResponse = await axios.get(`${BASE_URL}/pocList`);
         const eventResponse = await axios.get(`${BASE_URL}/getEvents`);
+        const participantResponse = await axios.get(`${BASE_URL}/participantList`);
         const currentYear = new Date().getFullYear();
 
         // Filter POCs by current year
@@ -38,18 +43,17 @@ const AddAntyodayaParticipant = () => {
         const currentYearEvents = eventResponse.data.filter(event => event.year === currentYear);
         setPocList(currentYearPocs);
         setEventList(currentYearEvents);
+        setParticipantList(participantResponse.data || []);
 
         console.log("POCs (current year only):", currentYearPocs);
         console.log("Events (current year only):", currentYearEvents);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        dispatch(hideLoading());
       }
     };
 
     fetchPocAndEventData();
-  }, [dispatch]);
+  }, []);
 
   // Resizing and setting photo
   const resizeImage = (file) => {
@@ -88,9 +92,65 @@ const AddAntyodayaParticipant = () => {
     });
   };
 
+  const isDanceEvent = (event) => {
+    return Boolean(event?.eventName && event.eventName.toLowerCase().includes("dance"));
+  };
+
+  const getDanceParticipantsCount = (event) => {
+    if (!credentials.poc && !credentials.school) return 0;
+    const currentYear = new Date().getFullYear();
+    return participantList.filter((p) => {
+      if (!p) return false;
+      const matchesYear = p.year === currentYear || !p.year;
+      const matchesPoc = credentials.poc && (p.poc === credentials.poc || p.poc?._id === credentials.poc);
+      const matchesSchool = credentials.school && typeof p.school === "string" && typeof credentials.school === "string" && p.school.trim().toLowerCase() === credentials.school.trim().toLowerCase();
+      const matchesPocOrSchool = matchesPoc || matchesSchool;
+
+      const hasEvent = p.events && Array.isArray(p.events) && (
+        p.events.includes(event._id) ||
+        p.events.some((e) => e === event._id || e?._id === event._id)
+      );
+      return matchesYear && matchesPocOrSchool && hasEvent;
+    }).length;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(showLoading());
+
+    // Check maximum 2 events
+    if (credentials.events.length > 2) {
+      setErrorMessage("You can only select up to 2 events.");
+      setShowError(true);
+      return;
+    }
+
+    // Check 1 event per group
+    const selectedGroupSet = new Set();
+    for (const eventId of credentials.events) {
+      const ev = eventList.find((e) => e._id === eventId);
+      if (ev) {
+        if (selectedGroupSet.has(ev.eventGroup)) {
+          setErrorMessage(`Only 1 event per group is allowed. Multiple events selected in Group ${ev.eventGroup}.`);
+          setShowError(true);
+          return;
+        }
+        selectedGroupSet.add(ev.eventGroup);
+      }
+    }
+
+    // Validate Dance limit before submission
+    for (const eventId of credentials.events) {
+      const selectedEvent = eventList.find((ev) => ev._id === eventId);
+      if (selectedEvent && isDanceEvent(selectedEvent)) {
+        const count = getDanceParticipantsCount(selectedEvent);
+        if (count >= 3) {
+          setErrorMessage(`Cannot add participant. Maximum limit (3) for "${selectedEvent.eventName}" has already been reached for this School.`);
+          setShowError(true);
+          return;
+        }
+      }
+    }
+    setLoading(true);
     const formData = new FormData();
     formData.append("name", credentials.name);
     formData.append("class", credentials.class);
@@ -103,8 +163,8 @@ const AddAntyodayaParticipant = () => {
 
     try {
       const res = await axios.post(`${BASE_URL}/addParticipants`, formData);
-      if (res.data === "Participant Added") {
-        alert("Participant submitted successfully!");
+      if (res.data === "Participant Added" || res.status === 201) {
+        setShowSuccess(true);
         setCredentials({
           name: "",
           class: "",
@@ -115,14 +175,23 @@ const AddAntyodayaParticipant = () => {
           poc: "",
           events: [],
         });
+        try {
+          const updatedParticipants = await axios.get(`${BASE_URL}/participantList`);
+          setParticipantList(updatedParticipants.data || []);
+        } catch (fetchErr) {
+          console.error("Error refreshing participant list:", fetchErr);
+        }
       } else {
-        alert(res.data);
+        setErrorMessage(res.data?.message || res.data || "Failed to add participant");
+        setShowError(true);
       }
     } catch (err) {
-      alert("ALL INPUT IS NOT FILLED");
+      const serverMsg = err.response?.data?.message || err.response?.data;
+      setErrorMessage(typeof serverMsg === "string" ? serverMsg : "Error adding participant. Please check all fields.");
+      setShowError(true);
       console.error("error", err);
     } finally {
-      dispatch(hideLoading());
+      setLoading(false);
     }
   };
 
@@ -156,7 +225,7 @@ const AddAntyodayaParticipant = () => {
     setCredentials((prevCredentials) => {
       const selectedEventId = selectedEvent._id;
       const isAlreadySelected = prevCredentials.events.includes(selectedEventId);
-  
+
       // Check if the event is already selected, remove it if so
       if (isAlreadySelected) {
         return {
@@ -164,19 +233,37 @@ const AddAntyodayaParticipant = () => {
           events: prevCredentials.events.filter((eventId) => eventId !== selectedEventId),
         };
       }
-  
-      // Check if the max number of events (3) is reached
-      if (prevCredentials.events.length >= 3) {
-        alert("You can only select up to 3 events.");
+
+      // Check if selecting a dance event without selecting POC / School first
+      if (isDanceEvent(selectedEvent) && !prevCredentials.poc && !prevCredentials.school) {
+        setErrorMessage("Please select a School first to verify Dance event availability.");
+        setShowError(true);
         return prevCredentials;
       }
-  
-      // Ensure only one event per group is selected
+
+      // Check if Dance quota (max 3 per POC) is already reached
+      if (isDanceEvent(selectedEvent)) {
+        const danceCount = getDanceParticipantsCount(selectedEvent);
+        if (danceCount >= 3) {
+          setErrorMessage(`Maximum 3 participants from this School are allowed for "${selectedEvent.eventName}". Limit reached (${danceCount}/3).`);
+          setShowError(true);
+          return prevCredentials;
+        }
+      }
+
+      // Ensure only one event per group is selected by filtering out previous selection in the same group
       const filteredEvents = prevCredentials.events.filter((eventId) => {
         const event = eventList.find((e) => e._id === eventId);
-        return event.eventGroup !== group;
+        return event && event.eventGroup !== group;
       });
-  
+
+      // Check if the max number of events (2) is reached
+      if (filteredEvents.length >= 2) {
+        setErrorMessage("You can only select up to 2 events (one per group).");
+        setShowError(true);
+        return prevCredentials;
+      }
+
       // Add the newly selected event
       return {
         ...prevCredentials,
@@ -184,7 +271,7 @@ const AddAntyodayaParticipant = () => {
       };
     });
   };
-  
+
   return (
     <DashboardLayout>
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
@@ -306,7 +393,7 @@ const AddAntyodayaParticipant = () => {
                   </div>
                 </div>
 
-              
+
 
                 <div className="col-span-full">
                   <label
@@ -365,14 +452,14 @@ const AddAntyodayaParticipant = () => {
                   )}
                 </div>
 
-                
+
 
                 <div className="sm:col-span-4">
                   <label
                     htmlFor="events"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Select up to 3 events, but only one event per group.
+                    Select up to 2 events, but only one event per group.
                   </label>
 
                   <div className="mt-2 flex flex-col gap-2">
@@ -392,16 +479,40 @@ const AddAntyodayaParticipant = () => {
                           {events
                             .sort((a, b) => a.eventName.localeCompare(b.eventName))
                             .map((event) => {
+                              const isDance = isDanceEvent(event);
+                              const danceCount = isDance ? getDanceParticipantsCount(event) : 0;
+                              const isQuotaFull = isDance && danceCount >= 3;
+                              const isChecked = credentials.events.includes(event._id);
+
                               return (
-                                <div key={event._id} className="flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    value={event._id}
-                                    onChange={() => handleEventChange(event, group)}
-                                    checked={credentials.events.includes(event._id)}
-                                    className="mr-2"
-                                  />
-                                  <label className="text-sm text-gray-900">{event.eventName}</label>
+                                <div key={event._id} className="flex items-center justify-between py-1 max-w-md">
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      value={event._id}
+                                      onChange={() => handleEventChange(event, group)}
+                                      checked={isChecked}
+                                      disabled={isQuotaFull && !isChecked}
+                                      className="mr-2 disabled:opacity-50"
+                                    />
+                                    <label className={`text-sm ${isQuotaFull && !isChecked ? "text-gray-400 cursor-not-allowed" : "text-gray-900 cursor-pointer"}`}>
+                                      {event.eventName}
+                                    </label>
+                                  </div>
+                                  {isDance && (credentials.poc || credentials.school) && (
+                                    <span
+                                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${isQuotaFull
+                                        ? "bg-red-100 text-red-700"
+                                        : danceCount === 2
+                                          ? "bg-amber-100 text-amber-700"
+                                          : "bg-emerald-100 text-emerald-700"
+                                        }`}
+                                    >
+                                      {isQuotaFull
+                                        ? "POC quota full (3/3)"
+                                        : `POC quota: ${danceCount}/3`}
+                                    </span>
+                                  )}
                                 </div>
                               );
                             })}
@@ -427,12 +538,26 @@ const AddAntyodayaParticipant = () => {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={loading}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
+        <ErrorMessageModel
+          isOpen={showError}
+          onClose={() => setShowError(false)}
+          onRetry={() => setShowError(false)}
+          title="Error"
+          message={errorMessage}
+        />
+        {showSuccess && (
+          <SuccessMessage
+            message="Participant submitted successfully!"
+            onClose={() => setShowSuccess(false)}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

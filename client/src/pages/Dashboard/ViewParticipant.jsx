@@ -51,7 +51,7 @@ const Participants = () => {
   const [usersPerPage, setUsersPerPage] = useState(initialUsers);
   const currentYear = new Date().getFullYear();
 
-  
+
   //Actions
   const toggleActionsDropdown = () => {
     setActionsDropdownOpen(!isActionsDropdownOpen);
@@ -86,8 +86,9 @@ const Participants = () => {
     if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
   };
   const [students, setStudents] = useState([]);
+  const [events, setEvents] = useState([]);
   const [filterName, setFilterName] = useState("");
-  const [filterSchool, setFilterSchool] = useState(""); 
+  const [filterSchool, setFilterSchool] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const toggleDropdown = (studentId) => {
     setOpenDropdownId(openDropdownId === studentId ? null : studentId);
@@ -97,9 +98,16 @@ const Participants = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`${BASE_URL}/participantList`);
-        const data = response.data || [];
+
+        const [participantsResponse, eventsResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/participantList`),
+          axios.get(`${BASE_URL}/getEvents`),
+        ]);
+
+        const data = participantsResponse.data || [];
+
         setStudents(data);
+        setEvents(eventsResponse.data || []);
 
         const yearsWithData = Array.from(
           new Set(data.map((s) => extractYear(s.year)).filter(Boolean))
@@ -110,6 +118,7 @@ const Participants = () => {
         } else if (yearsWithData.length > 0) {
           setSelectedSession([yearsWithData[0]]);
         }
+
       } catch (error) {
         console.log(error);
       } finally {
@@ -197,39 +206,39 @@ const Participants = () => {
   }, [selectedLocations, selectedClasses]); // Adding selectedLocations as a dependency
 
   // Ensure students is an array, even if it's initially undefined or null
-let filteredStudents = Array.isArray(students) ? students : [];
+  let filteredStudents = Array.isArray(students) ? students : [];
 
-if (selectedLocations.length > 0) {
-  filteredStudents = filteredStudents.filter((student) =>
-    selectedLocations.includes(student.location)
-  );
-}
+  if (selectedLocations.length > 0) {
+    filteredStudents = filteredStudents.filter((student) =>
+      selectedLocations.includes(student.location)
+    );
+  }
 
-if (selectedClasses.length > 0) {
-  filteredStudents = filteredStudents.filter((student) =>
-    selectedClasses.includes(student.class)
-  );
-}
+  if (selectedClasses.length > 0) {
+    filteredStudents = filteredStudents.filter((student) =>
+      selectedClasses.includes(student.class)
+    );
+  }
 
-if(selectedSession.length > 0){
-  filteredStudents = filteredStudents.filter((student) => {
-    const y = extractYear(student.year);
-    return y ? selectedSession.includes(y) : false;
+  if (selectedSession.length > 0) {
+    filteredStudents = filteredStudents.filter((student) => {
+      const y = extractYear(student.year);
+      return y ? selectedSession.includes(y) : false;
+    });
+  }
+
+  // Filter by student name and school
+  filteredStudents = filteredStudents.filter((user) => {
+    const userName = user.name ? user.name.toLowerCase() : "";
+    const schoolName = user.school ? user.school.toLowerCase() : ""; // Add filter by school
+    return (
+      userName.includes(filterName.toLowerCase()) &&
+      schoolName.includes(filterSchool.toLowerCase())
+    );
   });
-}
 
-// Filter by student name and school
-filteredStudents = filteredStudents.filter((user) => {
-  const userName = user.name ? user.name.toLowerCase() : "";
-  const schoolName = user.school ? user.school.toLowerCase() : ""; // Add filter by school
-  return (
-    userName.includes(filterName.toLowerCase()) &&
-    schoolName.includes(filterSchool.toLowerCase())
-  );
-});
-
-let sortedStudents = [...filteredStudents].sort((a, b) => {
-  // 1. Sort by year descending
+  let sortedStudents = [...filteredStudents].sort((a, b) => {
+    // 1. Sort by year descending
     if (a.year !== b.year) return b.year - a.year;
 
     // 2. Sort by name descending (Z → A)
@@ -240,7 +249,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
 
   });
 
-// console.log(filteredStudents);
+  // console.log(filteredStudents);
 
 
   //Pagination
@@ -313,55 +322,74 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
 
   // Download Excel workbook with multiple sheets (one per school)
   const handleDownloadExcelBySchool = () => {
+    const eventGroups = [...new Set(
+      events.map((event) => event.eventGroup).filter(Boolean)
+    )].sort();
+    const eventsById = new Map(
+      events.map((event) => [String(event._id), event])
+    );
+
     // Get unique schools from filtered students
     const uniqueSchools = [...new Set(filteredStudents.map(student => student.school))].sort();
-    
+
     // Create a new workbook
     const workbook = XLSX.utils.book_new();
-    
+
     // Track sheet names to handle duplicates
     const usedSheetNames = new Set();
-    
+
     // Create a sheet for each school
     uniqueSchools.forEach((school) => {
       const schoolStudents = sortedStudents.filter(student => student.school === school);
-      
+
       // Prepare data with headers
       const sheetData = [
-        ["S.No.", "Name", "Class", "Phone", "School", "Year"],
-        ...schoolStudents.map((student, index) => [
-          index + 1,
-          student.name,
-          student.class,
-          student.phone,
-          student.school,
-          student.year
-        ])
+        ["S.No.", "Name", "Class", "Phone", "School", "Year", ...eventGroups],
+        ...schoolStudents.map((student, index) => {
+          const eventsByGroup = (Array.isArray(student.events) ? student.events : [])
+            .map((eventId) => eventsById.get(String(eventId)))
+            .filter(Boolean)
+            .reduce((groups, event) => {
+              if (!groups[event.eventGroup]) groups[event.eventGroup] = [];
+              groups[event.eventGroup].push(event.eventName);
+              return groups;
+            }, {});
+
+          return [
+            index + 1,
+            student.name,
+            student.class,
+            student.phone,
+            student.school,
+            student.year,
+            ...eventGroups.map((group) => (eventsByGroup[group] || []).join(", ")),
+          ];
+        })
       ];
-      
+
       // Create worksheet
       const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-      
+
       // Generate unique sheet name (Excel limits sheet names to 31 chars)
       let sheetName = school.substring(0, 31);
       let counter = 1;
       const originalName = sheetName;
-      
+
       // If sheet name already exists, append a counter
       while (usedSheetNames.has(sheetName)) {
         counter++;
         const suffix = ` (${counter})`;
         sheetName = originalName.substring(0, 31 - suffix.length) + suffix;
       }
-      
+
       usedSheetNames.add(sheetName);
       XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
     });
-    
+
     // Download the workbook
     XLSX.writeFile(workbook, `students_by_school.xlsx`);
   };
-       
+
 
   const handleDelete = async (studentId) => {
     const confirmDelete = window.confirm(
@@ -377,10 +405,10 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
           // Student deleted successfully
           alert("Participants deleted successfully");
           navigate("/viewParticipants");
-        //   console.log("Student deleted successfully");
+          //   console.log("Student deleted successfully");
           // You can perform any additional actions after successful deletion, such as updating the UI
         } else {
-            alert("Participants not deleted successfully");
+          alert("Participants not deleted successfully");
           // Handle error response from server
           console.error(
             "Failed to delete student:",
@@ -520,7 +548,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                         </a>
                       </li>
                     </ul>
-                   
+
                   </div>
                 )}
 
@@ -598,7 +626,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                       <IoIosArrowDown />
                     )}
                   </button>
-                  
+
                   <div>
                     {isFilterBySessionDropdownOpen && (
                       <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow">
@@ -644,7 +672,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                       </div>
                     )}
                   </div>
-                 
+
                 </div>
               </div>
             </div>
@@ -652,7 +680,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
               <table className="w-full text-sm text-left text-gray-500 ">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-x border-t">
                   <tr>
-                  <th scope="col" className="px-4 py-3">
+                    <th scope="col" className="px-4 py-3">
                       S.No.
                     </th>
                     <th scope="col" className="px-4 py-3">
@@ -664,7 +692,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                     <th scope="col" className="px-4 py-3">
                       Phone
                     </th>
-                   
+
                     <th scope="col" className="px-4 py-3">
                       School
                     </th>
@@ -678,9 +706,9 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                   </tr>
                 </thead>
                 <tbody className="border-b">
-                  {sortedStudents.map((student,index) => (
+                  {sortedStudents.map((student, index) => (
                     <tr key={student._id} className="border-x">
-                    <td className="px-4 py-3">{indexOfFirstUser+index+1}</td>
+                      <td className="px-4 py-3">{indexOfFirstUser + index + 1}</td>
                       <th
                         scope="row"
                         className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap "
@@ -689,8 +717,8 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                       </th>
                       <td className="px-4 py-3">{student.class}</td>
                       <td className="px-4 py-3">{student.phone}</td>
-                     
-                     
+
+
                       <td className="px-4 py-3">{student.school}</td>
                       <td className="px-4 py-3">{student.year}</td>
 

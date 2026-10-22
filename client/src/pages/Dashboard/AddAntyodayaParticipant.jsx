@@ -650,7 +650,7 @@ const AddAntyodayaParticipant = () => {
           message={errorMessage}
         />
         {showSuccess && (
-          <SuccessMessage
+          <SuccessMessageModel
             message="Participant submitted successfully!"
             onClose={() => setShowSuccess(false)}
           />

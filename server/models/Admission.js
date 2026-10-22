@@ -58,4 +58,6 @@ const StudentAdmissionSchema = new Schema({
   },
 });
 
+StudentAdmissionSchema.index({ aadhar: 1 });
+
 module.exports = mongoose.model("Admission", StudentAdmissionSchema);

@@ -16,6 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const mongoDB = require("./config/db");
 const router = require("./routers");
+const healthRouter = require("./routers/healthRoute");
 const { ensurePapersFolder } = require("./utils/fileUtils");
 
 // Connect to MongoDB
@@ -39,6 +40,10 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/antyodayaImages", express.static(path.join(__dirname, "antyodayaImages")));
+
+// Observability & Health Check Routes
+app.use("/health", healthRouter);
+app.use("/api/v1/health", healthRouter);
 
 // API Routes
 app.use("/api/v1/user", router);
@@ -64,6 +69,10 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`server is running at ${PORT}`.bgCyan.white);
-});
+if (process.env.NODE_ENV !== "test" || require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`server is running at ${PORT}`.bgCyan.white);
+  });
+}
+
+module.exports = app;

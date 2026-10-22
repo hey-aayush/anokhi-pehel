@@ -1,31 +1,26 @@
 import { useState } from "react";
-import axios from "axios";
-import { BASE_URL } from "../../Service/helper";
+import { authService } from "../../Service/authService";
+import { getErrorMessage } from "../../Service/apiClient";
 import { logo } from "../../assets/Home";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  //const [credentials, setCredentials] = useState({ email: "" });
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent form default behavior
-    setLoading(true); // Dispatch showLoading to enable the loading state
+    setLoading(true);
     try {
       // Send forgot password request to backend
-      const response = await axios.post(`${BASE_URL}/forgot-password`, {
-        email,
-      });
-      console.log(response);
-      setMessage(response.data.message);
+      const data = await authService.forgotPassword(email);
+      setMessage(data?.message || "Password reset instructions sent to your email.");
       setTimeout(() => setMessage(""), 5000);
-      //setMessage("Password reset instructions sent to your email.");
     } catch (error) {
-      console.error("Error:", error.response.data);
-      setMessage("Error occurred. Please try again.");
+      const errMsg = getErrorMessage(error, "Error occurred. Please try again.");
+      setMessage(errMsg);
       setTimeout(() => setMessage(""), 5000);
     } finally {
-      setLoading(false); // Dispatch hideLoading to disable the loading state
+      setLoading(false);
     }
   };
   const onChange = (e) => {

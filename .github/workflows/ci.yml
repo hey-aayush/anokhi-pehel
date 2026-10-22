@@ -300,6 +300,7 @@ jobs:
       - uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
+          show-openssf-scorecard: false
 
   # ──────────────────────────────────────────────
   # 8. Full integration build

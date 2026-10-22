@@ -4,10 +4,15 @@ import axios from "axios";
 import { classes, locations, modes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
-import { showLoading, hideLoading } from "../../redux/features/alertSlice";
-import { useDispatch } from "react-redux";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
+import WarningModel from "../../components/Models/WarningModel";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 const AddStudent = () => {
-  const dispatch = useDispatch();
+  const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [credentials, setCredentials] = useState({
     name: "",
     class: "",
@@ -22,7 +27,7 @@ const AddStudent = () => {
   });
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(showLoading());
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("name", credentials.name);
     formData.append("class", credentials.class);
@@ -41,7 +46,9 @@ const AddStudent = () => {
         console.log(res);
 
         if (res.data === "Student Added") {
-          alert("Student submitted successfully!");
+          setSuccess(true);
+          setShowWarning(false);
+          setShowError(false);
           setCredentials({
             name: "",
             class: "",
@@ -56,18 +63,23 @@ const AddStudent = () => {
         } else if (
           res.data === "Student with this Aadhar number already exists"
         ) {
-          alert("Student with this Aadhar number already exists");
+          setShowWarning(true);
+          setShowError(false);
+          setErrorMessage(res.data);
         } else {
-          alert("Student Not Added!");
+          setErrorMessage("Student Not Added!");
+          setShowError(true);
+          setShowWarning(false);
         }
       })
       .catch((err) => {
-        alert("ALL INPUT IS NOT FILLED");
+        setErrorMessage("ALL INPUT IS NOT FILLED");
+        setShowError(true);
+        setShowWarning(false);
         console.log("error", err);
-        dispatch(hideLoading())
       })
       .finally(() => {
-        dispatch(hideLoading());
+        setIsSubmitting(false);
       });
   };
   const onChange = (e) => {
@@ -79,6 +91,30 @@ const AddStudent = () => {
 
   return (
     <DashboardLayout>
+      {success && (
+        <SuccessMessageModel
+          message="Student submitted successfully!"
+          onClose={() => setSuccess(false)}
+        />
+      )}
+      {showWarning && (
+        <WarningModel
+          isOpen={showWarning}
+          onClose={() => setShowWarning(false)}
+          onConfirm={() => setShowWarning(false)}
+          title="Duplicate Aadhar Number"
+          details="Student with this Aadhar number already exists."
+        />
+      )}
+      {showError && (
+        <ErrorMessageModel
+          isOpen={showError}
+          onClose={() => setShowError(false)}
+          onRetry={() => setShowError(false)}
+          title="Submission Failed"
+          message={errorMessage}
+        />
+      )}
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="space-y-8">
@@ -356,9 +392,10 @@ const AddStudent = () => {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={isSubmitting}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

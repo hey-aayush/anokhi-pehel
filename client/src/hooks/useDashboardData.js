@@ -3,63 +3,12 @@ import axios from "axios";
 import { BASE_URL } from "../Service/helper";
 import { classes } from "../constants/Dashboard";
 
-export const getLocalDateString = (d = new Date()) => {
-  const date = new Date(d);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-export const formatDateDDMMYYYY = (dateStr) => {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  if (!year || !month || !day) return dateStr;
-  return `${day}/${month}/${year}`;
-};
-
-export const formatDisplayDate = (dateStr) => {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  if (!year || !month || !day) return dateStr;
-  const date = new Date(Number(year), Number(month) - 1, Number(day));
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
-
 export const useDashboardData = () => {
-  const todayString = useMemo(() => getLocalDateString(), []);
-  const [selectedDate, setSelectedDate] = useState(todayString);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [classData, setClassData] = useState([]);
 
-  const isToday = selectedDate === todayString;
-  const formattedDisplayDate = useMemo(
-    () => formatDisplayDate(selectedDate),
-    [selectedDate]
-  );
-  const formattedDDMMYYYYDate = useMemo(
-    () => formatDateDDMMYYYY(selectedDate),
-    [selectedDate]
-  );
-
-  const handleSetSelectedDate = useCallback(
-    (newDate) => {
-      if (!newDate) return;
-      if (newDate > todayString) {
-        setSelectedDate(todayString);
-      } else {
-        setSelectedDate(newDate);
-      }
-    },
-    [todayString]
-  );
-
-  const fetchAllClassData = useCallback(async (dateToFetch = selectedDate) => {
+  const fetchAllClassData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -80,7 +29,7 @@ export const useDashboardData = () => {
         console.error("Error fetching student counts:", err);
       }
 
-      // 2. Fetch attendance and topic data for each class in parallel for the selected date
+      // 2. Fetch attendance and topic data for each class in parallel
       const results = await Promise.all(
         classes.map(async (cls) => {
           const enrolled = studentCounts[cls.id] || 0;
@@ -93,10 +42,10 @@ export const useDashboardData = () => {
           let subjectCovered = "";
           let topics = [];
 
-          // Fetch attendance for the specific date
+          // Fetch attendance
           try {
             const attRes = await axios.get(
-              `${BASE_URL}/attendance?classId=${cls.id}&date=${dateToFetch}`,
+              `${BASE_URL}/attendance?classId=${cls.id}`,
               authHeaders
             );
             if (attRes.data && typeof attRes.data.totalStudents === "number") {
@@ -110,10 +59,10 @@ export const useDashboardData = () => {
             isAttendanceTaken = false;
           }
 
-          // Fetch topic for the specific date
+          // Fetch topic
           try {
             const topicRes = await axios.get(
-              `${BASE_URL}/topicCovered?classId=${cls.id}&date=${dateToFetch}`,
+              `${BASE_URL}/topicCovered?classId=${cls.id}`,
               authHeaders
             );
             const topicList = topicRes.data?.topicsCovered || [];
@@ -158,11 +107,11 @@ export const useDashboardData = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, []);
 
   useEffect(() => {
-    fetchAllClassData(selectedDate);
-  }, [fetchAllClassData, selectedDate]);
+    fetchAllClassData();
+  }, [fetchAllClassData]);
 
   const metrics = useMemo(() => {
     const totalEnrolled = classData.reduce(
@@ -198,16 +147,9 @@ export const useDashboardData = () => {
     classData,
     loading,
     error,
-    refetch: () => fetchAllClassData(selectedDate),
+    refetch: fetchAllClassData,
     metrics,
-    selectedDate,
-    setSelectedDate: handleSetSelectedDate,
-    todayString,
-    isToday,
-    formattedDisplayDate,
-    formattedDDMMYYYYDate,
   };
 };
 
 export default useDashboardData;
-

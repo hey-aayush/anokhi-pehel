@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const ErrorMessageModel = ({ isOpen, onClose, onRetry, title, message }) => {
     if (!isOpen) return null;
   
@@ -71,5 +73,13 @@ const ErrorMessageModel = ({ isOpen, onClose, onRetry, title, message }) => {
     );
   };
   
-  export default ErrorMessageModel;
+  ErrorMessageModel.propTypes = {
+  isOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+  onRetry: PropTypes.func,
+  title: PropTypes.string,
+  message: PropTypes.string,
+};
+
+export default ErrorMessageModel;
   

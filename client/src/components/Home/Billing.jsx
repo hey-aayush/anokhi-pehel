@@ -1,4 +1,3 @@
-import { study2 } from "../../assets/Home";
 import styles, { layout } from "../../style";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";

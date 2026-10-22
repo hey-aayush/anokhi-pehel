@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { features } from "../../constants/Home";
 import styles, { layout } from "../../style";
@@ -24,6 +25,13 @@ const FeatureCard = ({ icon, title, content, index }) => (
     </div>
   </div>
 );
+
+FeatureCard.propTypes = {
+  icon: PropTypes.string,
+  title: PropTypes.string,
+  content: PropTypes.string,
+  index: PropTypes.number,
+};
 
 const Impact = () => {
   const navigate = useNavigate();

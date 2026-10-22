@@ -2,7 +2,6 @@ import { useState } from "react";
 import { close, menu, logo } from "../../assets/Home";
 import { navLinks } from "../../constants/Home";
 import { Link } from "react-router-dom";
-import Button from "./Button";
 const Navbar = () => {
   const [active, setActive] = useState("Home");
   const [toggle, setToggle] = useState(false);

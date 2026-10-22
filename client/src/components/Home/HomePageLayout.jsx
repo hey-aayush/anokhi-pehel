@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import styles from "../../style";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
@@ -60,6 +61,10 @@ const HomePageLayout = ({ children }) => {
       </div>
     </div>
   );
+};
+
+HomePageLayout.propTypes = {
+  children: PropTypes.node,
 };
 
 export default HomePageLayout;

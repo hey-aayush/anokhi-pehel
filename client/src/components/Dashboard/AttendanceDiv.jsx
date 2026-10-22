@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import { BASE_URL } from "../../Service/helper";
 
@@ -7,10 +8,9 @@ const AttendanceBoxes = ({ classId }) => {
   const [isTopicCovered, setIsTopicCovered] = useState(false);
   const [total, setTotal] = useState(0);
   const [present, setPresent] = useState(0);
-  const [percentage, setPercentage] = useState(0);
   const [topicCovered, setTopicCovered] = useState("");
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     try {
       const response = await axios.get(
         `${BASE_URL}/attendance?classId=${classId}`
@@ -20,18 +20,15 @@ const AttendanceBoxes = ({ classId }) => {
         const presentCount = response.data.totalPresentStudents || 0;
         setTotal(totalCount);
         setPresent(presentCount);
-        const percentagePresent =
-          totalCount > 0 ? ((presentCount / totalCount) * 100).toFixed(2) : 0;
-        setPercentage(percentagePresent);
         setIsAttendanceTaken(true);
       }
-    } catch (error) {
+    } catch {
       setIsAttendanceTaken(false);
     }
-  };
+  }, [classId]);
 
   // fetch the topic covered today in that class
-  const fetchTopicCovered = async () => {
+  const fetchTopicCovered = useCallback(async () => {
     try {
       const response = await axios.get(
         `${BASE_URL}/topicCovered?classId=${classId}`
@@ -44,11 +41,11 @@ const AttendanceBoxes = ({ classId }) => {
         setTopicCovered("");
         setIsTopicCovered(false);
       }
-    } catch (error) {
+    } catch {
       setTopicCovered("");
       setIsTopicCovered(false);
     }
-  };
+  }, [classId]);
 
   // Fetch attendance data on component mount or when classId changes
   useEffect(() => {
@@ -56,7 +53,7 @@ const AttendanceBoxes = ({ classId }) => {
       fetchAttendance();
       fetchTopicCovered();
     }
-  }, [classId]);
+  }, [classId, fetchAttendance, fetchTopicCovered]);
 
   // Determine card styling based on completion state:
   // - Both done: Dark Slate
@@ -88,11 +85,15 @@ const AttendanceBoxes = ({ classId }) => {
         {isTopicCovered ? (
           <p className="text-sm mt-1">Topic Covered: {topicCovered}</p>
         ) : (
-          <p className="text-sm opacity-90">Today's topic not updated</p>
+          <p className="text-sm opacity-90">Today&apos;s topic not updated</p>
         )}
       </div>
     </div>
   );
+};
+
+AttendanceBoxes.propTypes = {
+  classId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default AttendanceBoxes;

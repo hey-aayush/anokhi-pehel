@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import AnimatedTick from "./AnimatedTickModel";
 
 const SuccessMessage = ({ message, onClose, timer = 3000 }) => {
@@ -59,6 +60,12 @@ const SuccessMessage = ({ message, onClose, timer = 3000 }) => {
       )}
     </>
   );
+};
+
+SuccessMessage.propTypes = {
+  message: PropTypes.string,
+  onClose: PropTypes.func,
+  timer: PropTypes.number,
 };
 
 export default SuccessMessage;

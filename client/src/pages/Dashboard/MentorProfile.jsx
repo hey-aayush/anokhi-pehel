@@ -1,7 +1,6 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import Button from "../../components/Dashboard/Button";

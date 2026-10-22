@@ -1,4 +1,4 @@
-import { useState } from "react";
+import PropTypes from "prop-types";
 
 const WarningModal = ({ isOpen, onClose, onConfirm, title, details }) => {
   if (!isOpen) return null; // Don't render if modal is closed
@@ -64,13 +64,21 @@ const WarningModal = ({ isOpen, onClose, onConfirm, title, details }) => {
               onClick={onConfirm}
               className="py-2 px-4 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indio-700 focus:ring-4 focus:outline-none focus:ring-violet-300 "
             >
-              Yes, I'm sure
+              Yes, I&apos;m sure
             </button>
           </div>
         </div>
       </div>
     </div>
   );
+};
+
+WarningModal.propTypes = {
+  isOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+  onConfirm: PropTypes.func,
+  title: PropTypes.string,
+  details: PropTypes.string,
 };
 
 export default WarningModal;

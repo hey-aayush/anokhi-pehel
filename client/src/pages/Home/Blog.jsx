@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import HomePageLayout from '../../components/Home/HomePageLayout';
 import { blogData } from './Blogdata.jsx';
 import Modal from './Modal';

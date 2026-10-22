@@ -1,7 +1,5 @@
 import styles from "../../style";
-import React from "react";
 import HomePageLayout from "../../components/Home/HomePageLayout";
-import { connectWithUs } from "../../assets/Home";
 const App = () => (
   <HomePageLayout>
     <div className={`bg-primary ${styles.flexStart}`}>
@@ -57,9 +55,9 @@ const App = () => (
                   Admit them to schools
                 </h1>
                 <p className="leading-relaxed p-4 md:p-8 lg:p-6 font-base md:font-medium text-center hover:text-stone-100 sm:text-xl text-base">
-                  "Support our cause to ensure education for all. Help us enroll
+                  &quot;Support our cause to ensure education for all. Help us enroll
                   deserving children into schools, empowering their futures with
-                  knowledge and opportunities."
+                  knowledge and opportunities.&quot;
                 </p>
               </div>
             </div>
@@ -71,7 +69,7 @@ const App = () => (
                 <p className="leading-relaxed p-4 md:p-8 lg:p-6 font-base md:font-medium text-center hover:text-stone-100 sm:text-xl text-base">
                   Contribute stationery and brighten futures! Your support helps
                   provide essential tools for learning, nurturing the dreams of
-                  underprivileged children towards a brighter tomorrow."
+                  underprivileged children towards a brighter tomorrow.&quot;
                 </p>
               </div>
             </div>
@@ -81,10 +79,10 @@ const App = () => (
                   Celebrate Your day with us
                 </h1>
                 <p className="leading-relaxed p-4 md:p-8 lg:p-6 font-base md:font-medium text-center hover:text-stone-100 sm:text-xl text-base">
-                  "Make your special day theirs too! Celebrate with
+                  &quot;Make your special day theirs too! Celebrate with
                   underprivileged children, spreading joy and creating
                   unforgettable memories that leave a lasting impact on their
-                  lives and your heart."
+                  lives and your heart.&quot;
                 </p>
               </div>
             </div>
@@ -101,10 +99,10 @@ const App = () => (
                   Empower women
                 </h1>
                 <p className="leading-relaxed p-4 md:p-8 lg:p-6 font-base md:font-medium text-center hover:text-stone-100 sm:text-xl text-base">
-                  "Empower women with the essential tools for education and
+                  &quot;Empower women with the essential tools for education and
                   success. Provide sanitary pads, enabling them to pursue
                   learning, work, and personal growth, fostering empowerment and
-                  equality."
+                  equality.&quot;
                 </p>
               </div>
             </div>
@@ -141,7 +139,7 @@ const App = () => (
                 <div className="p-2 w-1/2">
                   <div className="relative">
                     <label
-                      for="name"
+                      htmlFor="name"
                       className="leading-7 text-sm text-gray-600"
                     >
                       Name
@@ -158,7 +156,7 @@ const App = () => (
                 <div className="p-2 w-1/2">
                   <div className="relative">
                     <label
-                      for="email"
+                      htmlFor="email"
                       className="leading-7 text-sm text-gray-600"
                     >
                       Email
@@ -175,7 +173,7 @@ const App = () => (
                 <div className="p-2 w-1/2">
                   <div className="relative">
                     <label
-                      for="address"
+                      htmlFor="address"
                       className="leading-7 text-sm text-gray-600"
                     >
                       Address
@@ -192,7 +190,7 @@ const App = () => (
                 <div className="p-2 w-1/2">
                   <div className="relative">
                     <label
-                      for="tel"
+                      htmlFor="tel"
                       className="leading-7 text-sm text-gray-600"
                     >
                       Phone number
@@ -236,7 +234,7 @@ const App = () => (
                 <div className="p-2 w-full">
                   <div className="relative">
                     <label
-                      for="message"
+                      htmlFor="message"
                       className="leading-7 text-sm text-gray-600"
                     >
                       Message

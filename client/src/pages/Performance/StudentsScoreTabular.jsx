@@ -1,5 +1,5 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { BASE_URL } from "../../Service/helper";

@@ -1,13 +1,9 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import Header from "../../components/Dashboard/Header";
-import Button from "../../components/Dashboard/Button";
-import { classes, locations, modes } from "../../constants/Dashboard";
+import { classes } from "../../constants/Dashboard";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { BASE_URL } from "../../../src/Service/helper";
-import { useNavigate, Link } from "react-router-dom";
 
 const Student = () => {
   const [scheduleData, setScheduleData] = useState([]);

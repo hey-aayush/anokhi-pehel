@@ -1,7 +1,6 @@
-import React from "react";
 import styles from "../../style";
 import { useNavigate } from "react-router-dom";
-import { antyodaya, Antyodayavid } from "../../assets/Home"; // Assuming this is the correct image path
+import { antyodaya } from "../../assets/Home"; // Assuming this is the correct image path
 import Button from "./Button"; // Uncomment if you use the button component
 
 const Antyodaya = () => {

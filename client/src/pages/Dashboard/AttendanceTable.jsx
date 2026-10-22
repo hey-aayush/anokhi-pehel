@@ -1,11 +1,8 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { classes, months } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
-import { downloadPDF } from "../../../src/Service/utilityfunctions";
-import { useSelector } from "react-redux";
 import moment from "moment";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import jsPDF from "jspdf";
@@ -13,10 +10,6 @@ import "jspdf-autotable";
 import StudentProfileModal from "../../Modals/studentProfileModal";
 
 const Attendance = () => {
-  const navigate = useNavigate();
-
-  const { user } = useSelector((state) => state.user);
-
   const [credentials, setCredentials] = useState({
     class: "",
     month: "",
@@ -32,9 +25,10 @@ const Attendance = () => {
     if (credentials.class || credentials.month) {
       fetchAttendanceData(credentials.class);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [credentials]);
 
-  const fetchAttendanceData = async (value) => {
+  const fetchAttendanceData = async () => {
     try {
       if (credentials.class && credentials.month) {
         const response = await axios.get(`${BASE_URL}/monthTotalAttendance`, {

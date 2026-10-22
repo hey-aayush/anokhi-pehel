@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -21,9 +21,9 @@ ChartJS.register(
   Legend
 );
 
-const PerformanceLineChart = ({ data , avgData}) => {
-    // console.log(data)
-    // console.log(avgData)
+const PerformanceLineChart = ({ data, avgData }) => {
+  // console.log(data)
+  // console.log(avgData)
   if (!data || data.length === 0) {
     return <p className="text-center text-gray-500">No performance data available</p>;
   }
@@ -105,6 +105,21 @@ const PerformanceLineChart = ({ data , avgData}) => {
       <Line data={chartData} options={options} />
     </div>
   );
+};
+
+PerformanceLineChart.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      month: PropTypes.string,
+      date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+      score: PropTypes.number,
+    })
+  ),
+  avgData: PropTypes.arrayOf(
+    PropTypes.shape({
+      score: PropTypes.number,
+    })
+  ),
 };
 
 export default PerformanceLineChart;

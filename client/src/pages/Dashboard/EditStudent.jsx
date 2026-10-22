@@ -44,7 +44,7 @@ function EditStudentPage() {
     e.preventDefault();
     try {
       // Send request to update student data
-      const response = await axios.put(
+      await axios.put(
         `${BASE_URL}/updateStudent?studentid=${studentId}`,
         student
       );

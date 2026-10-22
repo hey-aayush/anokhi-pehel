@@ -1,4 +1,3 @@
-import React from "react";
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import { useSelector } from "react-redux";
 import ClassAttendanceTable from "../../components/Dashboard/ClassAttendanceTable";

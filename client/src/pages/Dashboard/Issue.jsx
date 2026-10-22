@@ -2,13 +2,11 @@ import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import Button from "../../components/Dashboard/Button";
 import { BASE_URL } from "../../Service/helper";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 const Dashboard = () => {
   const currentColor = "#03C9D7";
-  const navigate = useNavigate();
   const { user } = useSelector((state) => state.user); // User data from Redux
   const [showForm, setShowForm] = useState(false); // Toggle form visibility
   const [issueText, setIssueText] = useState(""); // Capture issue input
@@ -39,7 +37,7 @@ const fetchIssues = async () => {
   }, []);
 
   // Function to handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = async () => {
     
 
     if (!issueText.trim()) {
@@ -48,7 +46,7 @@ const fetchIssues = async () => {
     }
     setLoading(true); // Start loading
     try {
-      const response = await axios.post(`${BASE_URL}/issues`, {
+      await axios.post(`${BASE_URL}/issues`, {
         userId: user._id, // Sending user ID or other info
         userName: user.name,
         userRegNumber: user.regnumber,
@@ -102,7 +100,7 @@ const fetchIssues = async () => {
           <p>No user data available.</p>
         )}
         <p className="text-center ">
-          We're glad to have you here! If you encounter any issues or have
+          We&apos;re glad to have you here! If you encounter any issues or have
           suggestions for improving the Anokhi Pehel web portal, please feel free
           to raise them here. Your feedback will help our web team gain valuable
           insights to make the portal more efficient and user-friendly. Thank

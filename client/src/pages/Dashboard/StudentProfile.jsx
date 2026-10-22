@@ -1,5 +1,5 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL, SERVER_URL } from "../../../src/Service/helper";
@@ -11,7 +11,6 @@ const Student = () => {
   const searchParams = new URLSearchParams(location.search);
   const studentId = searchParams.get("student._id");
   const [student, setStudent] = useState(null);
-  const [marks, setMarks] = useState([]);
   const [barChartData, setBarChartData] = useState({});
   const [performanceLoading, setPerformanceLoading] = useState(false);
 
@@ -80,7 +79,7 @@ const Student = () => {
 
     if(student.className)fetchBarChartData();
     // console.log(barChartData);
-  }, [student, subjects]);
+  }, [student, studentId]);
 
   return (
     <DashboardLayout>
@@ -134,7 +133,7 @@ const Student = () => {
 
       {/* Performance Chart Section */}
         <h2 className="text-xl font-bold text-center mb-4 mt-10">
-          {student?.name}'s Overall Performance
+          {student?.name}&apos;s Overall Performance
         </h2>
       <div className="overflow-x-auto px-6">
         <div className="min-w-[600px] h-[400px]">

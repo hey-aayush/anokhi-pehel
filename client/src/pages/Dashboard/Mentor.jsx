@@ -83,7 +83,6 @@ const Mentor = () => {
           );
           if (setting) {
             setIsAcceptingResponse(setting.value); // Set the fetched setting value
-            console.log(isAcceptingResponse);
           }
         }
       } catch (error) {
@@ -93,7 +92,7 @@ const Mentor = () => {
     fetchSettings();
   }, []);
   // Handle toggle change
-  const handleToggle = async (checked) => {
+  const handleToggle = async () => {
     const updatedValue = !isAcceptingResponse;
     setIsAcceptingResponse(updatedValue);
     //setIsAcceptingResponse(checked);

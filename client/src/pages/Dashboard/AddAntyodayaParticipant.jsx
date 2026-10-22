@@ -1,7 +1,7 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { classes, locations, modes } from "../../constants/Dashboard";
+import { classes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";

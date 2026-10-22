@@ -1,8 +1,8 @@
 import DashboardLayout from "./DashboardLayout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { BASE_URL } from "../../Service/helper";
 
 const ChangePassword = () => {

@@ -1,17 +1,14 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { classes, locations, modes } from "../../constants/Dashboard";
+import { classes, locations } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 const AddStudent = () => {
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
   const [credentials, setCredentials] = useState({
     name: "",

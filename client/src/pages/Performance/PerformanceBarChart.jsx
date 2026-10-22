@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
+import PropTypes from "prop-types";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,14 +13,33 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+const colors = [
+  "rgba(255, 99, 132, 0.6)",   // Light Red
+  "rgba(54, 162, 235, 0.6)",   // Light Blue
+  "rgba(255, 206, 86, 0.6)",   // Light Yellow
+  "rgba(75, 192, 192, 0.6)",   // Light Green
+  "rgba(153, 102, 255, 0.6)",  // Light Purple
+  "rgba(255, 159, 64, 0.6)",   // Light Orange
+  "rgba(144, 238, 144, 0.6)",  // Light Lime Green
+  "rgba(173, 216, 230, 0.6)",  // Light Sky Blue
+  "rgba(240, 128, 128, 0.6)",  // Light Coral
+  "rgba(221, 160, 221, 0.6)",  // Light Plum
+  "rgba(175, 238, 238, 0.6)",  // Light Turquoise
+  "rgba(250, 218, 221, 0.6)",  // Light Pink
+  "rgba(245, 222, 179, 0.6)",  // Light Wheat
+  "rgba(176, 224, 230, 0.6)",  // Light Powder Blue
+  "rgba(152, 251, 152, 0.6)",  // Light Pale Green
+];
+
 const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
-  if (!barChartData || Object.keys(barChartData).length === 0) {
-    return <p className="text-center text-gray-500">No data available</p>;
-  }
-  //check whether data is present or no
+  // Check whether data is present or no
   const groupedData = useMemo(() => {
     const tempGroupedData = {};
+    if (!barChartData || Object.keys(barChartData).length === 0) {
+      return tempGroupedData;
+    }
     Object.entries(barChartData).forEach(([subject, data]) => {
+      if (!Array.isArray(data)) return;
       data.forEach(({ score, date }) => {
         const parsedDate = new Date(date);
         const monthKey = `${parsedDate.toLocaleString("default", { month: "short" })} ${parsedDate.getFullYear()}`;
@@ -27,7 +47,7 @@ const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
         if (!tempGroupedData[monthKey]) tempGroupedData[monthKey] = {};
         if (!tempGroupedData[monthKey][subject]) tempGroupedData[monthKey][subject] = { total: 0, count: 0 };
 
-        if(score > -1){
+        if (score > -1) {
           tempGroupedData[monthKey][subject].total += score;
           tempGroupedData[monthKey][subject].count += 1;
         }
@@ -35,8 +55,6 @@ const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
     });
     return tempGroupedData;
   }, [barChartData]);
-
-  if(Object.keys(groupedData).length === 0) return <p className="text-center text-gray-500">No Performance data available</p>;
 
   const labels = useMemo(() => {
     return Object.keys(groupedData)
@@ -48,29 +66,9 @@ const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
       .map((item) => item.monthKey);
   }, [groupedData]);
 
-
-  const colors = [
-    "rgba(255, 99, 132, 0.6)",   // Light Red
-    "rgba(54, 162, 235, 0.6)",   // Light Blue
-    "rgba(255, 206, 86, 0.6)",   // Light Yellow
-    "rgba(75, 192, 192, 0.6)",   // Light Green
-    "rgba(153, 102, 255, 0.6)",  // Light Purple
-    "rgba(255, 159, 64, 0.6)",   // Light Orange
-    "rgba(144, 238, 144, 0.6)",  // Light Lime Green
-    "rgba(173, 216, 230, 0.6)",  // Light Sky Blue
-    "rgba(240, 128, 128, 0.6)",  // Light Coral
-    "rgba(221, 160, 221, 0.6)",  // Light Plum
-    "rgba(175, 238, 238, 0.6)",  // Light Turquoise
-    "rgba(250, 218, 221, 0.6)",  // Light Pink
-    "rgba(245, 222, 179, 0.6)",  // Light Wheat
-    "rgba(176, 224, 230, 0.6)",  // Light Powder Blue
-    "rgba(152, 251, 152, 0.6)",  // Light Pale Green
-  ];
-  
-  
-
   // Memoizing datasets to prevent unnecessary re-renders
   const datasets = useMemo(() => {
+    if (!subjects) return [];
     return subjects
       .filter((subject) => labels.some((month) => groupedData[month]?.[subject.id])) // Only include subjects with data
       .map((subject, index) => ({
@@ -85,9 +83,6 @@ const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
         ),
       }));
   }, [subjects, labels, groupedData]);
-  
-
-  // console.log("datasets: ", datasets);
 
   const chartData = useMemo(
     () => ({
@@ -110,14 +105,26 @@ const StudentPerformanceBarChart = ({ barChartData, subjects }) => {
     []
   );
 
-  // console.log("chartData: ", chartData);
+  if (!barChartData || Object.keys(barChartData).length === 0) {
+    return <p className="text-center text-gray-500">No data available</p>;
+  }
+
+  if (Object.keys(groupedData).length === 0) {
+    return <p className="text-center text-gray-500">No Performance data available</p>;
+  }
 
   return (
     <Bar data={chartData} options={options} />
   );
-  
+};
+
+StudentPerformanceBarChart.propTypes = {
+  barChartData: PropTypes.object,
+  subjects: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+    })
+  ),
 };
 
 export default StudentPerformanceBarChart;
-
-

@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import { FaInstagram, FaFacebook, FaLinkedin } from 'react-icons/fa';
 import { months } from '../../constants/Dashboard';
 const Modal = ({ isOpen, onClose, blog }) => {
@@ -59,6 +59,24 @@ const Modal = ({ isOpen, onClose, blog }) => {
       </div>
     </div>
   );
+};
+
+Modal.propTypes = {
+  isOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+  blog: PropTypes.shape({
+    title: PropTypes.string,
+    createdAt: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date),
+      PropTypes.number,
+    ]),
+    imageUrl: PropTypes.string,
+    description: PropTypes.string,
+    instagramVideoLink: PropTypes.string,
+    facebookPostLink: PropTypes.string,
+    linkedinPostLink: PropTypes.string,
+  }),
 };
 
 export default Modal;

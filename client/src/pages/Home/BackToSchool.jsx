@@ -1,7 +1,5 @@
 import styles from "../../style";
-import React from "react";
 import HomePageLayout from "../../components/Home/HomePageLayout";
-import { connectWithUs } from "../../assets/Home";
 const App = () => (
   <HomePageLayout>
     <div className={`bg-primary ${styles.flexStart}`}>
@@ -44,7 +42,7 @@ const App = () => (
                 Admission Assistance
                 </h1>
                 <p className="leading-relaxed p-4 md:p-8 lg:p-6 font-base md:font-medium text-center sm:text-xl text-base">
-                  "We work closely with schools to streamline the enrollment process for dropouts, ensuring a smooth return to the classroom."
+                  &quot;We work closely with schools to streamline the enrollment process for dropouts, ensuring a smooth return to the classroom.&quot;
                 </p>
               </div>
             </div>
@@ -54,7 +52,7 @@ const App = () => (
                 Financial Support
                 </h1>
                 <p className="leading-relaxed p-4 md:p-8 lg:p-6 font-base md:font-medium text-center sm:text-xl text-base">
-                "We provide  uniforms, textbooks,their admission fees, and other essential resources to make education accessible for underprivileged children."
+                &quot;We provide  uniforms, textbooks,their admission fees, and other essential resources to make education accessible for underprivileged children.&quot;
                 </p>
               </div>
             </div>
@@ -64,7 +62,7 @@ const App = () => (
                 Counseling and Mentorship
                 </h1>
                 <p className="leading-relaxed p-4 md:p-8 lg:p-6 font-base md:font-medium text-center sm:text-xl text-base">
-                  "We believe in holistic development,  helping them regain confidence and motivation to pursue their dreams."
+                  &quot;We believe in holistic development,  helping them regain confidence and motivation to pursue their dreams.&quot;
                 </p>
               </div>
             </div>

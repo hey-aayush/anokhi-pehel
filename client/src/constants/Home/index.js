@@ -1,12 +1,10 @@
 import {
-  sandeep,
   instagram,
   facebook,
   linkedin,
   star,
   send,
   shield,
-  DirectorImg,
   DirImg,
   BasantSir,
   RajivSir,

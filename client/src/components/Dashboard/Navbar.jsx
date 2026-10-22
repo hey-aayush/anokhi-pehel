@@ -1,9 +1,9 @@
 import { useEffect } from "react";
+import PropTypes from "prop-types";
 import { AiOutlineMenu } from "react-icons/ai";
 import { BsChatLeft } from "react-icons/bs";
 import { RiNotification3Line } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import avatar from "../../assets/Dashboard/avatar.jpg";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -19,6 +19,7 @@ import { SERVER_URL } from "../../Service/helper";
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
   <button
     type="button"
+    title={title}
     onClick={() => customFunc()}
     style={{ color }}
     className="relative text-xl rounded-full p-3 hover:bg-light-gray"
@@ -30,6 +31,14 @@ const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
     {icon}
   </button>
 );
+
+NavButton.propTypes = {
+  title: PropTypes.string,
+  customFunc: PropTypes.func,
+  icon: PropTypes.node,
+  color: PropTypes.string,
+  dotColor: PropTypes.string,
+};
 
 const Navbar = () => {
   const { activeMenu } = useSelector((state) => state.dashboardContext);

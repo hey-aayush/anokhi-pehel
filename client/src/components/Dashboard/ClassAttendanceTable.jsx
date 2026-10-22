@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlus, FaCalendarCheck, FaSearch } from "react-icons/fa";
 import { useDashboardData } from "../../hooks/useDashboardData";
@@ -111,7 +111,7 @@ const ClassAttendanceTable = () => {
         <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <div>
             <h2 className="text-lg md:text-xl font-bold text-slate-800">
-              Today's Class Overview
+              Today&apos;s Class Overview
             </h2>
             <p className="text-xs md:text-sm text-slate-500 mt-0.5">
               Live attendance, subject, and topic progress for all classes

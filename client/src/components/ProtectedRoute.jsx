@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import PropTypes from "prop-types";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
@@ -46,6 +47,7 @@ export default function ProtectedRoute({ children }) {
 
   useEffect(() => {
     if (!user) getUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (localStorage.getItem("token")) {
@@ -54,3 +56,7 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/login" />;
   }
 }
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node,
+};

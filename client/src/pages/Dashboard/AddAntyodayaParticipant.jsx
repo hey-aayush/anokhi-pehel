@@ -6,16 +6,16 @@ import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
 import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
 import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
-import WarningModel from "../../components/Models/WarningModel";
+
 
 const AddAntyodayaParticipant = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [showWarning, setShowWarning] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [warningDetails, setWarningDetails] = useState("");
+
   const [credentials, setCredentials] = useState({
     name: "",
     class: "",
@@ -355,15 +355,7 @@ const AddAntyodayaParticipant = () => {
           message={errorMessage}
         />
       )}
-      {showWarning && (
-        <WarningModel
-          isOpen={showWarning}
-          onClose={() => setShowWarning(false)}
-          onConfirm={() => setShowWarning(false)}
-          title="Event Selection Warning"
-          details={warningDetails}
-        />
-      )}
+
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit}>
           <div className="space-y-12">
@@ -658,7 +650,7 @@ const AddAntyodayaParticipant = () => {
           message={errorMessage}
         />
         {showSuccess && (
-          <SuccessMessage
+          <SuccessMessageModel
             message="Participant submitted successfully!"
             onClose={() => setShowSuccess(false)}
           />

@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { hideLoading, showLoading } from "../redux/features/alertSlice";
 import { setUser } from "../redux/features/userSlice";
 import { BASE_URL } from "../../src/Service/helper";
+import { queryClient } from "../queries/queryClient";
 
 export default function ProtectedRoute({ children }) {
   const dispatch = useDispatch();
@@ -29,16 +30,19 @@ export default function ProtectedRoute({ children }) {
         if (fetchedUser.isActive) {
           dispatch(setUser(fetchedUser));
         } else {
+          queryClient.clear();
           localStorage.clear();
           dispatch(setUser(null));
           navigate("/login");
         }
       } else {
+        queryClient.clear();
         localStorage.clear();
         dispatch(setUser(null));
         navigate("/login");
       }
     } catch (error) {
+      queryClient.clear();
       localStorage.clear();
       dispatch(setUser(null));
       dispatch(hideLoading());

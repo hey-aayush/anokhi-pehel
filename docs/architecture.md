@@ -14,10 +14,11 @@ The server exposes routes below `/api/v1/user`. It also serves uploaded images a
 
 ## Main boundaries
 
-- `client/src/App.jsx` owns route registration.
+- `client/src/App.jsx` owns route registration. The home page remains eager; dashboard and performance pages load on navigation.
 - `client/src/pages/` contains user-facing screens and feature workflows.
 - `client/src/components/` contains reusable presentation and interaction components.
 - `client/src/Service/` contains current client service helpers.
+- Redux owns session and UI state. React Query owns migrated API data; dashboard overview is the first migrated read. `client/src/queries/` owns its query keys and invalidation policy.
 - `server/routers/` owns HTTP route registration and currently contains some request and persistence logic.
 - `server/controller/` contains server handlers for selected domains.
 - `server/models/` contains Mongoose models.
@@ -45,3 +46,14 @@ feature
 ```
 
 The target structure is guidance for future phases, not a reason to move files in bulk during a production-sensitive change.
+
+## Client cache policy
+
+The dashboard overview is fresh by date for 30 seconds and retained for up to
+five minutes after its last use. Successful attendance, topic, or student writes
+cancel in-flight overview reads and invalidate every
+cached overview date. The mapping is in `client/src/queries/dashboardQueries.js`
+and is invoked by the shared Axios response interceptor. Authenticated cached
+data is cleared on logout, password change, or session rejection. When adding
+another cached read, add every write that can change it to the invalidation
+mapping and test an in-flight read that overlaps a write.

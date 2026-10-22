@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Spinner from "./components/Spinner";
@@ -7,58 +8,59 @@ import HomePage from "./pages/Home/HomePage";
 import AdminLogin from "./pages/Home/Login";
 import PageNotFound from "./pages/Error404";
 import "antd/dist/reset.css";
-import Dashboard from "./pages/Dashboard/Dashboard";
-import Student from "./pages/Dashboard/Student";
-import Mentor from "./pages/Dashboard/Mentor";
-import AddStudents from "./pages/Dashboard/AddStudents";
-import AddMentors from "./pages/Dashboard/AddMentor";
-import StudentProfile from "./pages/Dashboard/StudentProfile";
-import MentorProfile from "./pages/Dashboard/MentorProfile";
-import Schedule from "./pages/Dashboard/Schedule";
-import AddLineSchedule from "./pages/Dashboard/AddLineSchedule";
-import AddClassSchedule from "./pages/Dashboard/AddClassSchedule";
-import ClassSchedule from "./pages/Dashboard/ViewClassSchedule";
-import LineSchedule from "./pages/Dashboard/ViewLineSchedule";
 import Blog from "./pages/Home/Blog";
 import Gallery from "./pages/Home/Gallery";
 import Team from "./pages/Home/Team";
-import AddTestScore from "./pages/Dashboard/AddTestScore";
-import PerformancePage from "./pages/Performance/PerformancePage";
-import StudentsScoreTabular from "./pages/Performance/StudentsScoreTabular";
-import TakeAttendance from "./pages/Dashboard/TakeAttendance";
-import Attendance from "./pages/Dashboard/Attendance";
-import AttendanceTable from "./pages/Dashboard/AttendanceTable";
-import AddTopic from "./pages/Dashboard/AddTopic";
-import FindTopic from "./pages/Dashboard/FindTopic";
 import ConnectWithUs from "./pages/Home/ConnectWithUs";
-import ChangePassword from "./components/Dashboard/ChangePassword";
-import EditProfile from "./components/Dashboard/EditProfile";
-import ChangeRole from "./pages/Dashboard/ChangeRole";
-import EditStudent from "./pages/Dashboard/EditStudent";
 import ForgotPassword from "./pages/Home/ForgotPassword";
-import Alumni from "./pages/Dashboard/Alumni";
-import Notice from "./pages/Dashboard/Notice";
 import BackToSchool from "./pages/Home/BackToSchool";
-import Admission from "./pages/Dashboard/Admission";
-import AdmittedStudents from "./pages/Dashboard/AdmittedStudents";
-import AdmittedStudentProfile from "./pages/Dashboard/AdmittedStudentProfile";
 import Antyodaya from "./pages/Home/Antyodaya";
-import AtyodayaDashboard from "./pages/Dashboard/AntyodayaDashboard";
-import AddEvent from "./pages/Dashboard/AddEvent";
-import EventList from "./pages/Dashboard/EventList";
-import EventDetails from "./pages/Dashboard/EventDetails";
-import EditEvent from "./pages/Dashboard/EditEvent";
-import AddPoc from "./pages/Dashboard/AddPoc";
-import ViewPoc from "./pages/Dashboard/ViewPoc";
-import AddAtyodayaParticipant from "./pages/Dashboard/AddAntyodayaParticipant";
-import ViewParticipants from "./pages/Dashboard/ViewParticipant";
-import ParticipantProfile from "./pages/Dashboard/ParticipantProfile";
-import Issue from "./pages/Dashboard/Issue";
 import JoinAsMentor from "./pages/Home/JoinAsMentor";
-import Winners from "./pages/Dashboard/Winners";
-import StudentScoresPictorially from "./pages/Performance/StudentScoresPictorially";
-import PromoteStudents from "./pages/Dashboard/PromoteStudents";
-import Email_Service from "./pages/Dashboard/Email_Service";
+
+const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
+const Student = lazy(() => import("./pages/Dashboard/Student"));
+const Mentor = lazy(() => import("./pages/Dashboard/Mentor"));
+const AddStudents = lazy(() => import("./pages/Dashboard/AddStudents"));
+const AddMentors = lazy(() => import("./pages/Dashboard/AddMentor"));
+const StudentProfile = lazy(() => import("./pages/Dashboard/StudentProfile"));
+const MentorProfile = lazy(() => import("./pages/Dashboard/MentorProfile"));
+const Schedule = lazy(() => import("./pages/Dashboard/Schedule"));
+const AddLineSchedule = lazy(() => import("./pages/Dashboard/AddLineSchedule"));
+const AddClassSchedule = lazy(() => import("./pages/Dashboard/AddClassSchedule"));
+const ClassSchedule = lazy(() => import("./pages/Dashboard/ViewClassSchedule"));
+const LineSchedule = lazy(() => import("./pages/Dashboard/ViewLineSchedule"));
+const AddTestScore = lazy(() => import("./pages/Dashboard/AddTestScore"));
+const PerformancePage = lazy(() => import("./pages/Performance/PerformancePage"));
+const StudentsScoreTabular = lazy(() => import("./pages/Performance/StudentsScoreTabular"));
+const TakeAttendance = lazy(() => import("./pages/Dashboard/TakeAttendance"));
+const Attendance = lazy(() => import("./pages/Dashboard/Attendance"));
+const AttendanceTable = lazy(() => import("./pages/Dashboard/AttendanceTable"));
+const AddTopic = lazy(() => import("./pages/Dashboard/AddTopic"));
+const FindTopic = lazy(() => import("./pages/Dashboard/FindTopic"));
+const ChangePassword = lazy(() => import("./components/Dashboard/ChangePassword"));
+const EditProfile = lazy(() => import("./components/Dashboard/EditProfile"));
+const ChangeRole = lazy(() => import("./pages/Dashboard/ChangeRole"));
+const EditStudent = lazy(() => import("./pages/Dashboard/EditStudent"));
+const Alumni = lazy(() => import("./pages/Dashboard/Alumni"));
+const Notice = lazy(() => import("./pages/Dashboard/Notice"));
+const Admission = lazy(() => import("./pages/Dashboard/Admission"));
+const AdmittedStudents = lazy(() => import("./pages/Dashboard/AdmittedStudents"));
+const AdmittedStudentProfile = lazy(() => import("./pages/Dashboard/AdmittedStudentProfile"));
+const AtyodayaDashboard = lazy(() => import("./pages/Dashboard/AntyodayaDashboard"));
+const AddEvent = lazy(() => import("./pages/Dashboard/AddEvent"));
+const EventList = lazy(() => import("./pages/Dashboard/EventList"));
+const EventDetails = lazy(() => import("./pages/Dashboard/EventDetails"));
+const EditEvent = lazy(() => import("./pages/Dashboard/EditEvent"));
+const AddPoc = lazy(() => import("./pages/Dashboard/AddPoc"));
+const ViewPoc = lazy(() => import("./pages/Dashboard/ViewPoc"));
+const AddAtyodayaParticipant = lazy(() => import("./pages/Dashboard/AddAntyodayaParticipant"));
+const ViewParticipants = lazy(() => import("./pages/Dashboard/ViewParticipant"));
+const ParticipantProfile = lazy(() => import("./pages/Dashboard/ParticipantProfile"));
+const Issue = lazy(() => import("./pages/Dashboard/Issue"));
+const Winners = lazy(() => import("./pages/Dashboard/Winners"));
+const StudentScoresPictorially = lazy(() => import("./pages/Performance/StudentScoresPictorially"));
+const PromoteStudents = lazy(() => import("./pages/Dashboard/PromoteStudents"));
+const Email_Service = lazy(() => import("./pages/Dashboard/Email_Service"));
 const App = () => {
   const { loading } = useSelector((state) => state.alerts);
 
@@ -68,7 +70,8 @@ const App = () => {
         {loading ? (
           <Spinner />
         ) : (
-          <Routes>
+          <Suspense fallback={<Spinner />}>
+            <Routes>
             <Route
               path="/Dashboard"
               element={
@@ -446,7 +449,8 @@ const App = () => {
             <Route path="/backToSchool" element={<BackToSchool />} />
             <Route path="/Antyodaya" element={<Antyodaya />} />
             <Route path="*" element={<PageNotFound />} />
-          </Routes>
+            </Routes>
+          </Suspense>
         )}
       </BrowserRouter>
     </>

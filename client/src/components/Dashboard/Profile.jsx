@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setIsClicked } from "../../redux/features/navlinkSlice";
 import { SERVER_URL } from "../../Service/helper";
 import { FiEdit } from "react-icons/fi";
+import { queryClient } from "../../queries/queryClient";
 const Profile = () => {
   const currentColor = "#03C9D7";
   const currentColor2 = "#374151";
@@ -15,6 +16,7 @@ const Profile = () => {
 
   // logout funtion
   const handleLogout = () => {
+    queryClient.clear();
     localStorage.clear();
     navigate("/");
   };

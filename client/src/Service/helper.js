@@ -1,4 +1,6 @@
 import axios from "axios";
+import { queryClient } from "../queries/queryClient";
+import { invalidateForSuccessfulWrite } from "../queries/dashboardQueries";
 
 /**
  * Resolves the server base URL with Ostina-Freight architectural pattern:
@@ -66,7 +68,10 @@ axios.interceptors.request.use(
 let isRedirecting = false;
 
 axios.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    invalidateForSuccessfulWrite(queryClient, response.config);
+    return response;
+  },
   (error) => {
     if (
       typeof window !== "undefined" &&
@@ -79,6 +84,7 @@ axios.interceptors.response.use(
       if (!isLoginRequest) {
         isRedirecting = true;
         localStorage.removeItem("token");
+        queryClient.clear();
         setTimeout(() => {
           window.location.href = "/login";
         }, 100);

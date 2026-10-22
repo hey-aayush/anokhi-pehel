@@ -8,10 +8,18 @@ export default defineConfig({
     host: true,
     proxy: {
       "^/api/v1/user": {
-        target: "http:localhost:8080",
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "^/images": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "^/antyodayaImages": {
+        target: "http://localhost:8080",
         changeOrigin: true,
       },
     },
   },
-  build: { chunkSizeWarningLimit: 4000, },
+  build: { chunkSizeWarningLimit: 4000 },
 });

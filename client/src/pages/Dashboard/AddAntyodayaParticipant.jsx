@@ -30,10 +30,6 @@ const AddAntyodayaParticipant = () => {
   const [eventList, setEventList] = useState([]);
   const [participantList, setParticipantList] = useState([]);
   const [imageSize, setImageSize] = useState("");
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
   const WIDTH = 800;
 
   useEffect(() => {
@@ -603,8 +599,8 @@ const AddAntyodayaParticipant = () => {
                                     <label
                                       htmlFor={`event-${event._id}`}
                                       className={`text-sm ${isQuotaFull && !isChecked
-                                          ? "text-gray-400 cursor-not-allowed"
-                                          : "text-gray-900 cursor-pointer"
+                                        ? "text-gray-400 cursor-not-allowed"
+                                        : "text-gray-900 cursor-pointer"
                                         }`}
                                     >
                                       {event.eventName}
@@ -614,10 +610,10 @@ const AddAntyodayaParticipant = () => {
                                     (credentials.poc || credentials.school) && (
                                       <span
                                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${isQuotaFull
-                                            ? "bg-red-100 text-red-700"
-                                            : danceCount === 2
-                                              ? "bg-amber-100 text-amber-700"
-                                              : "bg-emerald-100 text-emerald-700"
+                                          ? "bg-red-100 text-red-700"
+                                          : danceCount === 2
+                                            ? "bg-amber-100 text-amber-700"
+                                            : "bg-emerald-100 text-emerald-700"
                                           }`}
                                       >
                                         {isQuotaFull

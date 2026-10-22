@@ -27,12 +27,12 @@ jobs:
   # ──────────────────────────────────────────────
   install:
     name: Install Dependencies
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.x'
           cache: 'npm'
@@ -50,13 +50,13 @@ jobs:
 
       # Cache node_modules for downstream jobs.
       - name: Cache client node_modules
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: client/node_modules
           key: client-modules-${{ hashFiles('client/package-lock.json') }}
 
       - name: Cache server node_modules
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: server/node_modules
           key: server-modules-${{ hashFiles('server/package-lock.json') }}
@@ -67,17 +67,17 @@ jobs:
   lint-client:
     name: Lint Client
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.x'
 
       - name: Restore client node_modules
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: client/node_modules
           key: client-modules-${{ hashFiles('client/package-lock.json') }}
@@ -94,17 +94,17 @@ jobs:
   build-client:
     name: Build Client
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.x'
 
       - name: Restore client node_modules
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: client/node_modules
           key: client-modules-${{ hashFiles('client/package-lock.json') }}
@@ -131,17 +131,17 @@ jobs:
   validate-server:
     name: Validate Server
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.x'
 
       - name: Restore server node_modules
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: server/node_modules
           key: server-modules-${{ hashFiles('server/package-lock.json') }}
@@ -200,12 +200,12 @@ jobs:
   security-audit:
     name: Security Audit
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.x'
 
@@ -228,13 +228,13 @@ jobs:
   dependency-review:
     name: Dependency Review
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
 
@@ -247,12 +247,12 @@ jobs:
   integration-build:
     name: Integration Build (Deploy Replica)
     needs: [lint-client, build-client, validate-server]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.x'
           cache: 'npm'

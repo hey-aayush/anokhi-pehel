@@ -1,27 +1,38 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
+#
+# SAFETY: This workflow now waits for the CI Checks workflow to succeed
+# before building and deploying.  Direct pushes to main still trigger
+# CI Checks first via the ci.yml workflow.
 
 name: Build and deploy Node.js app to Azure Web App - anokhi-pehel
 
 on:
-  push:
-    branches:
-      - main
+  # Only deploy after CI checks pass on main.
+  workflow_run:
+    workflows: ["CI Checks"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Only build if CI Checks succeeded (or if manually dispatched).
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.x'
+          cache: 'npm'
 
-      - name: npm install, build, and test
+      - name: npm install and build
         run: |
           npm install
           npm run build
@@ -41,7 +52,7 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -50,7 +61,7 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-      
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
@@ -59,3 +70,17 @@ jobs:
           slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C20F5C3DD4E24D9B91D817486FD18A96 }}
+
+  # Notify on failure — skipped CI means broken code was pushed directly.
+  notify-skipped:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion != 'success'
+    steps:
+      - name: CI Checks failed — deploy skipped
+        run: |
+          echo "::error::Deploy was skipped because CI Checks failed or were cancelled."
+          echo "Fix the issues reported in the CI Checks workflow run:"
+          echo "  ${{ github.event.workflow_run.html_url }}"
+          exit 1

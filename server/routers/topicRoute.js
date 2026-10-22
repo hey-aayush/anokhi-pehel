@@ -1,13 +1,13 @@
 const express = require("express");
 const Topic = require("../models/Topic");
+const { getTopicCovered } = require("../controller/topicController");
 const router = express.Router();
-
 
 // Endpoint to add a topic covered
 router.post("/topicCovered", async (req, res) => {
   try {
     const { classId, date, mentorId, topic, subject } = req.body;
-    // Validate input data (you may want to add more robust validation)
+    // Validate input data
     if (!classId || !date || !mentorId || !topic || !subject) {
       return res.status(400).json({ error: "Missing required data" });
     }
@@ -56,22 +56,6 @@ router.get("/topics", async (req, res) => {
   }
 });
 
-router.get("/topicCovered", async (req, res) => {
-  const { classId } = req.query;
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
-
-  try {
-    // Assuming you have imported the Topic model correctly
-    const topicsCovered = await Topic.find({
-      classId,
-      date: { $gte: new Date(today), $lt: new Date(today + "T23:59:59.999Z") },
-    });
-
-    res.status(200).json({ topicsCovered });
-  } catch (error) {
-    console.error("Error fetching topics covered:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+router.get("/topicCovered", getTopicCovered);
 
 module.exports = router;

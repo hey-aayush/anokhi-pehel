@@ -1,12 +1,20 @@
-const mongoose=require("mongoose");
+const mongoose = require("mongoose");
 
-const connectDB= async ()=>{
-    try {
-        await mongoose.connect(process.env.DB_URL);
-        console.log(`Mongodb connected ${mongoose.connection.host}`.bgGreen.white);
+const connectDB = async () => {
+  try {
+    const dbUrl = process.env.DB_URL;
+    if (!dbUrl) {
+      console.warn("DB_URL environment variable is missing".bgYellow.black);
+      return;
     }
-    catch(error){
-        console.log(`Mongodb Server Issue ${error}`.bgRed.white);
+    await mongoose.connect(dbUrl);
+    console.log(`Mongodb connected: ${mongoose.connection.host}`.bgGreen.white);
+  } catch (error) {
+    console.error(`Mongodb Server Issue: ${error.message}`.bgRed.white);
+    if (process.env.NODE_ENV === "production") {
+      process.exit(1);
     }
-}
-module.exports=connectDB;
+  }
+};
+
+module.exports = connectDB;

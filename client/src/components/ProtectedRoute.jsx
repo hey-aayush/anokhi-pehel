@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import PropTypes from "prop-types";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { hideLoading, showLoading } from "../redux/features/alertSlice";
@@ -9,51 +9,54 @@ import { BASE_URL } from "../../src/Service/helper";
 
 export default function ProtectedRoute({ children }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
 
-  const token = localStorage.getItem("token"); // Retrieve the stored token from localStorage
+  const token = localStorage.getItem("token");
+
   const getUser = async () => {
     try {
       dispatch(showLoading());
       const res = await axios.get(`${BASE_URL}/userData`, {
         headers: {
-          Authorization: token,
+          Authorization: token ? (token.startsWith("Bearer ") ? token : `Bearer ${token}`) : "",
         },
       });
       dispatch(hideLoading());
-      // Check if the response is successful and the user is active
-      if (res.data.success) {
-        const fetchedUser = res.data.data;
 
-        // Check if user is active
+      if (res.data?.success) {
+        const fetchedUser = res.data.data;
         if (fetchedUser.isActive) {
-          dispatch(setUser(fetchedUser)); // Set the user data if active
+          dispatch(setUser(fetchedUser));
         } else {
-          // If user is not active, log them out
           localStorage.clear();
-          return <Navigate to="/login" />;
+          dispatch(setUser(null));
+          navigate("/login");
         }
       } else {
-        // Handle if the response was not successful
         localStorage.clear();
-        return <Navigate to="/login" />;
+        dispatch(setUser(null));
+        navigate("/login");
       }
     } catch (error) {
       localStorage.clear();
+      dispatch(setUser(null));
       dispatch(hideLoading());
-      console.log(error);
+      navigate("/login");
     }
   };
 
   useEffect(() => {
-    if (!user) getUser();
+    if (!user && token) {
+      getUser();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, token]);
 
   if (localStorage.getItem("token")) {
     return children;
   } else {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 }
 

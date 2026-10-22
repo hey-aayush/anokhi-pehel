@@ -5,6 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
+const { verifyUser } = require("../middlewares/auth.middlewares");
 const app = express();
 
 app.use(cors());
@@ -32,9 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static("uploads"));
 
-router.route("/addStudentAdmission").post(upload.single("photo"), async (req, res) => {
+router.route("/addStudentAdmission").post(verifyUser, upload.single("photo"), async (req, res) => {
   const name = req.body.name;
-  const mentorId=req.body.mentorId;
+  const mentorId = req.body.mentorId;
   const className = req.body.class;
   const inAnokhiPehel = req.body.inAnokhiPehel;
   const phone = req.body.phone;
@@ -44,7 +45,7 @@ router.route("/addStudentAdmission").post(upload.single("photo"), async (req, re
   const address = req.body.address;
   const discription = req.body.discription;
   const school = req.body.school;
-  const photo = req.file.filename;
+  const photo = req.file ? req.file.filename : "";
   try {
     const existingStudentAdmission = await Admission.findOne({ aadhar: aadhar });
     if (existingStudentAdmission) {
@@ -70,63 +71,52 @@ router.route("/addStudentAdmission").post(upload.single("photo"), async (req, re
     await newStudentAdmission.save();
     res.json("Student Admission Added");
   } catch (error) {
-    // console.error(error);
     res.json("ALL INPUT IS NOT FILLED");
   }
 });
 
-router.get("/admittedStudentList", async (req, res) => {
-    try {
-      const students = await Admission.find();
-      res.json(students);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
+router.get("/admittedStudentList", verifyUser, async (req, res) => {
+  try {
+    const students = await Admission.find();
+    res.json(students);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
-  
-  router.get("/getAdmittedStudentByUserId", async (req, res) => {
-    // Extract the user ID from the request query parameters
-    const student_id = req.query.studentid;
-  
-    try {
-      // Query the database to retrieve the user based on the ID
-      const student = await Admission.findById(student_id);
-      // Check if the user exists
-      if (!student) {
-        return res.status(404).json({ error: "User not found" });
-      }
-  
-      res.json(student);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
+router.get("/getAdmittedStudentByUserId", verifyUser, async (req, res) => {
+  const student_id = req.query.studentid;
 
-  
-  router.delete("/deleteAdmittedStudents/:id", async (req, res) => {
-    const { id } = req.params;
-  
-    try {
-      // Find the student by ID and delete it
-      const deletedStudent = await Admission.findOneAndDelete({ _id: id });
-  
-      if (deletedStudent) {
-        // If the student was found and deleted, send a success message
-        res
-          .status(200)
-          .json({ message: "Student deleted successfully", deletedStudent });
-      } else {
-        // If no student was found with the provided ID, send a 404 error
-        res.status(404).json({ error: "Student not found" });
-      }
-    } catch (error) {
-      // If an error occurs during the deletion process, send a 500 error
-      res.status(500).json({ error: "Internal server error" });
+  try {
+    const student = await Admission.findById(student_id);
+    if (!student) {
+      return res.status(404).json({ error: "User not found" });
     }
-  });
 
+    res.json(student);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.delete("/deleteAdmittedStudents/:id", verifyUser, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedStudent = await Admission.findOneAndDelete({ _id: id });
+
+    if (deletedStudent) {
+      res
+        .status(200)
+        .json({ message: "Student deleted successfully", deletedStudent });
+    } else {
+      res.status(404).json({ error: "Student not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 module.exports = router;

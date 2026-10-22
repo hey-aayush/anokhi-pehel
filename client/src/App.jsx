@@ -109,7 +109,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            checkEvents
             <Route
               path="/checkEvents"
               element={
@@ -498,7 +497,7 @@ const App = () => {
               path="/Antyodaya"
               element={
                 <PublicRoute>
-                  <Antyodaya />s
+                  <Antyodaya />
                 </PublicRoute>
               }
             />

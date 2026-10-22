@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const { updateMentor } = require("../controller/userController");
+const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
 const app = express();
 
 app.use(cors());
@@ -34,13 +35,13 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded photos
 app.use("/uploads", express.static("uploads"));
 
-router.route("/createUser").post(upload.single("photo"), async (req, res) => {
+router.route("/createUser").post(verifyUser, requireAdmin, upload.single("photo"), async (req, res) => {
   const name = req.body.name;
   const phone = req.body.phone;
   const role = req.body.role;
   const regnumber = req.body.regnumber;
   const email = req.body.email;
-  const photo = req.file.filename;
+  const photo = req.file ? req.file.filename : "";
   const Ppassword = req.body.password;
   const branch = req.body.branch;
   const isActive = req.body.isActive;
@@ -85,10 +86,24 @@ router.route("/createUser").post(upload.single("photo"), async (req, res) => {
 });
 
 // changePassword
-router.route("/changePassword").post(async (req, res) => {
+router.route("/changePassword").post(verifyUser, async (req, res) => {
   const oldPassword = req.body.oldPassword;
   const newPassword = req.body.newPassword;
-  const userId = req.body.userId;
+  const userId = req.body.userId || req.user?._id;
+
+  // Authorization check: User can only change their own password unless admin
+  if (req.user) {
+    const isSelf = req.user._id.toString() === userId.toString();
+    const isAdmin =
+      req.user.isAdmin ||
+      req.user.role === "Coordinator" ||
+      req.user.role === "Final Year Coordinator";
+    if (!isSelf && !isAdmin) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden - Cannot change another user's password" });
+    }
+  }
 
   try {
     const user = await User.findById(userId);
@@ -116,11 +131,11 @@ router.route("/changePassword").post(async (req, res) => {
   }
 });
 
-router.patch("/update-mentor", upload.single("photo"), updateMentor);
+router.patch("/update-mentor", verifyUser, upload.single("photo"), updateMentor);
 
 router.get("/mentorList", async (req, res) => {
   try {
-    const users = await User.find({ role: { $ne: "Alumni" } }); // Exclude users with role "Alumni"
+    const users = await User.find({ role: { $ne: "Alumni" } }).select("-password"); // Exclude password hash
 
     res.json(users);
   } catch (error) {
@@ -129,10 +144,10 @@ router.get("/mentorList", async (req, res) => {
   }
 });
 
-//Route to get the Final Year and Alumni list
+// Route to get the Final Year and Alumni list (public team page - excludes password hash)
 router.get("/teamList", async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-password"); // Exclude password hash
     // Sort users by name in alphabetical order
     users.sort((a, b) => a.name.localeCompare(b.name));
     res.json(users);
@@ -142,7 +157,7 @@ router.get("/teamList", async (req, res) => {
   }
 });
 
-router.delete("/deleteUser/:userId", async (req, res) => {
+router.delete("/deleteUser/:userId", verifyUser, requireAdmin, async (req, res) => {
   try {
     const userId = req.params.userId;
     const deletedUser = await User.findByIdAndDelete(userId);
@@ -156,7 +171,7 @@ router.delete("/deleteUser/:userId", async (req, res) => {
   }
 });
 
-router.post("/updateUserRole", async (req, res) => {
+router.post("/updateUserRole", verifyUser, requireAdmin, async (req, res) => {
   const { id } = req.query; // Get user ID from query parameters
   try {
     // Find the user by ID
@@ -176,6 +191,7 @@ router.post("/updateUserRole", async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
 router.get("/activeStatus/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -190,7 +206,7 @@ router.get("/activeStatus/:userId", async (req, res) => {
   }
 });
 
-router.post("/updateActiveStatus/:userId", async (req, res) => {
+router.post("/updateActiveStatus/:userId", verifyUser, requireAdmin, async (req, res) => {
   try {
     const userId = req.params.userId;
     const user = await User.findById(userId);
@@ -210,9 +226,9 @@ router.post("/updateActiveStatus/:userId", async (req, res) => {
   }
 });
 
-router.get("/getInactiveUsers", async (req, res) => {
+router.get("/getInactiveUsers", verifyUser, requireAdmin, async (req, res) => {
   try {
-    const users = await User.find({ isActive: false });
+    const users = await User.find({ isActive: false }).select("-password");
     res.json(users);
   } catch (error) {
     console.error(error);
@@ -225,8 +241,8 @@ router.get("/getMentorByUserId", async (req, res) => {
   const mentor_id = req.query.mentorId;
 
   try {
-    // Query the database to retrieve the user based on the ID
-    const mentor = await User.findById(mentor_id);
+    // Query the database to retrieve the user based on the ID, excluding password
+    const mentor = await User.findById(mentor_id).select("-password");
 
     if (!mentor) {
       return res.status(404).json({ error: "Mentor not found" });

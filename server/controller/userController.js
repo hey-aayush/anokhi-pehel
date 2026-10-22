@@ -3,7 +3,25 @@ const User = require("../models/User");
 const updateMentor = async (req, res) => {
   try {
     const { field, newValue } = req.body;
-    const mentorId = req.body.userId;
+    const mentorId = req.body.userId || req.user?._id;
+
+    if (!mentorId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Authorization check: User can only update their own profile unless admin
+    if (req.user) {
+      const isSelf = req.user._id.toString() === mentorId.toString();
+      const isAdmin =
+        req.user.isAdmin ||
+        req.user.role === "Coordinator" ||
+        req.user.role === "Final Year Coordinator";
+      if (!isSelf && !isAdmin) {
+        return res
+          .status(403)
+          .json({ error: "Forbidden - Cannot update another mentor's profile" });
+      }
+    }
 
     // Find mentor by ID
     const mentor = await User.findById(mentorId);
@@ -17,8 +35,10 @@ const updateMentor = async (req, res) => {
     } else if (field === "phone") {
       mentor.phone = newValue;
     } else if (field === "instagram") {
+      mentor.socialMedia = mentor.socialMedia || {};
       mentor.socialMedia.instagram = newValue;
     } else if (field === "linkedin") {
+      mentor.socialMedia = mentor.socialMedia || {};
       mentor.socialMedia.linkedin = newValue;
     } else if (field === "branch") {
       mentor.branch = newValue;

@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { BASE_URL } from "../../Service/helper";
+import { queryClient } from "../../queries/queryClient";
 
 const ChangePassword = () => {
   const { user } = useSelector((state) => state.user);
@@ -38,6 +39,7 @@ const ChangePassword = () => {
         console.log(res);
         if (res.data) {
           alert("Password changed successfully");
+          queryClient.clear();
           localStorage.clear();
           navigate("/login");
         }

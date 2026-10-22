@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { BASE_URL } from "../Service/helper";
 import { classes } from "../constants/Dashboard";
+import { dashboardKeys } from "../queries/dashboardQueries";
 
 export const getLocalDateString = (d = new Date()) => {
   const date = new Date(d);
@@ -33,10 +35,6 @@ export const formatDisplayDate = (dateStr) => {
 export const useDashboardData = () => {
   const todayString = useMemo(() => getLocalDateString(), []);
   const [selectedDate, setSelectedDate] = useState(todayString);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [classData, setClassData] = useState([]);
-
   const isToday = selectedDate === todayString;
   const formattedDisplayDate = useMemo(
     () => formatDisplayDate(selectedDate),
@@ -59,20 +57,14 @@ export const useDashboardData = () => {
     [todayString]
   );
 
-  const fetchAllClassData = useCallback(async (dateToFetch = selectedDate) => {
-    setLoading(true);
-    setError(null);
+  const fetchAllClassData = useCallback(async ({ signal }) => {
+    const dateToFetch = selectedDate;
     try {
-      const token = localStorage.getItem("token");
-      const authHeaders = token
-        ? { headers: { Authorization: `Bearer ${token}` } }
-        : {};
-
       // 1. High-performance single consolidated dashboard overview request
       try {
         const overviewRes = await axios.get(
           `${BASE_URL}/dashboardOverview?date=${dateToFetch}`,
-          authHeaders
+          { signal }
         );
 
         if (overviewRes.data && overviewRes.data.countsByClass) {
@@ -117,10 +109,10 @@ export const useDashboardData = () => {
             };
           });
 
-          setClassData(results);
-          return;
+          return results;
         }
       } catch (overviewErr) {
+        if (signal.aborted) throw overviewErr;
         // Fallback gracefully to individual parallel requests if consolidated endpoint is unavailable
         console.warn(
           "Consolidated overview failed, falling back to parallel fetch:",
@@ -133,7 +125,7 @@ export const useDashboardData = () => {
       try {
         const countRes = await axios.get(
           `${BASE_URL}/studentCounts`,
-          authHeaders
+          { signal }
         );
         studentCounts = countRes.data?.countsByClass || {};
       } catch (err) {
@@ -157,7 +149,7 @@ export const useDashboardData = () => {
           try {
             const attRes = await axios.get(
               `${BASE_URL}/attendance?classId=${cls.id}&date=${dateToFetch}`,
-              authHeaders
+              { signal }
             );
             if (attRes.data && typeof attRes.data.totalStudents === "number") {
               total = attRes.data.totalStudents;
@@ -174,7 +166,7 @@ export const useDashboardData = () => {
           try {
             const topicRes = await axios.get(
               `${BASE_URL}/topicCovered?classId=${cls.id}&date=${dateToFetch}`,
-              authHeaders
+              { signal }
             );
             const topicList = topicRes.data?.topicsCovered || [];
             const validTopics = topicList.filter(
@@ -211,18 +203,23 @@ export const useDashboardData = () => {
         })
       );
 
-      setClassData(results);
+      return results;
     } catch (err) {
-      console.error("Error loading dashboard data:", err);
-      setError("Failed to load attendance or class overview data. Please check your connection and retry.");
-    } finally {
-      setLoading(false);
+      if (signal.aborted) throw err;
+      throw new Error("Failed to load attendance or class overview data. Please check your connection and retry.");
     }
   }, [selectedDate]);
 
-  useEffect(() => {
-    fetchAllClassData(selectedDate);
-  }, [fetchAllClassData, selectedDate]);
+  const {
+    data: classData = [],
+    isPending: loading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: dashboardKeys.date(selectedDate),
+    queryFn: fetchAllClassData,
+  });
+  const error = queryError?.message || null;
 
   const metrics = useMemo(() => {
     const totalEnrolled = classData.reduce(
@@ -258,7 +255,7 @@ export const useDashboardData = () => {
     classData,
     loading,
     error,
-    refetch: () => fetchAllClassData(selectedDate),
+    refetch,
     metrics,
     selectedDate,
     setSelectedDate: handleSetSelectedDate,

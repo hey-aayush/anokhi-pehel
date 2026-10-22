@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "install": "cd client && npm install && cd ../server && npm install",
     "build": "cd client && npm run build",
-    "start": "cd server && node index.js"
+    "start": "cd server && node index.js",
+    "lint": "cd client && npm run lint",
+    "validate:server": "find server -name '*.js' -not -path '*/node_modules/*' -exec node --check {} +",
+    "ci": "npm run lint && npm run validate:server && npm run build"
   },
   "repository": {
     "type": "git",

@@ -642,19 +642,8 @@ const AddAntyodayaParticipant = () => {
             </button>
           </div>
         </form>
-        <ErrorMessageModel
-          isOpen={showError}
-          onClose={() => setShowError(false)}
-          onRetry={() => setShowError(false)}
-          title="Error"
-          message={errorMessage}
-        />
-        {showSuccess && (
-          <SuccessMessageModel
-            message="Participant submitted successfully!"
-            onClose={() => setShowSuccess(false)}
-          />
-        )}
+
+
       </div>
     </DashboardLayout>
   );

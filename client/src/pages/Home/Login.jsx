@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { message } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Button from "../../components/Home/Button";
 import { logo } from "../../assets/Home";
-import { BASE_URL } from "../../../src/Service/helper";
+import { authService } from "../../Service/authService";
+import { getErrorMessage } from "../../Service/apiClient";
 import { showLoading, hideLoading } from "../../redux/features/alertSlice";
 import { useDispatch } from "react-redux";
 export default function Login() {
@@ -18,27 +18,23 @@ export default function Login() {
   };
   const handleSubmit = async () => {
     try {
-      // console.log(credentials);
       dispatch(showLoading());
-      const response = await axios.post(`${BASE_URL}/login`, credentials);
-      // console.log(response.data);
-      // window.location.reload();
+      const data = await authService.login(credentials);
       dispatch(hideLoading());
-      if (response.data.success) {
-        localStorage.setItem("token", response.data.authToken);
+      if (data.success) {
+        localStorage.setItem("token", data.authToken);
         message.success("Login successfully!!!");
-         navigate("/Dashboard");
+        navigate("/Dashboard");
       } else {
-        message.error(response.data.error);
+        message.error(data.error || "Login failed");
         navigate("/login");
       }
     } catch (err) {
-      console.log(err);
-      message.error("Login failed");
+      const errMsg = getErrorMessage(err, "Login failed");
+      message.error(errMsg);
       navigate("/login");
     } finally {
       dispatch(hideLoading());
-      // window.location.reload();
     }
   };
 

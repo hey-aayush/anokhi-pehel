@@ -13,7 +13,7 @@ const {
   changeStatus,
   getStudentCounts,
 } = require("../controller/studentController");
-const verifyUser = require("../middlewares/auth.middlewares.js");
+const { verifyUser } = require("../middlewares/auth.middlewares.js");
 
 app.use(cors());
 
@@ -40,7 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static("uploads"));
 
-router.route("/addStudent").post(upload.single("photo"), async (req, res) => {
+router.route("/addStudent").post(verifyUser, upload.single("photo"), async (req, res) => {
   const name = req.body.name;
   const className = req.body.class;
   const phone = req.body.phone;
@@ -50,7 +50,7 @@ router.route("/addStudent").post(upload.single("photo"), async (req, res) => {
   const aadhar = req.body.aadhar;
   const address = req.body.address;
   const school = req.body.school;
-  const photo = req.file.filename;
+  const photo = req.file ? req.file.filename : "";
 
   try {
     // Check if student with the same Aadhar number already exists
@@ -77,12 +77,11 @@ router.route("/addStudent").post(upload.single("photo"), async (req, res) => {
     await newStudent.save();
     res.json("Student Added");
   } catch (error) {
-    // console.error(error);
     res.json("ALL INPUT IS NOT FILLED");
   }
 });
 
-router.get("/studentList", async (req, res) => {
+router.get("/studentList", verifyUser, async (req, res) => {
   try {
     const students = await Student.find();
     res.json(students);
@@ -92,17 +91,11 @@ router.get("/studentList", async (req, res) => {
   }
 });
 
-
-
-
-router.get("/getstudentByUserId", async (req, res) => {
-  // Extract the user ID from the request query parameters
+router.get("/getstudentByUserId", verifyUser, async (req, res) => {
   const student_id = req.query.studentid;
 
   try {
-    // Query the database to retrieve the user based on the ID
     const student = await Student.findById(student_id);
-    // Check if the user exists
     if (!student) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -114,7 +107,7 @@ router.get("/getstudentByUserId", async (req, res) => {
   }
 });
 
-router.get("/getMarksByUserId", async (req, res) => {
+router.get("/getMarksByUserId", verifyUser, async (req, res) => {
   try {
     const studentId = req.query.studentid;
     const marks = await Test.find({ "score.studentId": studentId });
@@ -130,30 +123,25 @@ router.get("/getMarksByUserId", async (req, res) => {
   }
 });
 
-router.get("/students", async (req, res) => {
+router.get("/students", verifyUser, async (req, res) => {
   try {
-    const selectedClass = req.query.class; // Get the selected class from the query parameters
+    const selectedClass = req.query.class;
 
-    // Query the database to find students by the className
     const students = await Student.find({ className: selectedClass });
 
-    res.json(students); // Send the list of students as a JSON response
+    res.json(students);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-router.post("/getStudentByUserId", async (req, res) => {
-  // Extract the user ID from the request query parameters
+router.post("/getStudentByUserId", verifyUser, async (req, res) => {
   try {
-    // Extract the studentIds from the request body
     const { studentIds } = req.body;
 
-    // Query the database to retrieve student names based on IDs
     const students = await Student.find({ _id: { $in: studentIds } });
 
-    // Extract student names from the retrieved data
     const studentNames = students.map((student) => ({
       _id: student._id,
       name: student.name,
@@ -165,8 +153,9 @@ router.post("/getStudentByUserId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 // Route to update student details by ID
-router.put("/updateStudent", async (req, res) => {
+router.put("/updateStudent", verifyUser, async (req, res) => {
   try {
     const id = req.body._id;
     const updatedStudent = await Student.findByIdAndUpdate(id, req.body, {
@@ -182,31 +171,27 @@ router.put("/updateStudent", async (req, res) => {
   }
 });
 
-router.delete("/deleteStudents/:id", async (req, res) => {
+router.delete("/deleteStudents/:id", verifyUser, async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Find the student by ID and delete it
     const deletedStudent = await Student.findOneAndDelete({ _id: id });
 
     if (deletedStudent) {
-      // If the student was found and deleted, send a success message
       res
         .status(200)
         .json({ message: "Student deleted successfully", deletedStudent });
     } else {
-      // If no student was found with the provided ID, send a 404 error
       res.status(404).json({ error: "Student not found" });
     }
   } catch (error) {
-    // If an error occurs during the deletion process, send a 500 error
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-router.post("/studentTable", getStudentsFromLastAttendance); //Route to get students details of any class for a particular month
-router.put("/promoteStudent/:id", promoteStudent);  //Route to promote the students
-router.put("/updateStudentStatus/:id", changeStatus); //Route to update student status(active or inactive)
+router.post("/studentTable", verifyUser, getStudentsFromLastAttendance);
+router.put("/promoteStudent/:id", verifyUser, promoteStudent);
+router.put("/updateStudentStatus/:id", verifyUser, changeStatus);
 router.get("/studentCounts", verifyUser, getStudentCounts);
 
 module.exports = router;

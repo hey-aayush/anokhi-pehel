@@ -62,6 +62,13 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
+      - name: Inject JWT_SECRET into server environment
+        run: |
+          if [ -n "${{ secrets.JWT_SECRET }}" ]; then
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          fi
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2

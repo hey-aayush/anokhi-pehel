@@ -22,4 +22,21 @@ export default defineConfig({
     },
   },
   build: { chunkSizeWarningLimit: 4000 },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.js"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      include: ["src/**/*.{js,jsx}"],
+      exclude: [
+        "node_modules/",
+        "dist/",
+        "src/test/",
+        "src/main.jsx",
+        "src/assets/",
+      ],
+    },
+  },
 });

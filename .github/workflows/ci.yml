@@ -87,7 +87,56 @@ jobs:
         run: npx eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0
 
   # ──────────────────────────────────────────────
-  # 3. Build the client (Vite production build)
+  # 3. Unit tests (Client & Server)
+  #    Runs tests and outputs full code coverage reports.
+  #    Blocks downstream build and deployment if any test fails.
+  # ──────────────────────────────────────────────
+  test-client:
+    name: Unit Tests & Coverage (Client)
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Restore client node_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: client/node_modules
+          key: client-modules-${{ hashFiles('client/package-lock.json') }}
+
+      - name: Run client tests and print coverage
+        working-directory: client
+        run: npm test
+
+  test-server:
+    name: Unit Tests & Coverage (Server)
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Restore server node_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: server/node_modules
+          key: server-modules-${{ hashFiles('server/package-lock.json') }}
+
+      - name: Run server tests and print coverage
+        working-directory: server
+        run: npm test
+
+  # ──────────────────────────────────────────────
+  # 4. Build the client (Vite production build)
   #    This is the single most important check —
   #    it mirrors what the deploy workflow does.
   # ──────────────────────────────────────────────
@@ -246,7 +295,7 @@ jobs:
   # ──────────────────────────────────────────────
   integration-build:
     name: Integration Build (Deploy Replica)
-    needs: [lint-client, build-client, validate-server]
+    needs: [lint-client, test-client, test-server, build-client, validate-server]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

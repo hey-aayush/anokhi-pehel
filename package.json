@@ -4,13 +4,15 @@
   "description": "anokhi pehel website repository",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "npm test --prefix client",
+    "test:server": "npm test --prefix server",
     "install": "cd client && npm install && cd ../server && npm install",
     "build": "cd client && npm run build",
     "start": "cd server && node index.js",
     "lint": "cd client && npm run lint",
     "validate:server": "find server -name '*.js' -not -path '*/node_modules/*' -exec node --check {} +",
-    "ci": "npm run lint && npm run validate:server && npm run build"
+    "ci": "npm run lint && npm run test && npm run validate:server && npm run build"
   },
   "repository": {
     "type": "git",

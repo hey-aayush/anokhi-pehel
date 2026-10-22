@@ -40,8 +40,12 @@ const verifyToken = (token) => {
 };
 
 // Generate a temporary token valid for only 30 minutes (e.g., password reset)
-const generateTempToken = (userId) => {
-  return jwt.sign({ user: { id: userId } }, JWT_KEY, { expiresIn: "30m" });
+const generateTempToken = (userId, nonce = "") => {
+  return jwt.sign(
+    { user: { id: userId }, nonce, purpose: "password_reset" },
+    JWT_KEY,
+    { expiresIn: "30m" }
+  );
 };
 
 module.exports = { generateToken, verifyToken, generateTempToken, JWT_KEY };

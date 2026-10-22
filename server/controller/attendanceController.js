@@ -1,5 +1,7 @@
 const moment = require("moment");
 const Attendance = require("../models/Attendance");
+const Student = require("../models/Student");
+const Topic = require("../models/Topic");
 
 const parseTargetDate = (date) => {
   if (!date || date === "undefined" || date === "null") {
@@ -178,10 +180,77 @@ const getAttendanceTotal = async (req, res) => {
   }
 };
 
+const getDashboardOverview = async (req, res) => {
+  const { date } = req.query;
+  const targetDate = parseTargetDate(date);
+  const startOfDay = new Date(targetDate + "T00:00:00.000Z");
+  const endOfDay = new Date(targetDate + "T23:59:59.999Z");
+
+  try {
+    const [classCounts, attendanceRecords, topicsCovered] = await Promise.all([
+      Student.aggregate([
+        { $match: { active: { $ne: false } } },
+        { $group: { _id: "$className", count: { $sum: 1 } } },
+      ]),
+      Attendance.find({
+        date: { $gte: startOfDay, $lte: endOfDay },
+      }).lean(),
+      Topic.find({
+        date: { $gte: startOfDay, $lte: endOfDay },
+      }).lean(),
+    ]);
+
+    const countsByClass = {};
+    classCounts.forEach((item) => {
+      if (item._id) {
+        countsByClass[item._id] = item.count;
+      }
+    });
+
+    const attendanceByClass = {};
+    attendanceRecords.forEach((record) => {
+      const classId = record.classId;
+      if (!attendanceByClass[classId]) {
+        attendanceByClass[classId] = { total: 0, present: 0 };
+      }
+      const attList = Array.isArray(record.attendance) ? record.attendance : [];
+      attendanceByClass[classId].total += attList.length;
+      attendanceByClass[classId].present += attList.filter(
+        (item) => item.status === "present"
+      ).length;
+    });
+
+    const topicsByClass = {};
+    topicsCovered.forEach((item) => {
+      const classId = item.classId;
+      if (!topicsByClass[classId]) {
+        topicsByClass[classId] = [];
+      }
+      if (item.topic && item.topic.trim()) {
+        topicsByClass[classId].push({
+          topic: item.topic.trim(),
+          subject: item.subject ? item.subject.trim() : "",
+        });
+      }
+    });
+
+    res.status(200).json({
+      targetDate,
+      countsByClass,
+      attendanceByClass,
+      topicsByClass,
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard overview:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   monthlyAttendance,
   lastFiveDaysAttendance,
   getAttendance,
   getAttendanceTotal,
+  getDashboardOverview,
   parseTargetDate,
 };

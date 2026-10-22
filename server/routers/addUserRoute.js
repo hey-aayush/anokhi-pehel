@@ -30,7 +30,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-let upload = multer({ storage, fileFilter });
+let upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 app.use(express.urlencoded({ extended: true }));
 // Serve uploaded photos
 app.use("/uploads", express.static("uploads"));
@@ -192,7 +196,7 @@ router.post("/updateUserRole", verifyUser, requireAdmin, async (req, res) => {
   }
 });
 
-router.get("/activeStatus/:userId", async (req, res) => {
+router.get("/activeStatus/:userId", verifyUser, async (req, res) => {
   try {
     const userId = req.params.userId;
     const user = await User.findById(userId);
@@ -236,7 +240,7 @@ router.get("/getInactiveUsers", verifyUser, requireAdmin, async (req, res) => {
   }
 });
 
-router.get("/getMentorByUserId", async (req, res) => {
+router.get("/getMentorByUserId", verifyUser, async (req, res) => {
   // Extract the user ID from the request query parameters
   const mentor_id = req.query.mentorId;
 

@@ -1,10 +1,11 @@
 const express = require("express");
 const Topic = require("../models/Topic");
 const { getTopicCovered } = require("../controller/topicController");
+const { verifyUser } = require("../middlewares/auth.middlewares");
 const router = express.Router();
 
 // Endpoint to add a topic covered
-router.post("/topicCovered", async (req, res) => {
+router.post("/topicCovered", verifyUser, async (req, res) => {
   try {
     const { classId, date, mentorId, topic, subject } = req.body;
     // Validate input data
@@ -43,7 +44,7 @@ router.post("/topicCovered", async (req, res) => {
   }
 });
 
-router.get("/topics", async (req, res) => {
+router.get("/topics", verifyUser, async (req, res) => {
   try {
     const { classId, subject } = req.query;
 
@@ -56,6 +57,6 @@ router.get("/topics", async (req, res) => {
   }
 });
 
-router.get("/topicCovered", getTopicCovered);
+router.get("/topicCovered", verifyUser, getTopicCovered);
 
 module.exports = router;

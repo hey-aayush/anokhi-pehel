@@ -20,4 +20,6 @@ const POCSchema = new Schema({
   },
 });
 
+POCSchema.index({ year: 1, school: 1 });
+
 module.exports = mongoose.model("POC", POCSchema);

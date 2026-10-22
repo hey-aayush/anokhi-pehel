@@ -66,13 +66,10 @@ const sendMailsFromSheet = async (req, res) => {
       dateHeader     // recruitment only (new)
     } = req.body;
 
-    console.log(req.user);
-    const user_id = req.user.user.id;
-    //check if it is admin or not
-
-    const response_user = await User.findById(user_id);
-    console.log(response_user);
-    if(!response_user.isAdmin)return res.status(401).json({message:"Unauthorized Access", error: "You are not authorized to send the mail."})
+    const user_id = req.user?._id || req.userId || req.user?.id;
+    if (!user_id) {
+      return res.status(401).json({ message: "Unauthorized Access", error: "You are not authorized to send the mail." });
+    }
 
     if (
       !sheetUrl ||

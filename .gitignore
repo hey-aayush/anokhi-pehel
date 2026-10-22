@@ -3,3 +3,8 @@
 coverage/
 **/coverage/
 *.log
+.DS_Store
+release.zip
+server/papers/*
+!server/papers/.gitkeep
+client/dist/

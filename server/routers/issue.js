@@ -1,10 +1,11 @@
 const express = require("express");
 const Issue = require("../models/Issue"); // Assuming the model is in the models folder
+const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
 
 const router = express.Router();
 
 // Issue creation route
-router.post('/issues', async (req, res) => {
+router.post('/issues', verifyUser, async (req, res) => {
   const { userId, userName, userRegNumber, issue } = req.body;
 console.log(req.body);
   try {
@@ -31,7 +32,7 @@ console.log(req.body);
   }
 });
 
-router.get("/fetchIssues", async (req, res) => {
+router.get("/fetchIssues", verifyUser, async (req, res) => {
     try {
         const issues = await Issue.find(); // Retrieve all issues from the database
         res.status(200).json(issues); // Send issues as a JSON response
@@ -42,7 +43,7 @@ router.get("/fetchIssues", async (req, res) => {
         });
     }
 });
-router.put('/solveIssues/:id', async (req, res) => {
+router.put('/solveIssues/:id', verifyUser, async (req, res) => {
     const { status } = req.body;
     try {
       const updatedIssue = await Issue.findByIdAndUpdate(
@@ -61,7 +62,7 @@ router.put('/solveIssues/:id', async (req, res) => {
       });
     }
   });
-  router.delete('/deleteIssues/:id', async (req, res) => {
+  router.delete('/deleteIssues/:id', verifyUser, requireAdmin, async (req, res) => {
     const { id } = req.params;
   
     try {

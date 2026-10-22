@@ -2,19 +2,15 @@ const express = require("express");
 const Event = require("../models/Event");
 const Participant = require("../models/AntyodayaParticipant"); // Assuming the Event schema is located in models/Event.js
 const router = express.Router();
-const cors = require("cors");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const POC = require("../models/PointOfContact");
 const { addParticipants } = require("../controller/antyodayaController");
-// Middleware setup
-const app = express();
-app.use(cors());
-app.use(express.json()); // To parse incoming JSON data
+const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
 
 // Route to add a new event
-router.post("/addEvent", async (req, res) => {
+router.post("/addEvent", verifyUser, requireAdmin, async (req, res) => {
 //   const { eventName, eventDepartment, location, startTime,endTime, coordinator, phone, regNumber, festName } = req.body;
   try {
     
@@ -54,7 +50,7 @@ router.get("/getEventByEventId", async (req, res) => {
     }
   });
   
-  router.delete("/deleteEvent", async (req, res) => {
+  router.delete("/deleteEvent", verifyUser, requireAdmin, async (req, res) => {
     const { eventId } = req.query; // Get eventId from request parameters
 //    console.log(eventId);
     try {
@@ -76,7 +72,7 @@ router.get("/getEventByEventId", async (req, res) => {
   });
 
 
-  router.post("/editEvent", async (req, res) => {
+  router.post("/editEvent", verifyUser, requireAdmin, async (req, res) => {
     const {
       eventId,
       eventName,
@@ -168,7 +164,7 @@ router.get("/getEventByEventId", async (req, res) => {
 
 
 
-  router.post("/addPoc", async (req, res) => {
+  router.post("/addPoc", verifyUser, requireAdmin, async (req, res) => {
     try {
       const { nameOfPoc, contact, school } = req.body;
   
@@ -195,7 +191,7 @@ router.get("/getEventByEventId", async (req, res) => {
   });
 
 
-  router.get("/pocList", async (req, res) => {
+  router.get("/pocList", verifyUser, async (req, res) => {
     try {
       const pocList = await POC.find(); // Fetch all POCs from the database
       res.status(200).json(pocList);
@@ -205,7 +201,7 @@ router.get("/getEventByEventId", async (req, res) => {
     }
   });
 
-  router.delete("/pocList/:id", async (req, res) => {
+  router.delete("/pocList/:id", verifyUser, requireAdmin, async (req, res) => {
     try {
       const deletedPoc = await POC.findByIdAndDelete(req.params.id);
       if (!deletedPoc) {
@@ -217,7 +213,7 @@ router.get("/getEventByEventId", async (req, res) => {
     }
   });
 
-  router.get('/getPocById', async (req, res) => {
+  router.get('/getPocById', verifyUser, async (req, res) => {
     const { pocId } = req.query;
 //     const event = await Event.findById(eventId);
     // console.log(pocId);
@@ -257,15 +253,16 @@ router.get("/getEventByEventId", async (req, res) => {
     }
   };
   
-  let upload = multer({ storage, fileFilter });
-  app.use(express.urlencoded({ extended: true }));
-  
-  app.use("/uploads", express.static("uploads"));
+  let upload = multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  });
 
-  router.post("/addParticipants", upload.single("photo"), addParticipants);
+  router.post("/addParticipants", verifyUser, upload.single("photo"), addParticipants);
   
   
-  router.post("/getParticipantsByIds", async (req, res) => {
+  router.post("/getParticipantsByIds", verifyUser, async (req, res) => {
     try {
       const { ids } = req.body;  // Expecting an array of participant IDs
       const participants = await Participant.find({ '_id': { $in: ids } });
@@ -276,10 +273,11 @@ router.get("/getEventByEventId", async (req, res) => {
     }
   });
   
-  router.get("/participantList", async (req, res) => {
+  router.get("/participantList", verifyUser, async (req, res) => {
     try {
-      const students = await Participant.find();
-    //   console.log(students);
+      const { year } = req.query;
+      const filter = year && !isNaN(Number(year)) ? { year: Number(year) } : {};
+      const students = await Participant.find(filter).lean();
       res.json(students);
     } catch (error) {
       console.error(error);
@@ -287,7 +285,7 @@ router.get("/getEventByEventId", async (req, res) => {
     }
   });
 
-  router.delete("/deleteParticipants/:studentId", async (req, res) => {
+  router.delete("/deleteParticipants/:studentId", verifyUser, requireAdmin, async (req, res) => {
     const { studentId } = req.params;
   
     try {
@@ -308,7 +306,7 @@ router.get("/getEventByEventId", async (req, res) => {
 
 
   
-router.get("/getParticipantByUserId", async (req, res) => {
+router.get("/getParticipantByUserId", verifyUser, async (req, res) => {
   // Extract the user ID from the request query parameters
   const student_id = req.query.studentid;
 

@@ -21,7 +21,36 @@ export default defineConfig({
       },
     },
   },
-  build: { chunkSizeWarningLimit: 4000 },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("react") ||
+              id.includes("react-dom") ||
+              id.includes("react-router-dom") ||
+              id.includes("react-redux") ||
+              id.includes("@reduxjs/toolkit")
+            ) {
+              return "vendor-react";
+            }
+            if (id.includes("antd") || id.includes("@ant-design") || id.includes("rc-")) {
+              return "vendor-antd";
+            }
+            if (id.includes("chart.js") || id.includes("react-chartjs-2")) {
+              return "vendor-charts";
+            }
+            if (id.includes("jspdf") || id.includes("xlsx") || id.includes("html2canvas")) {
+              return "vendor-export";
+            }
+            return "vendor";
+          }
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",

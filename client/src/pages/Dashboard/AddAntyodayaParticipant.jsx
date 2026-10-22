@@ -32,12 +32,12 @@ const AddAntyodayaParticipant = () => {
     // Fetch POC, Event, and Participant data on component mount
     const fetchPocAndEventData = async () => {
       try {
+        const currentYear = new Date().getFullYear();
         const [pocResponse, eventResponse, participantResponse] = await Promise.all([
           axios.get(`${BASE_URL}/pocList`),
           axios.get(`${BASE_URL}/getEvents`),
-          axios.get(`${BASE_URL}/participantList`),
+          axios.get(`${BASE_URL}/participantList?year=${currentYear}`),
         ]);
-        const currentYear = new Date().getFullYear();
 
         // Filter POCs and Events by current year
         const currentYearPocs = (pocResponse.data || []).filter(
@@ -217,8 +217,9 @@ const AddAntyodayaParticipant = () => {
         });
         setImageSize("");
         try {
+          const currentYear = new Date().getFullYear();
           const updatedParticipants = await axios.get(
-            `${BASE_URL}/participantList`
+            `${BASE_URL}/participantList?year=${currentYear}`
           );
           setParticipantList(updatedParticipants.data || []);
         } catch (fetchErr) {

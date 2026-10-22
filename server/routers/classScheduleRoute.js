@@ -1,8 +1,9 @@
 const express = require("express");
 const ClassSchedule = require("../models/ClassSchedule");
+const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
 const router = express.Router();
 
-router.post("/addClassSchedule", async (req, res) => {
+router.post("/addClassSchedule", verifyUser, requireAdmin, async (req, res) => {
   try {
     const classScheduleData = req.body;
 
@@ -26,7 +27,7 @@ router.post("/addClassSchedule", async (req, res) => {
   }
 });
 
-router.get("/getClassSchedule", async (req, res) => {
+router.get("/getClassSchedule", verifyUser, async (req, res) => {
   try {
     const classScheduleData = await ClassSchedule.find(); // Fetch all schedule documents
     res.status(200).json(classScheduleData);

@@ -5,7 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
-const { verifyUser } = require("../middlewares/auth.middlewares");
+const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
 const app = express();
 
 app.use(cors());
@@ -28,7 +28,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-let upload = multer({ storage, fileFilter });
+let upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static("uploads"));
@@ -101,7 +105,7 @@ router.get("/getAdmittedStudentByUserId", verifyUser, async (req, res) => {
   }
 });
 
-router.delete("/deleteAdmittedStudents/:id", verifyUser, async (req, res) => {
+router.delete("/deleteAdmittedStudents/:id", verifyUser, requireAdmin, async (req, res) => {
   const { id } = req.params;
 
   try {

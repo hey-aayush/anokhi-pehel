@@ -1,15 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const Attendance = require("../models/Attendance");
+const { verifyUser } = require("../middlewares/auth.middlewares");
 const {
   monthlyAttendance,
   lastFiveDaysAttendance,
   getAttendance,
   getAttendanceTotal,
+  getDashboardOverview,
   parseTargetDate,
 } = require("../controller/attendanceController");
 
-router.post("/submitAttendance", async (req, res) => {
+router.post("/submitAttendance", verifyUser, async (req, res) => {
   try {
     const { classId, date, mentorId, attendanceRecords } = req.body;
 
@@ -79,11 +81,13 @@ router.post("/submitAttendance", async (req, res) => {
   }
 });
 
-router.get("/attendance", getAttendance);
+router.get("/attendance", verifyUser, getAttendance);
 
-router.get("/attendanceTotal", getAttendanceTotal);
+router.get("/attendanceTotal", verifyUser, getAttendanceTotal);
 
-router.get("/totalAttendance", async (req, res) => {
+router.get("/dashboardOverview", verifyUser, getDashboardOverview);
+
+router.get("/totalAttendance", verifyUser, async (req, res) => {
   const { classId, date } = req.query;
   const targetDate = parseTargetDate(date);
 
@@ -104,8 +108,8 @@ router.get("/totalAttendance", async (req, res) => {
   }
 });
 
-router.get("/lastFiveDaysAttendance", lastFiveDaysAttendance); // Route to get last five days attendance for any class
+router.get("/lastFiveDaysAttendance", verifyUser, lastFiveDaysAttendance); // Route to get last five days attendance for any class
 
-router.get("/monthTotalAttendance", monthlyAttendance); // Route to get monthly attendance for any class for a particular month
+router.get("/monthTotalAttendance", verifyUser, monthlyAttendance); // Route to get monthly attendance for any class for a particular month
 
 module.exports = router;

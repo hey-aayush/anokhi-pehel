@@ -1,4 +1,5 @@
 import "../../styles/DashboardStyles.css";
+import PropTypes from "prop-types";
 import { FiSettings } from "react-icons/fi";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
@@ -47,6 +48,10 @@ const DashboardLayout = ({ children }) => {
       </div>
     </div>
   );
+};
+
+DashboardLayout.propTypes = {
+  children: PropTypes.node,
 };
 
 export default DashboardLayout;

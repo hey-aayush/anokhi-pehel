@@ -1,8 +1,8 @@
 import styles from "../../style";
 import  "../../style.css";
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import HomePageLayout from "../../components/Home/HomePageLayout";
-import { Antyodayavid, AboutAntyodaya, AboutAntyodayaFrame } from "../../assets/Home"; // Ensure this path is correct
+import { Antyodayavid } from "../../assets/Home"; // Ensure this path is correct
 import { event,event1,event2,event3,event4} from "../../assets/Home/AntyodayaSponser/AtyodayaEvent";
 import Slider from "react-slick";
 import {bob,alumni,ieee,umeed,radio,vinayak,mtt} from "../../assets/Home/AntyodayaSponser";
@@ -128,7 +128,7 @@ const Antodaya = () => {
             <div className="border-2 border-teal-200 p-2 h-full rounded-2xl bg-stone-50 hover:bg-teal-400 shadow-inner ">
               <p className="leading-relaxed p-4 md:p-4 lg:p-12 font-base md:font-medium text-center hover: sm:text-xl text-base">
                 Antyodaya is the annual festival of Anokhi पहल, celebrated every
-                year on Children's Day at MNNIT since 2018. The festival
+                year on Children&apos;s Day at MNNIT since 2018. The festival
                 includes a variety of competitions, such as science exhibitions,
                 debates, quizzes, and a range of cultural activities and
                 performances.

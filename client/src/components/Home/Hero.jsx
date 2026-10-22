@@ -1,5 +1,5 @@
 import styles from "../../style";
-import { study, class1, ANOKHIPEHEL } from "../../assets/Home";
+import { ANOKHIPEHEL } from "../../assets/Home";
 
 const Hero = () => {
   return (

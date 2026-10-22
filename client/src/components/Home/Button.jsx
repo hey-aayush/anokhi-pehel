@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const Button = ({ styles, text, func }) => {
   return (
@@ -10,6 +10,12 @@ const Button = ({ styles, text, func }) => {
       {text}
     </button>
   );
+};
+
+Button.propTypes = {
+  styles: PropTypes.string,
+  text: PropTypes.string,
+  func: PropTypes.func,
 };
 
 export default Button;

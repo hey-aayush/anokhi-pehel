@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import HomePageLayout from "../../components/Home/HomePageLayout";
 import axios from "axios";
 import { BASE_URL, SERVER_URL } from "../../Service/helper";

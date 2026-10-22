@@ -13,7 +13,7 @@ import { FaPlus } from "react-icons/fa6";
 import { FaEye } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
-import { classes, locations } from "../../constants/Dashboard";
+import { classes } from "../../constants/Dashboard";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -59,13 +59,6 @@ const Participants = () => {
       setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
   };
 
-  //filter by location
-  const toggleFilterByLocationDropdown = () => {
-    setFilterByLOcationDropdownOpen(!isFilterByLocationDropdownOpen);
-    if (isFilterByClassDropdownOpen)
-      setFilterByClassDropdownOpen(!isFilterByClassDropdownOpen);
-    if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
-  };
 
   const toggleFilterBySessionDropdown = () => {
     setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
@@ -130,24 +123,8 @@ const Participants = () => {
   };
 
   // State to hold selected locations
-  const [selectedLocations, setSelectedLocations] = useState([]);
+  const [selectedLocations] = useState([]);
 
-  // Update selected locations when a checkbox is clicked
-  const handleLocationCheckboxChange = (e) => {
-    const { id } = e.target;
-    const isChecked = e.target.checked;
-
-    if (isChecked) {
-      setSelectedLocations((prevSelectedLocations) => [
-        ...prevSelectedLocations,
-        id,
-      ]);
-    } else {
-      setSelectedLocations((prevSelectedLocations) =>
-        prevSelectedLocations.filter((loc) => loc !== id)
-      );
-    }
-  };
 
   useEffect(() => {
     // This code block will execute whenever selectedLocations changes
@@ -204,10 +181,6 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
   // Calculate the indices for the current page
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredStudents.slice(
-    indexOfFirstUser,
-    indexOfLastUser
-  );
 
   // Function to handle page change
   const handlePageChange = (pageNumber) => {

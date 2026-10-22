@@ -1,9 +1,6 @@
 import styles from "../../style";
-import Button from "./Button";
-import { useNavigate } from "react-router-dom";
 
 const ContributeUs = () => {
-  const navigate = useNavigate();
   return (
     <section
       className={`${styles.flexCenter} ${styles.marginY} ${styles.padding} sm:flex-row flex-col bg-gray-200 rounded-[20px] box-shadow`}

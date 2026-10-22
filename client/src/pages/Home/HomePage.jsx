@@ -1,5 +1,5 @@
 import styles from "../../style";
-import { Hero, Stats, Footer, CardDeal, Impact } from "../../components/Home";
+import { Hero, Stats, CardDeal } from "../../components/Home";
 import HomePageLayout from "../../components/Home/HomePageLayout";
 import Testimonials from "../../components/Home/Testimonials";
 import Billing from "../../components/Home/Billing";

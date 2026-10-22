@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import { BASE_URL, SERVER_URL } from "../Service/helper";
 
@@ -131,6 +132,14 @@ const StudentProfileModal = ({ student, isOpen, onClose }) => {
             </div>
         </div>
     );
+};
+
+StudentProfileModal.propTypes = {
+    student: PropTypes.shape({
+        _id: PropTypes.string,
+    }),
+    isOpen: PropTypes.bool,
+    onClose: PropTypes.func,
 };
 
 export default StudentProfileModal;

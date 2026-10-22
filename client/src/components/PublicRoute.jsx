@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { Navigate } from "react-router-dom";
 
 export default function PublicRoute({ children }) {
@@ -8,3 +9,7 @@ export default function PublicRoute({ children }) {
     return children;
   }
 }
+
+PublicRoute.propTypes = {
+  children: PropTypes.node,
+};

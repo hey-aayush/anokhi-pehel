@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const Header = ({ category, title }) => {
   return (
@@ -7,6 +7,11 @@ const Header = ({ category, title }) => {
       <p className="text-xl font-bold tracking-tight text-slate-900">{title}</p>
     </div>
   );
+};
+
+Header.propTypes = {
+  category: PropTypes.string,
+  title: PropTypes.string,
 };
 
 export default Header;

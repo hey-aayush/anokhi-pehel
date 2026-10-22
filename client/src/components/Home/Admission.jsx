@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "../../style";
 import { useNavigate } from "react-router-dom";
 import { BackToSchool } from "../../assets/Home"; // Assuming this is the correct image path

@@ -1,5 +1,3 @@
-import React from "react";
-
 const AboutUs = () => (
   <section className="py-2 bg-gray-100 min-h-screen border-2 border-teal-200 relative ${styles.flexStart} overflow-hidden rounded-lg mb-20" style={{
     borderRadius: "40px", // Smooth curves
@@ -43,7 +41,7 @@ const AboutUs = () => (
       <p className="font-poppins text-lg sm:text-xl text-gray-900 leading-7">
         Student volunteers from MNNIT visit various locations daily and personally escort 
         students to classes. These volunteers dedicate two hours to teaching, covering 
-        much more than what's found in textbooks. Our focus extends beyond academics, 
+        much more than what&apos;s found in textbooks. Our focus extends beyond academics, 
         instilling moral and human values in our students.
       </p>
     </div>

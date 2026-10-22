@@ -16,7 +16,7 @@ export default function Login() {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  const handleSubmit = async (e) => {
+  const handleSubmit = async () => {
     try {
       // console.log(credentials);
       dispatch(showLoading());

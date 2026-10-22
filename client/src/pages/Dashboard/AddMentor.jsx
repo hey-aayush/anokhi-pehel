@@ -1,5 +1,5 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { BRANCH, ROLES } from "../../constants/Dashboard";
 import "react-datepicker/dist/react-datepicker.css";

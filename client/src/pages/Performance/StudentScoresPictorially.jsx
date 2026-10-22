@@ -1,5 +1,5 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { BASE_URL } from "../../Service/helper";
 import PerformanceLineChart from "./PerformanceLineChart";
@@ -45,7 +45,7 @@ const StudentScoresPictorially = () => {
 
     fetchTestData();
     fetchStudentName();
-  }, [studentId, subjectId]);
+  }, [classId, studentId, subjectId]);
 
   useEffect(() => {
     if (studentScoresWithAbsences.length === 0) return;
@@ -75,10 +75,12 @@ const StudentScoresPictorially = () => {
     };
 
     fetchClassAverage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentScoresWithAbsences]);
 
   useEffect(() => {
     filterData(studentScores, classAverage, selectedDuration);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDuration, studentScores, classAverage, viewMode]);
 
   const filterData = (data, avgData, months) => {

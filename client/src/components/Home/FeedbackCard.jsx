@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { quotes } from "../../assets/Home";
 
 const FeedbackCard = ({ content, name, title, img }) => (
@@ -24,5 +25,12 @@ const FeedbackCard = ({ content, name, title, img }) => (
     </div>
   </div>
 );
+
+FeedbackCard.propTypes = {
+  content: PropTypes.string,
+  name: PropTypes.string,
+  title: PropTypes.string,
+  img: PropTypes.string,
+};
 
 export default FeedbackCard;

@@ -1,12 +1,10 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../../src/Service/helper";
-import { useSelector } from "react-redux";
 const AddPoc = () => {
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.user);
   const [credentials, setCredentials] = useState({
     school: "",
     nameOfPoc: "",

@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from "prop-types";
 
 const Button = ({
   icon,
@@ -22,6 +22,19 @@ const Button = ({
       {icon} {text}
     </button>
   );
+};
+
+Button.propTypes = {
+  icon: PropTypes.node,
+  bgColor: PropTypes.string,
+  color: PropTypes.string,
+  bgHoverColor: PropTypes.string,
+  size: PropTypes.string,
+  text: PropTypes.node,
+  borderRadius: PropTypes.string,
+  width: PropTypes.string,
+  custumFunc: PropTypes.func,
+  className: PropTypes.string,
 };
 
 export default Button;

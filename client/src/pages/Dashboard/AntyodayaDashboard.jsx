@@ -1,17 +1,11 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import Button from "../../components/Dashboard/Button";
-import { BASE_URL } from "../../Service/helper";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import AttendanceDiv from "../../components/Dashboard/AttendanceDiv";
-import Attendance from "../../components/Dashboard/Attendance";
 const Dashboard = () => {
   const currentColor = "#03C9D7";
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
-  const [mentor, setMentor] = useState(null);
   const addEvent = () => {
     navigate("/addEvent");
   };

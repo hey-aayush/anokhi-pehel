@@ -1,6 +1,4 @@
-import React from "react";
 import { MdOutlineCancel } from "react-icons/md";
-import avatar from "../../assets/Dashboard/avatar.jpg";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";

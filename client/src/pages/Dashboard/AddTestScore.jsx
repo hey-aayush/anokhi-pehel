@@ -1,8 +1,6 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState } from "react";
-import { message } from "antd";
+import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { classes, subjects } from "../../constants/Dashboard";
 import { BASE_URL } from "../../Service/helper";
 import { useSelector } from "react-redux";
@@ -13,7 +11,6 @@ import WarningModel from "../../components/Models/WarningModel";
 import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 
 const AddStudent = () => {
-  const navigate = useNavigate();
   const [showStudentList, setShowStudentList] = useState(false);
   const { user } = useSelector((state) => state.user);
   const [errors, setErrors] = useState({});
@@ -112,7 +109,6 @@ const AddStudent = () => {
     setShowError(false);
     setSubmissionFailed(false);
 
-    let newErrors = {};
     const formData = new FormData();
 
     const localDate = new Date(credentials.date.getTime() - credentials.date.getTimezoneOffset() * 60000);

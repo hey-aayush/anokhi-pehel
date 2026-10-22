@@ -1,16 +1,10 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { classes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
-import { useSelector } from "react-redux";
 
 const Attendance = () => {
-  const navigate = useNavigate();
-
-  const { user } = useSelector((state) => state.user);
-
   const [credentials, setCredentials] = useState({
     class: "",
     date: "",
@@ -24,6 +18,7 @@ const Attendance = () => {
     if (credentials.class) {
       fetchAttendanceData(credentials.class);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [credentials.class]);
   const fetchAttendanceData = async (value) => {
     try {
@@ -71,7 +66,7 @@ const Attendance = () => {
     }
   };
 
-  const fetchStudents = (selectedClass) => {
+  const fetchStudents = () => {
     axios
       .get(`${BASE_URL}/studentList`)
       .then((response) => {

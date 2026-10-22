@@ -1,7 +1,6 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { classes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import { useSelector } from "react-redux";
@@ -10,7 +9,6 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
 
 const Attendance = () => {
-  const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
 
   const [credentials, setCredentials] = useState({ classId: "" });

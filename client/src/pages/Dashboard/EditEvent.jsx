@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import { times, event } from "../../constants/Dashboard";
+import { times } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 
 const EditEvent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const { user } = useSelector((state) => state.user);
   const eventId = searchParams.get("eventId");
 
   const [credentials, setCredentials] = useState({
@@ -268,7 +266,7 @@ const EditEvent = () => {
                     htmlFor="topic"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Coordinator's Registration Number
+                    Coordinator&apos;s Registration Number
                   </label>
                   <div className="mt-2">
                     <input

@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import Header from "../../components/Dashboard/Header";
 import { BASE_URL } from "../../../src/Service/helper";
-import { downloadPDF } from "../../../src/Service/utilityfunctions";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 

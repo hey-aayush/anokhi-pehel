@@ -1,10 +1,8 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { classes, months, subjects } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
-import { useSelector } from "react-redux";
 import Pagination from "../../components/Dashboard/Pagination";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
@@ -42,10 +40,7 @@ const getSessionFromDate = (date) => {
 };
 
 const FindTopic = () => {
-  const navigate = useNavigate();
   const initialTopics = 10;
-  const { user } = useSelector((state) => state.user);
-  const [errors, setErrors] = useState({});
   const [credentials, setCredentials] = useState({
     classId: "",
     subject: "",

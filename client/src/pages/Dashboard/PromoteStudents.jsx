@@ -1,16 +1,13 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout.jsx";
 import Header from "../../components/Dashboard/Header.jsx";
 import { useSelector } from "react-redux";
-import { MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../../Service/helper.js";
-import Spinner from "../../components/Spinner.jsx";
 import { classes } from "../../constants/Dashboard/index.jsx";
 import ErrorMessageModel from "../../components/Models/ErrorMessageModel.jsx";
 import WarningModal from "../../components/Models/WarningModel.jsx";
-import Button from "../../components/Dashboard/Button.jsx";
 import SuccessMessageModel from "../../components/Models/SuccessMessageModel.jsx";
 const PromoteStudents = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,10 +17,10 @@ const PromoteStudents = () => {
   const [promoteDataList, setPromoteDataList] = useState([]);
   const [inputClassError, setinputClassError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('')
-  const [warningMessage, setWarningMessage] = useState('')
+  const [, setWarningMessage] = useState('')
   const [warningOpen, setWarningOpen] = useState(false)
   const [studentsToPromote, setStudentsToPromote] = useState([]);
-  const [promotedClass, setPromotedClass] = useState('')
+  const [, setPromotedClass] = useState('')
   const [isPromotingAllowed, setIsPromotingAllowed] = useState(false);
   const [statusUpdationError, setStatusUpdationError] = useState(false);
   const [normalError, setNormalError] = useState(false);
@@ -161,7 +158,7 @@ const PromoteStudents = () => {
   }
 
   //handle of acceptingResponse or NOT
-  const handleToggle = async (checked) => {
+  const handleToggle = async () => {
     const updatedValue = !isPromotingAllowed;
     try {
       await axios.post(`${BASE_URL}/updateSettings`, {
@@ -243,7 +240,7 @@ const PromoteStudents = () => {
           1. Select a class to promote students from.
         </p>
         <p className="text-gray-600">
-          2. Click on "Promote" button to promote selected students.
+          2. Click on &quot;Promote&quot; button to promote selected students.
         </p>
         <p className="text-red-500">
           3. In-Active Students will not promoted to the next class.

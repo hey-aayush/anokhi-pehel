@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import PropTypes from "prop-types";
 import { GoArrowLeft, GoArrowRight } from "react-icons/go";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
@@ -196,6 +197,18 @@ const Pagination = ({
       </div>
     </div>
   );
+};
+
+Pagination.propTypes = {
+  currentPage: PropTypes.number,
+  totalPages: PropTypes.number,
+  onPageChange: PropTypes.func,
+  onPreviousPage: PropTypes.func,
+  onNextPage: PropTypes.func,
+  initialUsers: PropTypes.number,
+  usersPerPage: PropTypes.number,
+  handleUsersPerPageChange: PropTypes.func,
+  totalUsers: PropTypes.number,
 };
 
 export default Pagination;

@@ -1,14 +1,11 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { times, eventGroup } from "../../constants/Dashboard";
+import { times } from "../../constants/Dashboard";
 import { useNavigate } from "react-router-dom";
-import { event } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
-import { useSelector } from "react-redux";
 const AddEvent = () => {
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.user);
   const [credentials, setCredentials] = useState({
     eventName: "",
     eventGroup: "",
@@ -284,7 +281,7 @@ const AddEvent = () => {
                     htmlFor="topic"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Coordinator's Registration Number
+                    Coordinator&apos;s Registration Number
                   </label>
                   <div className="mt-2">
                     <input

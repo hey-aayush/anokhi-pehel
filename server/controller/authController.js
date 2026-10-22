@@ -52,21 +52,26 @@ const login = async (req, res) => {
 const getUserData = async (req, res) => {
   // Get the token from the request header
   const token = req.headers.authorization;
-  // Verify and decode the token (use your own verification logic)
   if (token) {
     try {
       const decoded = verifyToken(token);
+      if (decoded.purpose === "password_reset") {
+        return res.status(401).json({ message: "Invalid or expired token" });
+      }
 
       // Extract user ID from the decoded token
-      const userId = decoded.user.id;
+      const userId = decoded.user?.id || decoded.userId || decoded.id;
 
-      // Fetch user data from the database using the user ID
-      const user = await User.findById(userId);
+      // Fetch user data from the database excluding password hash
+      const user = await User.findById(userId).select("-password").lean();
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      user.password = undefined;
+
+      if (user.isActive === false) {
+        return res.status(401).json({ message: "Your account is not active. Please contact admin." });
+      }
 
       // Return user data as JSON
       res.json({ success: true, data: user });
@@ -82,22 +87,32 @@ const getUserData = async (req, res) => {
 //Generate link with temporary token to reset the password
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
+
   try {
-    //check if an account is accossiated with entered email id
+    // Check if an account is associated with entered email id
     const oldUser = await User.findOne({ email });
+    // Prevent user enumeration: respond identically if email is not found
     if (!oldUser) {
       return res.status(200).send({
-        message: "Invaild email id",
-        success: false,
+        message: "Password reset instructions sent to your email.",
+        success: true,
       });
     }
 
-    //Generate token if correct email id and create a link which calls API to reset password
-    const token = generateTempToken(oldUser.id);
-    const link = `https://anokhi-pehel.azurewebsites.net/api/v1/user/reset-password/${oldUser._id}/${token}`;
-    //const link = `http://localhost:8080/api/v1/user/reset-password/${oldUser._id}/${token}`;
+    // Embed current password hash snippet as nonce: once password changes, token is invalidated
+    const nonce = oldUser.password ? oldUser.password.slice(-10) : "";
+    const token = generateTempToken(oldUser.id, nonce);
 
-    //The mail content to be sent to user
+    // Resolve base url dynamically to support different deployment environments
+    const protocol = req.headers["x-forwarded-proto"] || req.protocol || "https";
+    const host = req.get("host") || "anokhi-pehel.azurewebsites.net";
+    const baseUrl = process.env.BASE_SERVER_URL || `${protocol}://${host}`;
+    const link = `${baseUrl.replace(/\/+$/, "")}/api/v1/user/reset-password/${oldUser._id}/${token}`;
+
+    // The mail content to be sent to user
     var mailOptions = {
       from: `Anokhi Pehel <${process.env.email}>`,
       to: `${email}`,
@@ -115,7 +130,7 @@ const forgotPassword = async (req, res) => {
       Anokhi Pehel`,
     };
 
-    //Function to send mail
+    // Function to send mail
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
         return res.status(500).send({
@@ -123,7 +138,6 @@ const forgotPassword = async (req, res) => {
           success: false,
         });
       } else {
-        //console.log(link);
         return res.status(200).send({
           message: "Password reset instructions sent to your email.",
           success: true,
@@ -138,28 +152,53 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-//TO reset password
+// TO reset password
 const resetPassword = async (req, res) => {
   const { id, token } = req.params;
-  const oldUser = await User.findOne({ _id: id });
-  if (!oldUser) {
-    return res.status(200).send({
-      message: "Invaild email id",
-      success: false,
-    });
-  }
-  // const secret = jwtSecret + oldUser.password;
-
-  //Generation of a random password
-  const password = generator.generate({
-    length: 10,
-    numbers: true,
-  });
-  //console.log(password);
   try {
-    //verify the token received as param
-    const verify = verifyToken(token);
-    //Hashing and updation of password in database
+    const oldUser = await User.findOne({ _id: id });
+    if (!oldUser) {
+      return res.status(400).send({
+        message: "Invalid or expired reset link",
+        success: false,
+      });
+    }
+
+    // Verify the token received as param
+    let decoded;
+    try {
+      decoded = verifyToken(token);
+    } catch {
+      return res.status(400).send({
+        message: "Invalid or expired reset token",
+        success: false,
+      });
+    }
+
+    if (!decoded || (decoded.user?.id !== id && decoded.userId !== id) || decoded.purpose !== "password_reset") {
+      return res.status(400).send({
+        message: "Invalid or expired reset token",
+        success: false,
+      });
+    }
+
+    // Verify single-use nonce against current user password
+    const expectedNonce = oldUser.password ? oldUser.password.slice(-10) : "";
+    if (decoded.nonce && decoded.nonce !== expectedNonce) {
+      return res.status(400).send({
+        message: "This password reset link has already been used.",
+        success: false,
+      });
+    }
+
+    // Generation of a random secure password
+    const password = generator.generate({
+      length: 12,
+      numbers: true,
+      symbols: false,
+    });
+
+    // Hashing and updation of password in database
     const hashedPassword = await bcrypt.hash(password, 10);
     await User.updateOne(
       {
@@ -172,7 +211,7 @@ const resetPassword = async (req, res) => {
       }
     );
 
-    //content to be mailed
+    // Content to be mailed
     var mailOptions = {
       from: `Anokhi Pehel <${process.env.email}>`,
       to: `${oldUser.email}`,
@@ -190,7 +229,7 @@ const resetPassword = async (req, res) => {
         Anokhi Pehel`,
     };
 
-    //Function to send mail
+    // Function to send mail
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
         return res.status(500).send({
@@ -198,11 +237,10 @@ const resetPassword = async (req, res) => {
           success: false,
         });
       } else {
-        //console.log(password);
         return res
           .status(200)
           .send(
-            "New password has been sent to mail.Please Check spam section as well if not received."
+            "New password has been sent to mail. Please Check spam section as well if not received."
           );
       }
     });

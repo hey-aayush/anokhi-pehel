@@ -1,9 +1,10 @@
 const express = require("express");
 const Schedule = require("../models/ClassSchedule");
 const LineSchedule = require("../models/LineSchedule");
+const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
 const router = express.Router();
 
-router.post("/addLineSchedule", async (req, res) => {
+router.post("/addLineSchedule", verifyUser, requireAdmin, async (req, res) => {
   try {
     const lineScheduleData = req.body;
 
@@ -27,7 +28,7 @@ router.post("/addLineSchedule", async (req, res) => {
   }
 });
 
-router.get("/getLineSchedule", async (req, res) => {
+router.get("/getLineSchedule", verifyUser, async (req, res) => {
   try {
     const lineScheduleData = await LineSchedule.find(); // Fetch all schedule documents
     res.status(200).json(lineScheduleData);
@@ -37,7 +38,7 @@ router.get("/getLineSchedule", async (req, res) => {
   }
 });
 
-router.get("/getClassScheduleByMentorId", async (req, res) => {
+router.get("/getClassScheduleByMentorId", verifyUser, async (req, res) => {
   try {
     const mentorId = req.query.mentorId;
     const classSchedule = await Schedule.find(
@@ -68,7 +69,7 @@ router.get("/getClassScheduleByMentorId", async (req, res) => {
   }
 });
 
-router.get("/getLineScheduleByMentorId", async (req, res) => {
+router.get("/getLineScheduleByMentorId", verifyUser, async (req, res) => {
   try {
     const mentorId = req.query.mentorId;
     const lineSchedule = await LineSchedule.find(
@@ -99,7 +100,7 @@ router.get("/getLineScheduleByMentorId", async (req, res) => {
   }
 });
 
-router.get("/getLineSchedule1ByMentorId", async (req, res) => {
+router.get("/getLineSchedule1ByMentorId", verifyUser, async (req, res) => {
   try {
     const mentorId = req.query.mentorId;
 

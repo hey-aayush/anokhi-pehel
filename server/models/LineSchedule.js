@@ -33,4 +33,6 @@ const LineScheduleSchema = new Schema({
   ],
 });
 
+LineScheduleSchema.index({ location: 1 });
+
 module.exports = mongoose.model("lineschedule", LineScheduleSchema);

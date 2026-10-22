@@ -26,4 +26,7 @@ const ClassDescriptionSchema = new Schema({
   },
 });
 
+ClassDescriptionSchema.index({ classId: 1, date: 1 });
+ClassDescriptionSchema.index({ date: 1 });
+
 module.exports = mongoose.model("classtopic", ClassDescriptionSchema);

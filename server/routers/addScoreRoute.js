@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { paperUpload } = require("../middlewares/multer.middlewares.js");
+const { verifyUser } = require("../middlewares/auth.middlewares.js");
 const { 
   submitScore,
   testData, 
@@ -9,14 +10,14 @@ const {
   testsScore 
 } = require("../controller/performanceController.js");
 
-router.post("/submitScore", paperUpload.single("file"), submitScore);
+router.post("/submitScore", verifyUser, paperUpload.single("file"), submitScore);
 
-router.get("/tests", testData);
+router.get("/tests", verifyUser, testData);
 
-router.get("/get-graph", graphData);
+router.get("/get-graph", verifyUser, graphData);
 
-router.get("/getAverage", averageData)
+router.get("/getAverage", verifyUser, averageData);
 
-router.get("/testsScore", testsScore);
+router.get("/testsScore", verifyUser, testsScore);
 
 module.exports = router;

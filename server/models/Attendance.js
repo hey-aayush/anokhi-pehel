@@ -32,4 +32,7 @@ const AttendanceSchema = new Schema({
   ],
 });
 
+AttendanceSchema.index({ classId: 1, date: 1 });
+AttendanceSchema.index({ date: 1 });
+
 module.exports = mongoose.model("attendance", AttendanceSchema);

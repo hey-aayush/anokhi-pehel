@@ -15,5 +15,9 @@ const ParticipantSchema = new mongoose.Schema({
   },
 });
 
+ParticipantSchema.index({ year: 1, poc: 1 });
+ParticipantSchema.index({ year: 1, school: 1 });
+ParticipantSchema.index({ events: 1 });
+
 const Participant = mongoose.model("Participant", ParticipantSchema);
 module.exports = Participant;

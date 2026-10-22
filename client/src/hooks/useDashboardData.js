@@ -63,12 +63,72 @@ export const useDashboardData = () => {
     setLoading(true);
     setError(null);
     try {
-      // 1. Fetch lightweight active student counts per class with auth headers
       const token = localStorage.getItem("token");
       const authHeaders = token
         ? { headers: { Authorization: `Bearer ${token}` } }
         : {};
 
+      // 1. High-performance single consolidated dashboard overview request
+      try {
+        const overviewRes = await axios.get(
+          `${BASE_URL}/dashboardOverview?date=${dateToFetch}`,
+          authHeaders
+        );
+
+        if (overviewRes.data && overviewRes.data.countsByClass) {
+          const { countsByClass, attendanceByClass, topicsByClass } =
+            overviewRes.data;
+
+          const results = classes.map((cls) => {
+            const enrolled = countsByClass[cls.id] || 0;
+            const att = attendanceByClass?.[cls.id];
+            const isAttendanceTaken = Boolean(
+              att && typeof att.total === "number"
+            );
+            const total = isAttendanceTaken ? att.total : enrolled;
+            const present = isAttendanceTaken ? att.present : 0;
+            const percentage =
+              total > 0 ? Math.round((present / total) * 100) : 0;
+
+            const validTopics = (topicsByClass?.[cls.id] || []).filter(
+              (t) =>
+                t && typeof t.topic === "string" && t.topic.trim().length > 0
+            );
+            const isTopicCovered = validTopics.length > 0;
+            const topicCovered = isTopicCovered
+              ? validTopics[validTopics.length - 1].topic
+              : "";
+            const subjectCovered = isTopicCovered
+              ? validTopics[validTopics.length - 1].subject
+              : "";
+
+            return {
+              id: cls.id,
+              label: `Class ${cls.name}`,
+              enrolled,
+              isAttendanceTaken,
+              total,
+              present,
+              percentage,
+              isTopicCovered,
+              topicCovered,
+              subjectCovered,
+              topics: validTopics,
+            };
+          });
+
+          setClassData(results);
+          return;
+        }
+      } catch (overviewErr) {
+        // Fallback gracefully to individual parallel requests if consolidated endpoint is unavailable
+        console.warn(
+          "Consolidated overview failed, falling back to parallel fetch:",
+          overviewErr?.message
+        );
+      }
+
+      // 2. Fallback: Fetch lightweight active student counts per class with auth headers
       let studentCounts = {};
       try {
         const countRes = await axios.get(
@@ -80,7 +140,7 @@ export const useDashboardData = () => {
         console.error("Error fetching student counts:", err);
       }
 
-      // 2. Fetch attendance and topic data for each class in parallel for the selected date
+      // 3. Fallback: Fetch attendance and topic data for each class in parallel for the selected date
       const results = await Promise.all(
         classes.map(async (cls) => {
           const enrolled = studentCounts[cls.id] || 0;

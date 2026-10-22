@@ -14,4 +14,7 @@ const IssueSchema = new Schema({
   createdAt: { type: Date, default: Date.now }, // Date the issue was created
 });
 
+IssueSchema.index({ status: 1 });
+IssueSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Issue', IssueSchema);

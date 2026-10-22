@@ -18,6 +18,11 @@ const verifyUser = async (req, res, next) => {
 
   try {
     const decoded = verifyToken(authHeader);
+
+    if (decoded.purpose === "password_reset") {
+      return res.status(401).json({ message: "Unauthorized - Invalid token type" });
+    }
+
     const userId = decoded.user?.id || decoded.userId || decoded.id;
 
     if (!userId) {

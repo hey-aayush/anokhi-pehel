@@ -13,7 +13,7 @@ const {
   changeStatus,
   getStudentCounts,
 } = require("../controller/studentController");
-const { verifyUser } = require("../middlewares/auth.middlewares.js");
+const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares.js");
 
 app.use(cors());
 
@@ -35,7 +35,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-let upload = multer({ storage, fileFilter });
+let upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static("uploads"));
@@ -171,7 +175,7 @@ router.put("/updateStudent", verifyUser, async (req, res) => {
   }
 });
 
-router.delete("/deleteStudents/:id", verifyUser, async (req, res) => {
+router.delete("/deleteStudents/:id", verifyUser, requireAdmin, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -190,8 +194,8 @@ router.delete("/deleteStudents/:id", verifyUser, async (req, res) => {
 });
 
 router.post("/studentTable", verifyUser, getStudentsFromLastAttendance);
-router.put("/promoteStudent/:id", verifyUser, promoteStudent);
-router.put("/updateStudentStatus/:id", verifyUser, changeStatus);
+router.put("/promoteStudent/:id", verifyUser, requireAdmin, promoteStudent);
+router.put("/updateStudentStatus/:id", verifyUser, requireAdmin, changeStatus);
 router.get("/studentCounts", verifyUser, getStudentCounts);
 
 module.exports = router;

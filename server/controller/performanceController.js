@@ -47,31 +47,42 @@ const submitScore = async (req, res) => {
           return res.status(400).json({ error: "Scores array must not be empty" });
       }
 
-      for (const score of parsedScores) {
+      // Deduplicate student scores in payload to prevent concurrent document mutations
+      const uniqueScores = Array.from(
+        new Map(parsedScores.map((s) => [String(s.studentId), s])).values()
+      );
+
+      for (const score of uniqueScores) {
           if (!score.studentId || typeof score.score !== "number") {
               deleteFile(uploadedFilePath);
               return res.status(403).json({ error: "Invalid score data" });
           }
       }
 
-      // **CHECK IF DATA ALREADY EXISTS BEFORE FILE UPLOAD**
-      for (const score of parsedScores) {
-          const { studentId } = score;
+      // **CHECK IF DATA ALREADY EXISTS BEFORE FILE UPLOAD (Batch optimized)**
+      const studentIds = uniqueScores.map((s) => s.studentId);
+      const existingRecords = await Test.find({
+        student: { $in: studentIds },
+        subject,
+        className: classId,
+      });
 
-          let testRecord = await Test.findOne({ student: studentId, subject, className: classId });
+      const targetDateStr = new Date(date).toISOString().split("T")[0];
+      const recordMap = new Map();
 
-          if (testRecord) {
-              const existingTest = testRecord.tests.find(
-                  (test) => new Date(test.date).toISOString().split("T")[0] === new Date(date).toISOString().split("T")[0]
-              );
+      for (const rec of existingRecords) {
+        const hasDuplicate = rec.tests.some(
+          (test) =>
+            new Date(test.date).toISOString().split("T")[0] === targetDateStr
+        );
 
-              if (existingTest) {
-                  deleteFile(uploadedFilePath);
-                  return res.status(409).json({
-                      message: `Data already exists for current date and subject`,
-                  });
-              }
-          }
+        if (hasDuplicate) {
+          deleteFile(uploadedFilePath);
+          return res.status(409).json({
+            message: `Data already exists for current date and subject`,
+          });
+        }
+        recordMap.set(rec.student.toString(), rec);
       }
 
       let fileId = null;
@@ -90,13 +101,15 @@ const submitScore = async (req, res) => {
           fileId = uploadedFileUrl;
       }
 
-      for (const score of parsedScores) {
+      // Parallel batch save for all score records
+      const savePromises = [];
+      for (const score of uniqueScores) {
           const { studentId, score: studentScore } = score;
-          let testRecord = await Test.findOne({ student: studentId, subject, className: classId });
+          let testRecord = recordMap.get(studentId.toString());
 
           if (testRecord) { 
               testRecord.tests.push({ totalMarks: totalMarks, score: studentScore, mentorId: mentorId, fileId: fileId, date: date });
-              await testRecord.save();
+              savePromises.push(testRecord.save());
           } else {
               const newTest = new Test({
                   student: studentId,
@@ -104,9 +117,10 @@ const submitScore = async (req, res) => {
                   subject,
                   tests: [{ totalMarks: totalMarks, score: studentScore, mentorId: mentorId, fileId: fileId, date: date }],
               });
-              await newTest.save();
+              savePromises.push(newTest.save());
           }
       }
+      await Promise.all(savePromises);
 
       return res.status(200).json({ message: "Scores submitted successfully !!" });
   } 
@@ -179,12 +193,13 @@ const graphData = async (req, res) => {
       return res.status(404).json({ message: "No performance data found for this student and subject." });
     }
 
-    const formattedTests = performance.tests.map(test => ({
-      score: test.score*(100/test.totalMarks),
-      date: new Date(test.date).toISOString().split("T")[0],
-    }));
-
-    // console.log("Formatted Tests:", formattedTests);
+    const formattedTests = performance.tests.map(test => {
+      const total = test.totalMarks > 0 ? test.totalMarks : 100;
+      return {
+        score: Math.round(((test.score * 100) / total) * 100) / 100,
+        date: new Date(test.date).toISOString().split("T")[0],
+      };
+    });
 
     res.status(200).json({ status: 200, data: formattedTests, message: "Performance data retrieved successfully" });
   } catch (error) {
@@ -194,46 +209,46 @@ const graphData = async (req, res) => {
 }
 
 const averageData = async(req, res) => {
-  const { classId, subjectId } = req.query;
+  try {
+    const { classId, subjectId } = req.query;
 
-  const classData = await Test.find({ className: classId , subject: subjectId });
-  if (!classData) {
-    return res.status(404).json({ success: false, message: "Class not found" });
+    const classData = await Test.find({ className: classId , subject: subjectId });
+    if (!classData || classData.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const performanceByDate = {};
+
+    classData.forEach((entry) => {
+        entry.tests.forEach((test) => {
+            if (!test.date || typeof test.score !== "number") {
+                return;
+            }
+
+            const dateKey = new Date(test.date).toISOString().split("T")[0]; // Ensure consistent date format
+
+            if (!performanceByDate[dateKey]) {
+                performanceByDate[dateKey] = { sum: 0, count: 0 };
+            }
+
+            if (test.score > -1) {
+              const total = test.totalMarks > 0 ? test.totalMarks : 100;
+              performanceByDate[dateKey].sum += (test.score * 100) / total;
+              performanceByDate[dateKey].count += 1;
+            }
+        });
+    });
+
+    const averagePerformance = Object.entries(performanceByDate).map(([date, data]) => ({
+      date, // Formatted as YYYY-MM-DD
+      score: data.count > 0 ? Math.round((data.sum / data.count) * 100) / 100 : 0,  
+    }));
+
+    return res.json({ success: true, data: averagePerformance });
+  } catch (error) {
+    console.error("Error fetching average data:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
   }
-
-  const performanceByDate = {};
-
-  classData.forEach((entry) => {
-      entry.tests.forEach((test) => {
-          if (!test.date || typeof test.score !== "number") {
-              console.warn("Skipping test with invalid data:", test);
-              return;
-          }
-
-          const dateKey = new Date(test.date).toISOString().split("T")[0]; // Ensure consistent date format
-
-          if (!performanceByDate[dateKey]) {
-              performanceByDate[dateKey] = { sum: 0, count: 0 };
-          }
-
-          if(test.score > -1){
-            performanceByDate[dateKey].sum += test.score*(100/test.totalMarks);
-            performanceByDate[dateKey].count += 1;
-          }
-            
-      });
-  });
-
-  // console.log("performanceByDate: ", performanceByDate)
-
-  const averagePerformance = Object.entries(performanceByDate).map(([date, data]) => ({
-    date, // Now formatted as YYYY-MM-DD
-    score: data.sum / data.count,  
-  }));
-
-  // console.log("averagePerformance: ", averagePerformance)
-
-  return res.json({ success: true, data: averagePerformance });
 }
 
 const testsScore = async (req, res) => {
@@ -244,25 +259,23 @@ const testsScore = async (req, res) => {
       return res.status(400).json({ error: "Test date is required" });
     }
 
-    
     const results = await Test.find({ "tests.date": testDate })
       .populate("student", "name") 
-
 
     if (!results.length) {
       return res.status(404).json({ message: "No test scores found for the given date" });
     }
 
-    // Format response to include only the required details
+    // Format response to include only the required details (with null-safe student access)
     const response = results.map((test) => ({
-      studentId: test.student._id,
-      studentName: test.student.name,
+      studentId: test.student?._id || test.student,
+      studentName: test.student?.name || "Unknown Student",
       subject: test.subject,
       className: test.className,
       scores: test.tests
       .filter((t) => {
-        const recordDate = new Date(t.date).toISOString().split("T")[0]; // Convert to 'YYYY-MM-DD'
-        const queryDate = new Date(testDate).toISOString().split("T")[0]; // Ensure same format
+        const recordDate = new Date(t.date).toISOString().split("T")[0];
+        const queryDate = new Date(testDate).toISOString().split("T")[0];
         return recordDate === queryDate;
       })
       .map((t) => ({
@@ -272,10 +285,7 @@ const testsScore = async (req, res) => {
         paperLink: t.fileId,
         date: t.date,
       })),
-
     }));
-
-    // console.log("Response: ", response);
 
     res.status(200).json(response);
   } catch (error) {

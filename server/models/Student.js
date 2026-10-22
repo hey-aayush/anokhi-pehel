@@ -48,4 +48,7 @@ const StudentSchema = new Schema({
   },
 });
 
+StudentSchema.index({ className: 1, active: 1 });
+StudentSchema.index({ aadhar: 1 });
+
 module.exports = mongoose.model("student", StudentSchema);

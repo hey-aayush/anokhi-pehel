@@ -57,3 +57,17 @@ and is invoked by the shared Axios response interceptor. Authenticated cached
 data is cleared on logout, password change, or session rejection. When adding
 another cached read, add every write that can change it to the invalidation
 mapping and test an in-flight read that overlaps a write.
+
+Student and participant list pages now use filtered, paginated React Query reads.
+Their successful writes invalidate all cached pages; exports request the complete
+filtered array only when the user downloads it. Attendance tables cache each
+class and month, cancel superseded requests, and invalidate after attendance or
+student writes.
+
+The existing `/studentList` and `/participantList` responses remain arrays when
+`page` and `limit` are omitted. Passing either parameter opts into
+`{ items, page, limit, total }`, with a maximum limit of 100. Student filters
+are `classes`, `locations`, and `name`; participant filters are `classes`,
+`years`, `name`, and `school`. Comma-separated class and location/year filters
+are accepted. The existing single `year` participant filter remains supported.
+No database fields or collection names change.

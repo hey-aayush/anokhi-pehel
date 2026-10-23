@@ -26,6 +26,8 @@ const Admission = () => {
         <img
           src={BackToSchool}
           alt="Back to School"
+          loading="lazy"
+          decoding="async"
           className="w-[400px] h-[300px] object-cover rounded-lg"
         />
       </div>

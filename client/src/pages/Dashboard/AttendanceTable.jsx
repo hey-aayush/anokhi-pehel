@@ -1,5 +1,6 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { classes, months } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
@@ -8,6 +9,8 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import StudentProfileModal from "../../Modals/studentProfileModal";
+import { attendanceKeys } from "../../queries/attendanceQueries";
+import Spinner from "../../components/Spinner";
 
 const Attendance = () => {
   const [credentials, setCredentials] = useState({
@@ -15,80 +18,38 @@ const Attendance = () => {
     month: "",
   });
 
-  const [status, setStatus] = useState("True");
-  const [students, setStudents] = useState([]);
-  const [studentsAttendance, setStudentsAttendance] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   const [selectedStudent, setSelectedStudent] = useState(null); // State for selected student
 
-  useEffect(() => {
-    if (credentials.class || credentials.month) {
-      fetchAttendanceData(credentials.class);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [credentials]);
-
-  const fetchAttendanceData = async () => {
-    try {
-      if (credentials.class && credentials.month) {
-        const response = await axios.get(`${BASE_URL}/monthTotalAttendance`, {
-          params: {
-            classId: credentials.class,
-            month: credentials.month,
-          },
-        });
-        if (response.status === 200 && response.data.students.length > 0) {
-          const completeAttendance = response.data;
-          if (completeAttendance) {
-            setStudentsAttendance(completeAttendance);
-            fetchStudents(completeAttendance.students);
-            setStatus("True");
-          } else {
-            setStatus("False");
-            console.error("Attendance data structure invalid");
-          }
-        } else {
-          setStatus("False");
-          console.error("No attendance data or invalid response");
-        }
-      }
-    } catch (error) {
-      setStatus("False");
-      console.error("Error fetching attendance data:", error);
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    fetchAttendanceData();
-  };
+  const hasSelection = Boolean(credentials.class && credentials.month);
+  const { data, isError, isPending } = useQuery({
+    queryKey: attendanceKeys.month(credentials.class, credentials.month),
+    enabled: hasSelection,
+    queryFn: async ({ signal }) => {
+      const response = await axios.get(`${BASE_URL}/monthTotalAttendance`, {
+        params: { classId: credentials.class, month: credentials.month },
+        signal,
+      });
+      const attendance = response.data;
+      if (!attendance?.students?.length) return { attendance, students: [] };
+      const names = await axios.post(
+        `${BASE_URL}/studentTable`,
+        { value: attendance.students },
+        { signal }
+      );
+      return {
+        attendance,
+        students: names.data.sort((a, b) => a.name.localeCompare(b.name)),
+      };
+    },
+  });
+  const studentsAttendance = data?.attendance;
+  const students = data?.students ?? [];
+  const status = hasSelection && !isError && Boolean(studentsAttendance?.students?.length);
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    setCredentials({ ...credentials, [name]: value });
-    if (name === "class" || name === "month") {
-      fetchAttendanceData(value);
-    }
-  };
-
-  const fetchStudents = (value) => {
-    axios
-      .post(`${BASE_URL}/studentTable`, {
-        value: value,
-      })
-      .then((response) => {
-        // Sort students by name in alphabetical order
-        const sortedStudents = response.data.sort((a, b) => {
-          return a.name.localeCompare(b.name);
-        });
-
-        // Set the sorted students data in state
-        console.log("Sorted students data:", sortedStudents);
-        setStudents(sortedStudents);
-      })
-      .catch((error) => {
-        console.error("Error fetching students:", error);
-      });
+    setCredentials((current) => ({ ...current, [name]: value }));
   };
 
   const getAttendanceForStudent = (studentId, day) => {
@@ -103,7 +64,6 @@ const Attendance = () => {
   };
 
   const openModal = (student) => {
-    console.log("Opening modal with student data:", student);
     setSelectedStudent(student); // Set the selected student
     setIsModalOpen(true); // Open the modal
   };
@@ -171,7 +131,7 @@ const Attendance = () => {
   return (
     <DashboardLayout>
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
+        <form onSubmit={(event) => event.preventDefault()}>
           <div className="space-y-8">
             <div className="border-b border-gray-900/10 pb-8">
               <h2 className="text-base font-bold leading-7 text-gray-900">
@@ -200,7 +160,7 @@ const Attendance = () => {
 
                 <div className="sm:col-span-2">
                   <label
-                    htmlFor="region"
+                    htmlFor="class"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
                     Class
@@ -226,12 +186,13 @@ const Attendance = () => {
               </div>
             </div>
           </div>
-          {status === "False" && (
+          {hasSelection && isPending && <Spinner />}
+          {hasSelection && !status && (isError || data) && (
             <div className="text-black text-center p-4 text-lg font-bold">
-              No attendance record found.
+              {isError ? "Unable to load attendance. Please try again." : "No attendance record found."}
             </div>
           )}
-          {status === "True" && (
+          {status && (
             <div className="overflow-x-auto">
               <div className="shadow-md sm:rounded-lg">
                 <h2 className="text-lg font-semibold mb-4 sticky top-0 bg-white z-20">
@@ -266,7 +227,6 @@ const Attendance = () => {
                     </thead>
                     <tbody>
                       {students.map((student) => {
-                        console.log("Student data:", student);
                         let presentCount = 0;
                         return (
                           <tr

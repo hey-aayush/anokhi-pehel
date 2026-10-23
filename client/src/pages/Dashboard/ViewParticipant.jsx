@@ -14,7 +14,7 @@ import { FaEye } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { classes } from "../../constants/Dashboard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -27,6 +27,19 @@ import { getAllParticipants, getEvents, getParticipantPage } from "../../Service
 import { listKeys } from "../../queries/listQueries";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 
+const currentYear = new Date().getFullYear();
+
+const extractYear = (val) => {
+  if (!val) return null;
+  const str = String(val);
+  const kMatch = str.match(/\b2[kK](\d{2})\b/);
+  if (kMatch) return 2000 + Number(kMatch[1]);
+  const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+  if (match) return Number(match[1]);
+  const num = Number(val);
+  return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+};
+
 const Participants = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
@@ -37,7 +50,7 @@ const Participants = () => {
     useState(false);
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
     useState(false);
-  const [selectedSession, setSelectedSession] = useState([]); // State to hold selected session
+  const [selectedSession, setSelectedSession] = useState([currentYear]); // By default current session is selected
   const initialUsers = 40;
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(initialUsers);
@@ -123,13 +136,28 @@ const Participants = () => {
     queryKey: listKeys.events,
     queryFn: ({ signal }) => getEvents(signal),
   });
-  const currentUsers = data?.items ?? [];
+  const currentUsers = useMemo(() => data?.items ?? [], [data?.items]);
   const totalUsers = data?.total ?? 0;
   const totalPages = Math.ceil(totalUsers / usersPerPage);
   const getExportStudents = async () =>
     (await getAllParticipants(filters)).sort((a, b) =>
       b.year - a.year || (a.name || "").localeCompare(b.name || "")
     );
+
+  const availableSessions = useMemo(() => {
+    const yearsFromData = [
+      ...(Array.isArray(events) ? events : []).map((e) => extractYear(e.year)),
+      ...(Array.isArray(currentUsers) ? currentUsers : []).map((s) => extractYear(s.year)),
+    ].filter(Boolean);
+    const minYear =
+      yearsFromData.length > 0 ? Math.min(...yearsFromData) : 2024;
+    const startYear = Math.min(minYear, currentYear);
+    const sessions = [];
+    for (let yr = currentYear; yr >= startYear; yr--) {
+      sessions.push(yr);
+    }
+    return sessions;
+  }, [events, currentUsers]);
 
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
@@ -315,7 +343,14 @@ const Participants = () => {
       {isPending && <Spinner />}
       {isError && <p role="alert">Unable to load participants. Please try again.</p>}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
-        <Header category="Antyodaya2k25" title="Participants" />
+        <Header
+          category={
+            selectedSession.length === 1
+              ? `Antyodaya ${selectedSession[0]}`
+              : "Antyodaya"
+          }
+          title="Participants"
+        />
         <div className="mx-auto max-w-screen-xl">
           <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -490,21 +525,21 @@ const Participants = () => {
                   <div>
                     {isFilterBySessionDropdownOpen && (
                       <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow">
-                        <ul className="space-y-2 text-sm">
-                          {[2024, 2025].map((year) => (
+                        <ul className="space-y-2 text-sm max-h-60 overflow-y-auto p-1">
+                          {availableSessions.map((year) => (
                             <li key={year} className="flex items-center">
                               <input
-                                id={year}
+                                id={`session-${year}`}
                                 type="checkbox"
                                 name="session"
                                 value={year}
-                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500  focus:ring-2 outline-none"
+                                className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2 outline-none cursor-pointer"
                                 onChange={handleSessionBoxChange}
                                 checked={selectedSession.includes(year)}
                               />
                               <label
-                                htmlFor={year}
-                                className="ml-2 text-sm font-medium text-gray-900"
+                                htmlFor={`session-${year}`}
+                                className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
                               >
                                 {year}
                               </label>

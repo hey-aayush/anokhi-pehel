@@ -1,5 +1,5 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import Header from "../../components/Dashboard/Header";
 import { BASE_URL } from "../../../src/Service/helper";
@@ -11,19 +11,32 @@ import {
 } from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
+const currentYear = new Date().getFullYear();
+
+const extractYear = (val) => {
+  if (!val) return null;
+  const str = String(val);
+  const kMatch = str.match(/\b2[kK](\d{2})\b/);
+  if (kMatch) return 2000 + Number(kMatch[1]);
+  const match = str.match(/\b(19\d{2}|20\d{2})\b/);
+  if (match) return Number(match[1]);
+  const num = Number(val);
+  return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
+};
+
 const ViewPocList = () => {
   const [pocList, setPocList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
     useState(false);
-  const [selectedSession, setSelectedSession] = useState([]);
+  const [selectedSession, setSelectedSession] = useState([currentYear]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
   useEffect(() => {
     const fetchPocData = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/pocList`);
-        setPocList(response.data);
+        setPocList(response.data || []);
       } catch (error) {
         console.error("Error fetching POC details:", error);
       }
@@ -39,16 +52,28 @@ const ViewPocList = () => {
 
   const toggleFilterBySessionDropdown = () => {
     setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
-    if (isFilterBySessionDropdownOpen)
-      setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
-    if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
+    if (isActionsDropdownOpen) setActionsDropdownOpen(false);
   };
 
-    const toggleActionsDropdown = () => {
-      setActionsDropdownOpen(!isActionsDropdownOpen);
-      if (isFilterBySessionDropdownOpen)
-        setIsFilterBySessionDropdownOpen(!isFilterBySessionDropdownOpen);
-    };
+  const toggleActionsDropdown = () => {
+    setActionsDropdownOpen(!isActionsDropdownOpen);
+    if (isFilterBySessionDropdownOpen)
+      setIsFilterBySessionDropdownOpen(false);
+  };
+
+  const availableSessions = useMemo(() => {
+    const yearsFromData = (Array.isArray(pocList) ? pocList : [])
+      .map((p) => extractYear(p.year))
+      .filter(Boolean);
+    const minYear =
+      yearsFromData.length > 0 ? Math.min(...yearsFromData) : currentYear;
+    const startYear = Math.min(minYear, currentYear);
+    const sessions = [];
+    for (let yr = currentYear; yr >= startYear; yr--) {
+      sessions.push(yr);
+    }
+    return sessions;
+  }, [pocList]);
 
   const handleSessionBoxChange = (e) => {
     const { value, checked } = e.target;
@@ -81,10 +106,11 @@ const ViewPocList = () => {
 
   });
 
-  if(selectedSession.length > 0){
-    sortedPocList = sortedPocList.filter((poc) =>
-      selectedSession.includes(poc.year)
-    );
+  if (selectedSession.length > 0) {
+    sortedPocList = sortedPocList.filter((poc) => {
+      const y = extractYear(poc.year);
+      return y ? selectedSession.includes(y) : false;
+    });
   }
 
   // Function to delete a POC
@@ -136,7 +162,14 @@ const ViewPocList = () => {
   return (
     <DashboardLayout>
       <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
-        <Header category="Antyodaya2k25" title="Point of Contact of Schools" />
+        <Header
+          category={
+            selectedSession.length === 1
+              ? `Antyodaya ${selectedSession[0]}`
+              : "Antyodaya"
+          }
+          title="Point of Contact of Schools"
+        />
       </div>
       <div className="m-2 md:m-0 mt-0 p-2 md:p-7 bg-white rounded-3xl">
         <h2 className="text-center text-xl font-bold tracking-tight text-slate-900">
@@ -177,21 +210,21 @@ const ViewPocList = () => {
               
               {isFilterBySessionDropdownOpen && (
                 <div className="absolute right-0 mt-2 p-3 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-100">
-                  <ul className="space-y-2 text-sm">
-                    {[2024, 2025].map((year) => (
+                  <ul className="space-y-2 text-sm max-h-60 overflow-y-auto">
+                    {availableSessions.map((year) => (
                       <li key={year} className="flex items-center">
                         <input
-                          id={year}
+                          id={`session-${year}`}
                           type="checkbox"
                           name="session"
                           value={year}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                           onChange={handleSessionBoxChange}
                           checked={selectedSession.includes(year)}
                         />
                         <label
-                          htmlFor={year}
-                          className="ml-2 text-sm font-medium text-gray-900"
+                          htmlFor={`session-${year}`}
+                          className="ml-2 text-sm font-medium text-gray-900 cursor-pointer"
                         >
                           {year}
                         </label>

@@ -14,7 +14,7 @@ import { FaEye } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { classes } from "../../constants/Dashboard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -26,6 +26,9 @@ import Pagination from "../../components/Dashboard/Pagination.jsx";
 import { getAllParticipants, getEvents, getParticipantPage } from "../../Service/listApi";
 import { listKeys } from "../../queries/listQueries";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+
+const getAvailableSessions = (items) =>
+  [...new Set([...(Array.isArray(items) ? items : []).map((e) => Number(e.year)), 2024, new Date().getFullYear()].filter(Boolean))].sort((a, b) => b - a);
 
 const Participants = () => {
   const navigate = useNavigate();
@@ -124,6 +127,7 @@ const Participants = () => {
     queryKey: listKeys.events,
     queryFn: ({ signal }) => getEvents(signal),
   });
+  const availableSessions = useMemo(() => getAvailableSessions(events), [events]);
   const currentUsers = data?.items ?? [];
   const totalUsers = data?.total ?? 0;
   const totalPages = Math.ceil(totalUsers / usersPerPage);
@@ -492,7 +496,7 @@ const Participants = () => {
                     {isFilterBySessionDropdownOpen && (
                       <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow">
                         <ul className="space-y-2 text-sm">
-                          {[...new Set([...(Array.isArray(events) ? events : []).map((e) => Number(e.year)), 2024, new Date().getFullYear()].filter(Boolean))].sort((a, b) => b - a).map((year) => (
+                          {availableSessions.map((year) => (
                             <li key={year} className="flex items-center">
                               <input
                                 id={year}

@@ -39,6 +39,10 @@ export const navLinks = [
     id: "connectWithUs",
     title: "Contact Us",
   },
+  {
+    id: "Join",
+    title: "Join as Mentor",
+  },
 ];
 
 export const stats = [
@@ -114,35 +118,17 @@ export const footerLinks = [
   {
     title: "Useful Links",
     links: [
-      {
-        name: "Content",
-        link: "https://anokhi-pehel.azurewebsites.net/",
-      },
-      {
-        name: "How it Works",
-        link: "https://anokhi-pehel.azurewebsites.net/",
-      },
-      {
-        name: "Create",
-        link: "https://anokhi-pehel.azurewebsites.net/",
-      },
+      { name: "About Anokhi Pehel", link: "/" },
+      { name: "Join as Mentor", link: "/Join" },
+      { name: "Contact Us", link: "/connectWithUs" },
     ],
   },
   {
     title: "Community",
     links: [
-      {
-        name: "Help Center",
-        link: "https://anokhi-pehel.azurewebsites.net/",
-      },
-      {
-        name: "Partners",
-        link: "https://anokhi-pehel.azurewebsites.net/",
-      },
-      {
-        name: "Suggestions",
-        link: "https://anokhi-pehel.azurewebsites.net/",
-      },
+      { name: "Team", link: "/team" },
+      { name: "Blog", link: "/blog" },
+      { name: "Gallery", link: "/gallery" },
     ],
   },
   // {
@@ -163,11 +149,11 @@ export const footerLinks = [
     links: [
       {
         name: "Email Id: anokhipehel@mnnit.ac.in",
-        //link: "https://anokhi-pehel.azurewebsites.net/",
+        link: "mailto:anokhipehel@mnnit.ac.in",
       },
       {
         name: "Phone: +91 9580259378",
-        //link: "https://anokhi-pehel.azurewebsites.net/",
+        link: "tel:+919580259378",
       },
     ],
   },

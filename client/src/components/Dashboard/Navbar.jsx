@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import PropTypes from "prop-types";
 import { AiOutlineMenu } from "react-icons/ai";
-import { BsChatLeft } from "react-icons/bs";
-import { RiNotification3Line } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
 
 import { useSelector, useDispatch } from "react-redux";
@@ -12,8 +10,6 @@ import {
   setScreenSize,
 } from "../../redux/features/dashboardSlice";
 import { setIsClicked } from "../../redux/features/navlinkSlice";
-import Chat from "./Chat";
-import Notification from "./Notification";
 import Profile from "./Profile";
 import { SERVER_URL } from "../../Service/helper";
 const NavButton = ({ title, customFunc, icon, color, dotColor }) => (
@@ -93,20 +89,6 @@ const Navbar = () => {
       />
 
       <div className="flex">
-        <NavButton
-          title="Chat"
-          dotColor="rgb(254, 201, 15)"
-          customFunc={() => handleClick("chat")}
-          color="#03C9D7"
-          icon={<BsChatLeft />}
-        />
-        <NavButton
-          title="Notification"
-          dotColor="rgb(254, 201, 15)"
-          customFunc={() => handleClick("notification")}
-          color="#03C9D7"
-          icon={<RiNotification3Line />}
-        />
         <div
           className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg"
           onClick={() => handleClick("userProfile")}
@@ -125,8 +107,6 @@ const Navbar = () => {
           <MdKeyboardArrowDown className="text-gray-400 text-14" />
         </div>
 
-        {isClicked.chat && <Chat />}
-        {isClicked.notification && <Notification />}
         {isClicked.userProfile && <Profile />}
       </div>
     </div>

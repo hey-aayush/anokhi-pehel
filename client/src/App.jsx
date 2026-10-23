@@ -20,6 +20,8 @@ import JoinAsMentor from "./pages/Home/JoinAsMentor";
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
 const Student = lazy(() => import("./pages/Dashboard/Student"));
 const Mentor = lazy(() => import("./pages/Dashboard/Mentor"));
+const MentorApplications = lazy(() => import("./pages/Dashboard/MentorApplications"));
+const MentorApplicationDetails = lazy(() => import("./pages/Dashboard/MentorApplicationDetails"));
 const AddStudents = lazy(() => import("./pages/Dashboard/AddStudents"));
 const AddMentors = lazy(() => import("./pages/Dashboard/AddMentor"));
 const StudentProfile = lazy(() => import("./pages/Dashboard/StudentProfile"));
@@ -384,6 +386,8 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/mentors/applications" element={<ProtectedRoute><MentorApplications /></ProtectedRoute>} />
+            <Route path="/mentors/applications/:applicationId" element={<ProtectedRoute><MentorApplicationDetails /></ProtectedRoute>} />
             <Route
               path="/Alumni"
               element={

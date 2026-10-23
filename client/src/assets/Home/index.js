@@ -21,7 +21,7 @@ import DirectorImg from "./directorImg.jpeg";
 import BasantSir from "./BasantSir.jpg";
 import RajivSir from "./RajivSir.jpg";
 import BackToSchool from "./BackToSchool.jpg";
-import antyodaya from "./antyodaya.png";
+import antyodaya from "./antyodaya-lossless.webp";
 import Antyodaya2k23 from "./Antyodaya2k23.png";
 import Antyodayavid from "./Antyodayavid.mp4";
 import AboutAntyodaya from "./AboutAntyodaya.jpg"

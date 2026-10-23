@@ -1,6 +1,8 @@
 import axios from "axios";
 import { queryClient } from "../queries/queryClient";
 import { invalidateForSuccessfulWrite } from "../queries/dashboardQueries";
+import { invalidateListsForSuccessfulWrite } from "../queries/listQueries";
+import { invalidateAttendanceForSuccessfulWrite } from "../queries/attendanceQueries";
 
 /**
  * Resolves the server base URL with Ostina-Freight architectural pattern:
@@ -70,6 +72,8 @@ let isRedirecting = false;
 axios.interceptors.response.use(
   (response) => {
     invalidateForSuccessfulWrite(queryClient, response.config);
+    invalidateListsForSuccessfulWrite(queryClient, response.config);
+    invalidateAttendanceForSuccessfulWrite(queryClient, response.config);
     return response;
   },
   (error) => {

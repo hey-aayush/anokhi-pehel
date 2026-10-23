@@ -13,6 +13,7 @@ const Pagination = ({
   usersPerPage,
   handleUsersPerPageChange,
   totalUsers,
+  maxPageSize,
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
@@ -27,6 +28,11 @@ const Pagination = ({
   };
   //Options to change number of users per page
   const generateOptions = (base) => {
+    if (maxPageSize) {
+      return [base, base * 2, maxPageSize].filter((option, index, all) =>
+        option <= maxPageSize && all.indexOf(option) === index
+      );
+    }
     let options = [];
     let i = 1;
     while (i * base < totalUsers) {
@@ -175,7 +181,7 @@ const Pagination = ({
           type="button"
         >
           <span className="mx-1">
-            {usersPerPage === totalUsers ? "All" : `${usersPerPage} per page`}
+            {!maxPageSize && usersPerPage === totalUsers ? "All" : `${usersPerPage} per page`}
           </span>
           {isDropdownOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
         </button>
@@ -188,7 +194,7 @@ const Pagination = ({
                   className="pl-3 pr-8 py-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => handleOptionClick(option)}
                 >
-                  {option === totalUsers ? "All" : `${option} per page`}
+                  {!maxPageSize && option === totalUsers ? "All" : `${option} per page`}
                 </div>
               ))}
             </div>
@@ -209,6 +215,7 @@ Pagination.propTypes = {
   usersPerPage: PropTypes.number,
   handleUsersPerPageChange: PropTypes.func,
   totalUsers: PropTypes.number,
+  maxPageSize: PropTypes.number,
 };
 
 export default Pagination;

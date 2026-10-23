@@ -14,6 +14,7 @@ const {
   getStudentCounts,
 } = require("../controller/studentController");
 const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares.js");
+const { listStudents } = require("../controller/listController");
 
 app.use(cors());
 
@@ -85,15 +86,7 @@ router.route("/addStudent").post(verifyUser, upload.single("photo"), async (req,
   }
 });
 
-router.get("/studentList", verifyUser, async (req, res) => {
-  try {
-    const students = await Student.find();
-    res.json(students);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+router.get("/studentList", verifyUser, listStudents);
 
 router.get("/getstudentByUserId", verifyUser, async (req, res) => {
   const student_id = req.query.studentid;

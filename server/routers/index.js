@@ -14,4 +14,6 @@ router.use(require("./antyodayaRoute"));
 router.use(require("./issue"));
 router.use(require("./settingsRoute"));
 router.use(require("./email.route"));
+router.use(require("./mentorApplicationRoute"));
+router.use(require("./contactRoute"));
 module.exports = router;

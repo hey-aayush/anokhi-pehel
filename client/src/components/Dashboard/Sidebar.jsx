@@ -55,9 +55,12 @@ const Sidebar = () => {
                   if (link.name === "Email-Service" && !user?.isAdmin) {
                     return null; 
                   }
+                  if (link.name === "Applications" && !(user?.isAdmin || ["Coordinator", "Final Year Coordinator", "Alumni", "admin"].includes(user?.role))) {
+                    return null;
+                  }
                   return (
                     <NavLink
-                      to={`/${link.name}`}
+                      to={link.path || `/${link.name}`}
                       key={link.name}
                       style={({ isActive }) => ({
                         backgroundColor: isActive ? currentColor : "",

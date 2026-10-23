@@ -46,6 +46,9 @@ const UserSchema = new Schema({
   branch: {
     type: String,
   },
+  applicationId: {
+    type: String,
+  },
   isAdmin: {
     type: Boolean,
     default: false,

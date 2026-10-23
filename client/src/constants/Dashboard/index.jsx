@@ -1,8 +1,6 @@
-import { AiOutlineUserAdd } from "react-icons/ai";
-import { BiHelpCircle, BiSolidSpreadsheet } from "react-icons/bi";
+import { BiHelpCircle } from "react-icons/bi";
 import { PiStudentFill } from "react-icons/pi";
-import { SiBytedance } from "react-icons/si";
-import { MdSimCardAlert, MdEmail,MdDashboard } from "react-icons/md";
+import { MdEmail,MdDashboard } from "react-icons/md";
 import { GiGamepadCross, GiTeacher, GiChart, GiPencil, GiInspiration } from "react-icons/gi";
 import { FaBook } from "react-icons/fa";
 
@@ -20,6 +18,11 @@ export const links = [
       },
       {
         name: "Mentors",
+        icon: <GiTeacher />,
+      },
+      {
+        name: "Applications",
+        path: "/mentors/applications",
         icon: <GiTeacher />,
       },
       {
@@ -46,24 +49,12 @@ export const links = [
         name: "Email-Service",
         icon: <MdEmail />,
       },
-      {
-        name: "StudyPlan",
-        icon: <BiSolidSpreadsheet />,
-      },
-      {
-        name: "Notice",
-        icon: <MdSimCardAlert />,
-      },
     ],
   },
 
   {
     title: "Activity",
     links: [
-      {
-        name: "Cultural Fest",
-        icon: <SiBytedance />,
-      },
       {
         name: "Antyodaya-Dashboard",
         icon: <GiGamepadCross />,
@@ -76,10 +67,6 @@ export const links = [
       {
         name: "Issue",
         icon: <BiHelpCircle />,
-      },
-      {
-        name: "Volunteer",
-        icon: <AiOutlineUserAdd />,
       },
     ],
   },

@@ -16,12 +16,11 @@ const Navbar = () => {
         <Link to="/">Anokhi पहल</Link>
       </span>
 
-      <ul className="list-none sm:flex hidden justify-end items-center flex-1">
-        {navLinks.map((nav, index) => (
+      <ul className="list-none lg:flex hidden justify-end items-center flex-1 gap-5">
+        {navLinks.map((nav) => (
           <li
             key={nav.id}
-            className={`font-poppins font-medium cursor-pointer text-[16px] ${active === nav.title ? "text-black font-bold" : "text-slate-900"
-              } ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}`}
+            className={`font-poppins font-medium cursor-pointer text-[16px] ${active === nav.title ? "text-black font-bold" : "text-slate-900"}`}
             onClick={() => setActive(nav.title)}
           >
             <Link to={`/${nav.id}`}>{nav.title}</Link>
@@ -30,15 +29,14 @@ const Navbar = () => {
         {token &&
           <li
             key="dashboard"
-            className={`font-poppins font-medium cursor-pointer text-[16px] ${active === "dashboard" ? "text-black font-bold" : "text-slate-900"
-              } ${5 === navLinks.length - 1 ? "mr-0" : "mr-10"} ml-10`}
+            className={`font-poppins font-medium cursor-pointer text-[16px] ${active === "dashboard" ? "text-black font-bold" : "text-slate-900"}`}
             onClick={() => setActive("dashboard")}
           >
             <Link to={`/dashboard`}> Dashboard</Link>
           </li>
         }
       </ul>
-      <div className="sm:hidden flex flex-1 justify-end items-center gap-3">
+      <div className="lg:hidden flex flex-1 justify-end items-center gap-3">
         {token && (
           <Link
             to="/dashboard"
@@ -67,7 +65,7 @@ const Navbar = () => {
                     ? "text-black font-bold"
                     : "text-gray-600"
                   } ${index === navLinks.length - 1 ? "mb-0" : "mb-4"}`}
-                onClick={() => setActive(nav.title)}
+                onClick={() => { setActive(nav.title); setToggle(false); }}
               >
                 <Link to={`/${nav.id}`}>{nav.title}</Link>
               </li>

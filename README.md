@@ -1,45 +1,30 @@
 # Anokhi Pehel
 
-Anokhi Pehel is a web application for managing participants, users, events, attendance, mentors, and related programme data.
+React/Vite frontend and Express/Mongoose API for participants, events, attendance, mentors, and programme data.
 
-## Repository layout
+## Run locally
 
-- `client/` - React and Vite frontend.
-- `server/` - Express and MongoDB backend.
-- `docs/` - Architecture and development guidance.
-
-## Prerequisites
-
-- Node.js 18 or newer.
-- npm.
-- A MongoDB connection string and the external service credentials used by the server.
-
-## Local setup
-
-1. Install root dependencies with `npm install`.
-2. Install frontend dependencies with `npm install --prefix client`.
-3. Copy `server/.env.example` to `server/.env` and fill in the required values.
-4. Copy `client/.env.example` to `client/.env` and set the local API and server URLs.
-5. Start the backend with `node server/index.js`.
-6. Start the frontend with `npm run dev --prefix client`.
-
-The exact environment values are deployment-specific. Never commit `.env` files or credentials.
-
-## Common commands
+Requires Node.js 18+, npm, and MongoDB. From the repository root:
 
 ```sh
-npm run build
-npm run dev --prefix client
-npm run lint --prefix client
+npm install                  # root install script also installs client and server packages
+cp server/.env.example server/.env
+# Set DB_URL and JWT_SECRET in server/.env; leave PORT unset for the 8080 default.
+cp client/.env.example client/.env
+npm start                    # terminal 1: Express at http://localhost:8080
+npm run dev --prefix client  # terminal 2: Vite at http://localhost:5173
 ```
 
-The root build creates the frontend production bundle and prepares it for the server. Run checks from the directory that owns the relevant package script.
+The [client env example](client/.env.example) points API calls and uploaded images to the local server. If `client/.env` is omitted, API calls use Vite's proxy to port 8080, while image URLs use the deployed origin. Never commit `.env` files. The API health endpoint is `/health`.
 
-## Change guidelines
+## Checks
 
-- Preserve existing API paths and response shapes unless a migration is explicitly planned.
-- Prefer small, reversible changes that can be deployed independently.
-- Add or update documentation when setup, configuration, or ownership changes.
-- Keep secrets, uploaded files, build output, and local environment files out of Git.
+```sh
+npm run test:client
+npm run test:server
+npm run lint --prefix client
+npm run validate:server
+npm run build
+```
 
-See [`AGENTS.md`](./AGENTS.md), [`docs/architecture.md`](./docs/architecture.md), and [`docs/development.md`](./docs/development.md) for the working rules.
+`npm run build` creates `client/dist`; the Express server serves it in production. See [AGENTS.md](AGENTS.md) for agent rules, [docs/architecture.md](docs/architecture.md) for code ownership and API/cache contracts, and [docs/development.md](docs/development.md) for verification and delivery guidance. The [client README](client/README.md) contains frontend-specific commands.

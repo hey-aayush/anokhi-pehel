@@ -37,7 +37,7 @@ const Participants = () => {
     useState(false);
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
     useState(false);
-  const [selectedSession, setSelectedSession] = useState([]); // State to hold selected session
+  const [selectedSession, setSelectedSession] = useState([new Date().getFullYear()]); // State to hold selected session
   const initialUsers = 40;
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(initialUsers);
@@ -316,7 +316,7 @@ const Participants = () => {
       {isPending && <Spinner />}
       {isError && <p role="alert">Unable to load participants. Please try again.</p>}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
-        <Header category="Antyodaya2k25" title="Participants" />
+        <Header category={selectedSession.length === 1 ? `Antyodaya ${selectedSession[0]}` : "Antyodaya"} title="Participants" />
         <div className="mx-auto max-w-screen-xl">
           <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">

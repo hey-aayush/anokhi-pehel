@@ -23,7 +23,7 @@ const EventPage = () => {
   const [searchCoordinator, setSearchCoordinator] = useState(""); // Coordinator name filter state
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
       useState(false);
-  const [selectedSession, setSelectedSession] = useState([]);
+  const [selectedSession, setSelectedSession] = useState([new Date().getFullYear()]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   
 
@@ -170,7 +170,7 @@ const EventPage = () => {
     <DashboardLayout>
       {loading && <Spinner />}
     <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
-        <Header category="Antyodaya2k25" title="Events" />
+        <Header category={selectedSession.length === 1 ? `Antyodaya ${selectedSession[0]}` : "Antyodaya"} title="Events" />
         <div>
             {user?.isAdmin === true && (
                 <Button

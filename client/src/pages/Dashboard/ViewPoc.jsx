@@ -16,7 +16,7 @@ const ViewPocList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
     useState(false);
-  const [selectedSession, setSelectedSession] = useState([]);
+  const [selectedSession, setSelectedSession] = useState([new Date().getFullYear()]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
   useEffect(() => {
@@ -136,7 +136,7 @@ const ViewPocList = () => {
   return (
     <DashboardLayout>
       <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
-        <Header category="Antyodaya2k25" title="Point of Contact of Schools" />
+        <Header category={selectedSession.length === 1 ? `Antyodaya ${selectedSession[0]}` : "Antyodaya"} title="Point of Contact of Schools" />
       </div>
       <div className="m-2 md:m-0 mt-0 p-2 md:p-7 bg-white rounded-3xl">
         <h2 className="text-center text-xl font-bold tracking-tight text-slate-900">

@@ -19,6 +19,7 @@ const Mentor = () => {
   const currentColor = "#03C9D7";
   let navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
+  const canReview = user?.isAdmin === true || user?.role === "Coordinator" || user?.role === "Final Year Coordinator";
 
   const onClick = () => {
     navigate("/AddMentors7282vdsghbhdghd");
@@ -55,6 +56,7 @@ const Mentor = () => {
   }, []);
 
   useEffect(() => {
+    if (!canReview) return;
     const fetchInActiveUsers = async () => {
       try {
         setIsLoading(true);
@@ -71,7 +73,7 @@ const Mentor = () => {
     };
 
     fetchInActiveUsers();
-  }, []);
+  }, [canReview]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -179,7 +181,7 @@ const Mentor = () => {
       <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
         <Header category="Academics" title="Mentors" />
         <div>
-          {user?.isAdmin === true && (
+          {canReview && (
             <div>
               <Button
                 color="white"
@@ -190,6 +192,7 @@ const Mentor = () => {
                 height="10px"
                 custumFunc={onClick}
               />
+              <Link to="/mentors/applications" className="ml-3 inline-block rounded bg-teal-600 px-4 py-2 text-white">Applications</Link>
 
               <label className="ml-2 inline-flex items-center cursor-pointer">
                 <input
@@ -309,11 +312,12 @@ const Mentor = () => {
         </div>
       </div>
 
-      {user?.isAdmin === true && (
+      {canReview && (
         <div>
           <h2 className="text-center text-xl font-bold tracking-tight text-slate-900">
-            Inactive Users
+            Inactive mentor accounts (legacy)
           </h2>
+          <p className="text-center text-sm text-gray-600">New applications follow the separate approval workflow above.</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500 ">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-x border-t">

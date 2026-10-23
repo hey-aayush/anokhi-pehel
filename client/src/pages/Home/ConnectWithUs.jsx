@@ -1,6 +1,37 @@
 import styles from "../../style";
 import HomePageLayout from "../../components/Home/HomePageLayout";
-const App = () => (
+import { useState } from "react";
+import { apiPost, getErrorMessage } from "../../Service/apiClient";
+
+const App = () => {
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setFeedback(null);
+    setSubmitting(true);
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    try {
+      const { data } = await apiPost("/contact", {
+        name: values.get("name"),
+        email: values.get("email"),
+        address: values.get("address"),
+        phone: values.get("tel"),
+        alumni: values.get("accountType"),
+        message: values.get("message"),
+      });
+      form.reset();
+      setFeedback({ type: "success", text: data.message });
+    } catch (error) {
+      setFeedback({ type: "error", text: getErrorMessage(error) });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
   <HomePageLayout>
     <div className={`bg-primary ${styles.flexStart}`}>
       <div className={`${styles.boxWidth}`}>
@@ -133,7 +164,7 @@ const App = () => (
               <div className="w-16 h-1 rounded-full bg-teal-500 inline-flex"></div>
             </div>
           </div>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="lg:w-1/2 md:w-2/3 mx-auto">
               <div className="flex flex-wrap -m-2">
                 <div className="p-2 w-1/2">
@@ -148,6 +179,8 @@ const App = () => (
                       type="text"
                       id="name"
                       name="name"
+                      required
+                      maxLength={100}
                       placeholder="Name"
                       className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                     />
@@ -165,6 +198,8 @@ const App = () => (
                       type="email"
                       id="email"
                       name="email"
+                      required
+                      maxLength={254}
                       placeholder="E-mail"
                       className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                     />
@@ -179,9 +214,10 @@ const App = () => (
                       Address
                     </label>
                     <input
-                      type="address"
+                      type="text"
                       id="address"
                       name="address"
+                      maxLength={200}
                       placeholder="eg- Allahabad"
                       className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                     />
@@ -199,6 +235,7 @@ const App = () => (
                       type="tel"
                       id="tel"
                       name="tel"
+                      maxLength={30}
                       placeholder="eg : 9787876546"
                       className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                     />
@@ -214,6 +251,7 @@ const App = () => (
                         type="radio"
                         className="form-radio"
                         name="accountType"
+                        value="yes"
                       />
                       <span className="ml-2 leading-7 text-sm text-gray-600">
                         Yes
@@ -224,6 +262,7 @@ const App = () => (
                         type="radio"
                         className="form-radio"
                         name="accountType"
+                        value="no"
                       />
                       <span className="ml-2 leading-7 text-sm text-gray-600">
                         No
@@ -242,23 +281,27 @@ const App = () => (
                     <textarea
                       id="message"
                       name="message"
+                      required
+                      maxLength={3000}
                       placeholder="Put your thoughts here."
                       className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"
                     ></textarea>
                   </div>
                 </div>
                 <div className="p-2 w-full">
-                  <button className="flex mx-auto text-white bg-teal-500 border-0 py-2 px-8 focus:outline-none hover:bg-teal-600 rounded text-lg">
-                    Connect
+                  <button type="submit" disabled={submitting} className="flex mx-auto text-white bg-teal-500 border-0 py-2 px-8 focus:outline-none hover:bg-teal-600 rounded text-lg disabled:opacity-50">
+                    {submitting ? "Sending..." : "Connect"}
                   </button>
                 </div>
               </div>
             </div>
           </form>
+          {feedback && <p role="alert" className={`mx-auto mt-4 max-w-xl rounded p-3 text-center ${feedback.type === "error" ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>{feedback.text}</p>}
         </div>
       </section>
     </div>
   </HomePageLayout>
-);
+  );
+};
 
 export default App;

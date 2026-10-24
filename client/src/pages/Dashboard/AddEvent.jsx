@@ -2,14 +2,10 @@ import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import { useState } from "react";
 import axios from "axios";
 import { times } from "../../constants/Dashboard";
-//import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../../src/Service/helper";
-//import { useSelector } from "react-redux";
 import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
 import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 const AddEvent = () => {
-  //const navigate = useNavigate();
-  //const { user } = useSelector((state) => state.user);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,13 +24,16 @@ const AddEvent = () => {
     festName: "Antyodaya2k24",
   });
 
-  const submitEvent = () => {
+  
+  // Send the topic data to the server using Axios
+    const submitEvent = () => {
     setIsSubmitting(true);
     axios
       .post(`${BASE_URL}/addEvent`, credentials)
       .then((response) => {
         console.log(response);
 
+        // Check if the event was added successfully based on status code
         if (response.status === 201) {
           setSuccessMessage("Event submitted successfully");
           setShowSuccess(true);
@@ -65,11 +64,16 @@ const AddEvent = () => {
       })
       .catch((error) => {
         console.error("Error occurred:", error);
+
+        // Check for server errors
         if (error.response) {
+          // If the server responded with a status other than 2xx
           setErrorMessage(`Error: ${error.response.data.message || "Something went wrong"}`);
         } else if (error.request) {
+          // If no response was received from the server
           setErrorMessage("Error: No response from server. Please try again later.");
         } else {
+          // Catch any other errors in the request setup
           setErrorMessage("Error: Failed to send request.");
         }
         setShowError(true);

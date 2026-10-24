@@ -7,15 +7,12 @@ import "react-datepicker/dist/react-datepicker.css";
 import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
 import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 
-
 const AddAntyodayaParticipant = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
   const [credentials, setCredentials] = useState({
     name: "",
     class: "",
@@ -207,7 +204,7 @@ const AddAntyodayaParticipant = () => {
 
     try {
       const res = await axios.post(`${BASE_URL}/addParticipants`, formData);
-      if (res.data === "Participant Added") {
+      if (res.data === "Participant Added" || res.status === 201) {
         setSuccessMessage("Participant submitted successfully!");
         setShowSuccess(true);
         setCredentials({
@@ -642,8 +639,6 @@ const AddAntyodayaParticipant = () => {
             </button>
           </div>
         </form>
-
-
       </div>
     </DashboardLayout>
   );

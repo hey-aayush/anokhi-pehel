@@ -1,14 +1,10 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import { useState } from "react";
 import axios from "axios";
-//import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../../src/Service/helper";
-//import { useSelector } from "react-redux";
 import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
 import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 const AddPoc = () => {
-  //const navigate = useNavigate();
-  //const { user } = useSelector((state) => state.user);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

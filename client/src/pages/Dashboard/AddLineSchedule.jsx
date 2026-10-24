@@ -12,9 +12,9 @@ import WarningModel from "../../components/Models/WarningModel";
 const AddLineSchedule = () => {
   const [userNames, setUserNames] = useState([]);
   const { user } = useSelector((state) => state.user);
-  const [showSuccess, setShowSuccess] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [showWarning, setShowWarning] = useState(false);
+  const [showWarning,setShowWarning] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [warningDetails, setWarningDetails] = useState("");
@@ -61,6 +61,7 @@ const AddLineSchedule = () => {
       .post(`${BASE_URL}/addLineSchedule`, schedule)
       .then((res) => {
         console.log(res.data);
+        // Check if the response indicates success (you should have a proper way to determine success)
         if (res.data === "Schedule Added") {
           setSuccessMessage("Schedule Added successfully!");
           setShowSuccess(true);

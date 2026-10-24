@@ -14,9 +14,13 @@ import { FaEye } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { classes, locations } from "../../constants/Dashboard";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { BASE_URL } from "../../../src/Service/helper";
+import { getAllStudents, getStudentPage } from "../../Service/listApi";
+import { listKeys } from "../../queries/listQueries";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { downloadPDF } from "../../../src/Service/utilityfunctions";
 import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../../components/Spinner.jsx";
@@ -24,7 +28,6 @@ import Pagination from "../../components/Dashboard/Pagination.jsx";
 
 const Student = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const { user } = useSelector((state) => state.user);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const [isFilterByClassDropdownOpen, setFilterByClassDropdownOpen] =
@@ -59,34 +62,20 @@ const Student = () => {
     if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
   };
 
-  const [students, setStudents] = useState([]);
   const [filterName, setFilterName] = useState("");
+  const debouncedName = useDebouncedValue(filterName);
 
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const toggleDropdown = (studentId) => {
     setOpenDropdownId(openDropdownId === studentId ? null : studentId);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.get(`${BASE_URL}/studentList`);
-        setStudents(response.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false); // Set loading state to false once data is fetched
-      }
-    };
-    fetchData();
-  }, []);
-
   // State to hold selected classes
   const [selectedClasses, setSelectedClasses] = useState([]);
 
   // Update selected classes when a checkbox is clicked
   const handleClassCheckboxChange = (e) => {
+    setCurrentPage(1);
     const { id } = e.target;
     const isChecked = e.target.checked;
 
@@ -104,6 +93,7 @@ const Student = () => {
 
   // Update selected locations when a checkbox is clicked
   const handleLocationCheckboxChange = (e) => {
+    setCurrentPage(1);
     const { id } = e.target;
     const isChecked = e.target.checked;
 
@@ -119,39 +109,23 @@ const Student = () => {
     }
   };
 
-  useEffect(() => {
-    // This code block will execute whenever selectedLocations changes
-    // console.log("Selected locations updated:", selectedLocations);
-  }, [selectedLocations, selectedClasses]); // Adding selectedLocations as a dependency
-
-  let filteredStudents = students;
-
-  if (selectedLocations.length > 0) {
-    filteredStudents = filteredStudents.filter((student) =>
-      selectedLocations.includes(student.location)
-    );
-  }
-
-  if (selectedClasses.length > 0) {
-    filteredStudents = filteredStudents.filter((student) =>
-      selectedClasses.includes(student.className)
-    );
-  }
-  // console.log(filteredStudents);
-
-  filteredStudents = filteredStudents.filter((user) => {
-    const userName = user.name ? user.name.toLowerCase() : "";
-    return userName.includes(filterName.toLowerCase());
+  const filters = {
+    classes: selectedClasses.slice().sort().join(","),
+    locations: selectedLocations.slice().sort().join(","),
+    name: debouncedName.trim(),
+  };
+  const pageParams = { ...filters, page: currentPage, limit: usersPerPage };
+  const { data, isPending, isError } = useQuery({
+    queryKey: listKeys.studentPage(pageParams),
+    queryFn: ({ signal }) => getStudentPage(pageParams, signal),
   });
+  const currentUsers = data?.items ?? [];
+  const totalUsers = data?.total ?? 0;
+  const totalPages = Math.ceil(totalUsers / usersPerPage);
 
-  //Pagination
-  // Calculate the indices for the current page
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredStudents.slice(
-    indexOfFirstUser,
-    indexOfLastUser
-  );
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
   // Function to handle page change
   const handlePageChange = (pageNumber) => {
@@ -169,14 +143,11 @@ const Student = () => {
       setCurrentPage(currentPage + 1);
     }
   };
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredStudents.length / usersPerPage);
-
   const handleUsersPerPageChange = (e) => {
     setUsersPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
-  const handleDownloadTable = () => {
+  const handleDownloadTable = async () => {
     const columns = [
       { label: "Name", key: "name" },
       { label: "Class", key: "className" },
@@ -186,7 +157,11 @@ const Student = () => {
       { label: "School", key: "school" }
     ];
 
-    downloadPDF(filteredStudents, columns, "students_table");
+    try {
+      downloadPDF(await getAllStudents(filters), columns, "students_table");
+    } catch (error) {
+      console.error("Unable to download students:", error);
+    }
   };
 
   const handleDelete = async (studentId) => {
@@ -222,7 +197,8 @@ const Student = () => {
 
   return (
     <DashboardLayout>
-      {isLoading && <Spinner />}
+      {isPending && <Spinner />}
+      {isError && <p role="alert">Unable to load students. Please try again.</p>}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
         <Header category="Academics" title="Students" />
         <div className="mx-auto max-w-screen-xl">
@@ -244,7 +220,7 @@ const Student = () => {
                       placeholder="Search"
                       required=""
                       value={filterName}
-                      onChange={(e) => setFilterName(e.target.value)}
+                      onChange={(e) => { setFilterName(e.target.value); setCurrentPage(1); }}
                     />
                   </div>
                 </form>
@@ -518,7 +494,8 @@ const Student = () => {
               initialUsers={initialUsers}
               usersPerPage={usersPerPage}
               handleUsersPerPageChange={handleUsersPerPageChange}
-              totalUsers={filteredStudents.length}
+              totalUsers={totalUsers}
+              maxPageSize={100}
             />
           </div>
         </div>

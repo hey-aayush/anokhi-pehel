@@ -15,6 +15,10 @@ const Antyodaya = () => {
         <img
           src={antyodaya}
           alt="Antyodaya"
+          loading="lazy"
+          decoding="async"
+          width="2860"
+          height="1322"
           className="w-[400px] h-[270px] object-cover rounded-lg"
         />
       </div>

@@ -1,39 +1,19 @@
-# Agent instructions
+# Agent guide
 
-## Scope
+Read the nearest package, target files, callers, and current diff before editing. Open [architecture](docs/architecture.md) or [development](docs/development.md) only when needed.
 
-This repository contains a Vite React client and an Express/Mongoose server. Read the nearest package and relevant domain files before editing. Keep changes within the requested layer and avoid unrelated formatting churn.
+## Map
 
-## Safety rules
+- `client/src/App.jsx`: routes; `client/src/Service/`: API helpers; `client/src/queries/`: cache keys and invalidation.
+- `server/routers/`: routes; `server/controller/`: handlers; `server/models/`: persistence.
 
-- Treat production behavior and existing API contracts as compatibility constraints.
-- Do not change URLs, authentication behavior, database fields, upload paths, or response shapes without an explicit migration plan.
-- Do not commit secrets, `.env` files, generated `dist/` output, uploaded images, or dependency directories.
-- Preserve existing user changes in a dirty worktree.
-- Prefer small patches that are easy to review and revert.
+## Rules
 
-## Engineering rules
+- Preserve production behavior and API contracts. Changing URLs, auth, database fields, upload paths, or response shapes requires an explicit migration plan.
+- Preserve dirty-worktree changes. Stay within the requested layer; make small patches without unrelated formatting.
+- Reuse helpers. Keep routing, validation, business logic, and persistence separate. Use environment variables for deployment configuration. Handle errors at boundaries; remove debug logs.
+- Never commit secrets, `.env`, `dist/`, uploads, or dependencies. Update docs for changed commands, configuration, contracts, or boundaries.
 
-- Reuse existing helpers and patterns before introducing abstractions.
-- Keep route wiring, request validation, business logic, and persistence separate as code is refactored.
-- Use environment variables for deployment-specific configuration.
-- Handle errors at the boundary and avoid leaving debug logging in production paths.
-- Update documentation when a command, configuration value, API contract, or architectural boundary changes.
+## Verify
 
-## Verification
-
-Run the narrowest relevant checks first, then broaden them when shared code changes:
-
-```sh
-npm run lint --prefix client
-npm run build
-```
-
-If dependencies are unavailable, report that explicitly instead of changing lockfiles or installing packages as part of an unrelated refactor.
-
-## Working sequence
-
-1. Inspect the target files and their callers.
-2. State the compatibility risk in the change summary.
-3. Make the smallest coherent patch.
-4. Run focused checks and inspect the final diff.
+Run focused checks first; broaden for shared code. Client: `npm run lint --prefix client` and `npm run build`; changed behavior: `npm run test:client` or `npm run test:server`; server JavaScript: `npm run validate:server`. For docs-only changes, check links, commands, and diff. Report missing dependencies rather than installing or changing lockfiles for an unrelated task. State compatibility risk in the summary.

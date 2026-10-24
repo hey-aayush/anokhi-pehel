@@ -14,7 +14,8 @@ import { FaEye } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { classes } from "../../constants/Dashboard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { BASE_URL } from "../../../src/Service/helper";
@@ -22,10 +23,15 @@ import { downloadCSV, downloadPDF } from "../../../src/Service/utilityfunctions"
 import { useNavigate, Link } from "react-router-dom";
 import Spinner from "../../components/Spinner.jsx";
 import Pagination from "../../components/Dashboard/Pagination.jsx";
+import { getAllParticipants, getEvents, getParticipantPage } from "../../Service/listApi";
+import { listKeys } from "../../queries/listQueries";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+
+const getAvailableSessions = (items) =>
+  [...new Set((Array.isArray(items) ? items : []).map((e) => e.year).filter(Boolean))].sort((a, b) => b - a);
 
 const Participants = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const { user } = useSelector((state) => state.user);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const [isFilterByClassDropdownOpen, setFilterByClassDropdownOpen] =
@@ -66,39 +72,21 @@ const Participants = () => {
       setFilterByClassDropdownOpen(!isFilterByClassDropdownOpen);
     if (isActionsDropdownOpen) setActionsDropdownOpen(!isActionsDropdownOpen);
   };
-  const [students, setStudents] = useState([]);
-  const [events, setEvents] = useState([]);
   const [filterName, setFilterName] = useState("");
   const [filterSchool, setFilterSchool] = useState(""); 
+  const debouncedName = useDebouncedValue(filterName);
+  const debouncedSchool = useDebouncedValue(filterSchool);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const toggleDropdown = (studentId) => {
     setOpenDropdownId(openDropdownId === studentId ? null : studentId);
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const [participantsResponse, eventsResponse] = await Promise.all([
-          axios.get(`${BASE_URL}/participantList`),
-          axios.get(`${BASE_URL}/getEvents`),
-        ]);
-        setStudents(participantsResponse.data);
-        setEvents(eventsResponse.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false); // Set loading state to false once data is fetched
-      }
-    };
-    fetchData();
-  }, []);
 
   // State to hold selected classes
   const [selectedClasses, setSelectedClasses] = useState([]);
 
   // Update selected classes when a checkbox is clicked
   const handleClassCheckboxChange = (e) => {
+    setCurrentPage(1);
     const { id } = e.target;
     const isChecked = e.target.checked;
 
@@ -112,6 +100,7 @@ const Participants = () => {
   };
 
   const handleSessionBoxChange = (e) => {
+    setCurrentPage(1);
     const { value, checked } = e.target;
     const year = Number(value);
 
@@ -122,65 +111,36 @@ const Participants = () => {
     }
   };
 
-  // State to hold selected locations
-  const [selectedLocations] = useState([]);
-
+  const filters = {
+    classes: selectedClasses.slice().sort().join(","),
+    years: selectedSession.slice().sort().join(","),
+    name: debouncedName.trim(),
+    school: debouncedSchool.trim(),
+  };
+  const pageParams = { ...filters, page: currentPage, limit: usersPerPage };
+  const { data, isPending, isError } = useQuery({
+    queryKey: listKeys.participantPage(pageParams),
+    queryFn: ({ signal }) => getParticipantPage(pageParams, signal),
+    placeholderData: keepPreviousData,
+  });
+  const { data: events = [] } = useQuery({
+    queryKey: listKeys.events,
+    queryFn: ({ signal }) => getEvents(signal),
+  });
+  const availableSessions = useMemo(() => getAvailableSessions(events), [events]);
+  const currentUsers = data?.items ?? [];
+  const totalUsers = data?.total ?? 0;
+  const totalPages = Math.ceil(totalUsers / usersPerPage);
+  const getExportStudents = async () =>
+    (await getAllParticipants(filters)).sort((a, b) =>
+      b.year - a.year || (a.name || "").localeCompare(b.name || "")
+    );
 
   useEffect(() => {
-    // This code block will execute whenever selectedLocations changes
-    // console.log("Selected locations updated:", selectedLocations);
-  }, [selectedLocations, selectedClasses]); // Adding selectedLocations as a dependency
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
-  // Ensure students is an array, even if it's initially undefined or null
-let filteredStudents = Array.isArray(students) ? students : [];
-
-if (selectedLocations.length > 0) {
-  filteredStudents = filteredStudents.filter((student) =>
-    selectedLocations.includes(student.location)
-  );
-}
-
-if (selectedClasses.length > 0) {
-  filteredStudents = filteredStudents.filter((student) =>
-    selectedClasses.includes(student.class)
-  );
-}
-
-if(selectedSession.length > 0){
-  filteredStudents = filteredStudents.filter((student) =>
-    selectedSession.includes(student.year)
-  );
-}
-
-// Filter by student name and school
-filteredStudents = filteredStudents.filter((user) => {
-  const userName = user.name ? user.name.toLowerCase() : "";
-  const schoolName = user.school ? user.school.toLowerCase() : ""; // Add filter by school
-  return (
-    userName.includes(filterName.toLowerCase()) &&
-    schoolName.includes(filterSchool.toLowerCase())
-  );
-});
-
-let sortedStudents = [...filteredStudents].sort((a, b) => {
-  // 1. Sort by year descending
-    if (a.year !== b.year) return b.year - a.year;
-
-    // 2. Sort by name descending (Z → A)
-    const nameA = a.name.toLowerCase();
-    const nameB = b.name.toLowerCase();
-    if (nameA < nameB) return -1;
-    if (nameA > nameB) return 1;
-
-  });
-
-// console.log(filteredStudents);
-
-
-  //Pagination
-  // Calculate the indices for the current page
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const indexOfFirstUser = (currentPage - 1) * usersPerPage;
 
   // Function to handle page change
   const handlePageChange = (pageNumber) => {
@@ -198,14 +158,11 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
       setCurrentPage(currentPage + 1);
     }
   };
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredStudents.length / usersPerPage);
-
   const handleUsersPerPageChange = (e) => {
     setUsersPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
-  const handleDownloadTable = () => {
+  const handleDownloadTable = async () => {
     const columns = [
       { label: "S.No.", key: "index" },
       { label: "Name", key: "name" },
@@ -215,15 +172,18 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
       { label: "Year", key: "year" }
     ];
 
-    const dataWithIndex = sortedStudents.map((student, index) => ({
-      ...student,
-      index: index + 1
-    }));
-
-    downloadPDF(dataWithIndex, columns, "students_table");
+    try {
+      const dataWithIndex = (await getExportStudents()).map((student, index) => ({
+        ...student,
+        index: index + 1
+      }));
+      downloadPDF(dataWithIndex, columns, "students_table");
+    } catch (error) {
+      console.error("Unable to export participants:", error);
+    }
   };
 
-  const handleDownloadTableCsv = () => {
+  const handleDownloadTableCsv = async () => {
     const columns = [
       { label: "S.No.", key: "index" },
       { label: "Name", key: "name" },
@@ -233,16 +193,21 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
       { label: "Year", key: "year" }
     ];
 
-    const dataWithIndex = sortedStudents.map((student, index) => ({
-      ...student,
-      index: index + 1
-    }));
-
-    downloadCSV(dataWithIndex, columns, "students_table");
+    try {
+      const dataWithIndex = (await getExportStudents()).map((student, index) => ({
+        ...student,
+        index: index + 1
+      }));
+      downloadCSV(dataWithIndex, columns, "students_table");
+    } catch (error) {
+      console.error("Unable to export participants:", error);
+    }
   };
 
   // Download Excel workbook with multiple sheets (one per school)
-  const handleDownloadExcelBySchool = () => {
+  const handleDownloadExcelBySchool = async () => {
+    try {
+    const sortedStudents = await getExportStudents();
     const eventGroups = [...new Set(
       events.map((event) => event.eventGroup).filter(Boolean)
     )].sort();
@@ -251,7 +216,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
     );
 
     // Get unique schools from filtered students
-    const uniqueSchools = [...new Set(filteredStudents.map(student => student.school))].sort();
+    const uniqueSchools = [...new Set(sortedStudents.map(student => student.school))].sort();
     
     // Create a new workbook
     const workbook = XLSX.utils.book_new();
@@ -309,6 +274,9 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
     
     // Download the workbook
     XLSX.writeFile(workbook, `students_by_school.xlsx`);
+    } catch (error) {
+      console.error("Unable to export participants:", error);
+    }
   };
        
 
@@ -349,9 +317,10 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
 
   return (
     <DashboardLayout>
-      {isLoading && <Spinner />}
+      {isPending && <Spinner />}
+      {isError && <p role="alert">Unable to load participants. Please try again.</p>}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
-        <Header category="Antyodaya2k25" title="Participants" />
+        <Header category={selectedSession.length === 1 ? `Antyodaya ${selectedSession[0]}` : "Antyodaya"} title="Participants" />
         <div className="mx-auto max-w-screen-xl">
           <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -371,7 +340,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                       placeholder="Search by name"
                       required=""
                       value={filterName}
-                      onChange={(e) => setFilterName(e.target.value)}
+                      onChange={(e) => { setFilterName(e.target.value); setCurrentPage(1); }}
                     />
                   </div>
                 </form>
@@ -391,7 +360,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full pl-10 p-2"
                       placeholder="Search by School"
                       value={filterSchool} // Add search by school value
-                      onChange={(e) => setFilterSchool(e.target.value)} // Add search by school onChange
+                      onChange={(e) => { setFilterSchool(e.target.value); setCurrentPage(1); }}
                     />
                   </div>
                 </form>
@@ -527,7 +496,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                     {isFilterBySessionDropdownOpen && (
                       <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow">
                         <ul className="space-y-2 text-sm">
-                          {[2024, 2025].map((year) => (
+                          {availableSessions.map((year) => (
                             <li key={year} className="flex items-center">
                               <input
                                 id={year}
@@ -584,7 +553,7 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
                   </tr>
                 </thead>
                 <tbody className="border-b">
-                  {sortedStudents.map((student,index) => (
+                  {currentUsers.map((student,index) => (
                     <tr key={student._id} className="border-x">
                     <td className="px-4 py-3">{indexOfFirstUser+index+1}</td>
                       <th
@@ -666,7 +635,8 @@ let sortedStudents = [...filteredStudents].sort((a, b) => {
               initialUsers={initialUsers}
               usersPerPage={usersPerPage}
               handleUsersPerPageChange={handleUsersPerPageChange}
-              totalUsers={filteredStudents.length}
+              totalUsers={totalUsers}
+              maxPageSize={100}
             />
           </div>
         </div>

@@ -8,6 +8,7 @@ const multer = require("multer");
 const POC = require("../models/PointOfContact");
 const { addParticipants } = require("../controller/antyodayaController");
 const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
+const { listParticipants } = require("../controller/listController");
 
 // Route to add a new event
 router.post("/addEvent", verifyUser, requireAdmin, async (req, res) => {
@@ -273,17 +274,7 @@ router.get("/getEventByEventId", async (req, res) => {
     }
   });
   
-  router.get("/participantList", verifyUser, async (req, res) => {
-    try {
-      const { year } = req.query;
-      const filter = year && !isNaN(Number(year)) ? { year: Number(year) } : {};
-      const students = await Participant.find(filter).lean();
-      res.json(students);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
+  router.get("/participantList", verifyUser, listParticipants);
 
   router.delete("/deleteParticipants/:studentId", verifyUser, requireAdmin, async (req, res) => {
     const { studentId } = req.params;

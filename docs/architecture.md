@@ -10,7 +10,7 @@ client (React/Vite) -> HTTP API -> server (Express) -> MongoDB
                                       |-> email and Google integrations
 ```
 
-The server exposes routes below `/api/v1/user`. It also serves uploaded images and, in the production build, serves the frontend bundle. The client currently contains page-level data fetching and shared URL constants.
+The server exposes routes below `/api/v1/user`. It also serves uploaded images and, in the production build, the frontend bundle. The client uses shared API helpers and a mix of page-level and React Query data fetching.
 
 ## Main boundaries
 
@@ -18,7 +18,7 @@ The server exposes routes below `/api/v1/user`. It also serves uploaded images a
 - `client/src/pages/` contains user-facing screens and feature workflows.
 - `client/src/components/` contains reusable presentation and interaction components.
 - `client/src/Service/` contains current client service helpers.
-- Redux owns session and UI state. React Query owns migrated API data; dashboard overview is the first migrated read. `client/src/queries/` owns its query keys and invalidation policy.
+- Redux owns session and UI state. React Query owns migrated API data for the dashboard overview, paged lists, events, and monthly attendance. `client/src/queries/` owns query keys and invalidation rules.
 - `server/routers/` owns HTTP route registration and currently contains some request and persistence logic.
 - `server/controller/` contains server handlers for selected domains.
 - `server/models/` contains Mongoose models.
@@ -49,11 +49,27 @@ The target structure is guidance for future phases, not a reason to move files i
 
 ## Client cache policy
 
-The dashboard overview is fresh by date for 30 seconds and retained for up to
-five minutes after its last use. Successful attendance, topic, or student writes
-cancel in-flight overview reads and invalidate every
-cached overview date. The mapping is in `client/src/queries/dashboardQueries.js`
-and is invoked by the shared Axios response interceptor. Authenticated cached
-data is cleared on logout, password change, or session rejection. When adding
-another cached read, add every write that can change it to the invalidation
-mapping and test an in-flight read that overlaps a write.
+React Query data is fresh for 30 seconds and retained for up to five minutes
+after its last use. Successful writes cancel affected in-flight reads and
+invalidate their keys through the shared Axios response interceptor and
+`client/src/queries/`. Authenticated cached data is cleared on logout,
+password change, or session rejection. When adding a cached read, map every
+write that can change it and test an in-flight read that overlaps a write.
+
+Student and participant list pages now use filtered, paginated React Query reads.
+Their successful writes invalidate all cached pages; exports request the complete
+filtered array only when the user downloads it. Attendance tables cache each
+class and month, cancel superseded requests, and invalidate after attendance or
+student writes.
+
+The existing `/studentList` and `/participantList` responses remain arrays when
+`page` and `limit` are omitted. Passing either parameter opts into
+`{ items, page, limit, total }`, with a maximum limit of 100. Student filters
+are `classes`, `locations`, and `name`; participant filters are `classes`,
+`years`, `name`, and `school`. Comma-separated class and location/year filters
+are accepted. The existing single `year` participant filter remains supported.
+No database fields or collection names change.
+
+The landing Antyodaya card uses a full-resolution lossless WebP; the original
+PNG remains as a reference and decodes to identical pixels. Below-fold landing
+images are lazy-loaded.

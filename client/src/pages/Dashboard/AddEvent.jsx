@@ -21,7 +21,7 @@ const AddEvent = () => {
     coordinator: "",
     phone: "",
     regNumber: "",
-    festName: "Antyodaya2k24",
+    festName: "Antyodaya2k26",
   });
 
   
@@ -138,9 +138,6 @@ const AddEvent = () => {
                       </option>
                       <option value="Group1">Group1</option>
                       <option value="Group2">Group2</option>
-                      <option value="Group3">Group3</option>
-                      <option value="Group4">Group4</option>
-                      <option value="Group5">Group5</option>
                     </select>
                   </div>
                 </div>

@@ -118,7 +118,7 @@ const EventPage = () => {
 
   if(selectedSession.length > 0){
     sortedEventsList = sortedEventsList.filter((event) =>
-      selectedSession.includes(Number(event.year))
+      selectedSession.includes(event.year)
     );
   }
 

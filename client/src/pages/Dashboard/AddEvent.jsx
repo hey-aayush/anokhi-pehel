@@ -2,10 +2,15 @@ import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import { useState } from "react";
 import axios from "axios";
 import { times } from "../../constants/Dashboard";
-import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../../src/Service/helper";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
+import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 const AddEvent = () => {
-  const navigate = useNavigate();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [credentials, setCredentials] = useState({
     eventName: "",
     eventGroup: "",
@@ -19,10 +24,10 @@ const AddEvent = () => {
     festName: "Antyodaya2k26",
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Send the topic data to the server using Axios
+  
+  // Send the topic data to the server using Axios
+    const submitEvent = () => {
+    setIsSubmitting(true);
     axios
       .post(`${BASE_URL}/addEvent`, credentials)
       .then((response) => {
@@ -30,13 +35,11 @@ const AddEvent = () => {
 
         // Check if the event was added successfully based on status code
         if (response.status === 201) {
-          alert("Event submitted successfully");
-          navigate("/Antyodaya-Dashboard");
-          // Reset the form credentials
+          setSuccessMessage("Event submitted successfully");
+          setShowSuccess(true);
           setCredentials({
             eventName: "",
             eventGroup: "",
-            // eventDepartment: "",
             location: "",
             time: "",
             coordinator: "",
@@ -45,13 +48,11 @@ const AddEvent = () => {
             festName: "",
           });
         } else {
-          // Handle any other response that isn't a 201
-          alert("Event updated");
-          navigate("/Antyodaya-Dashboard");
+          setSuccessMessage("Event updated");
+          setShowSuccess(true);
           setCredentials({
             eventName: "",
             eventGroup: "",
-            // eventDepartment: "",
             location: "",
             time: "",
             coordinator: "",
@@ -67,17 +68,24 @@ const AddEvent = () => {
         // Check for server errors
         if (error.response) {
           // If the server responded with a status other than 2xx
-          alert(
-            `Error: ${error.response.data.message || "Something went wrong"}`
-          );
+          setErrorMessage(`Error: ${error.response.data.message || "Something went wrong"}`);
         } else if (error.request) {
           // If no response was received from the server
-          alert("Error: No response from server. Please try again later.");
+          setErrorMessage("Error: No response from server. Please try again later.");
         } else {
           // Catch any other errors in the request setup
-          alert("Error: Failed to send request.");
+          setErrorMessage("Error: Failed to send request.");
         }
+        setShowError(true);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submitEvent();
   };
 
   const onChange = (e) => {
@@ -87,6 +95,21 @@ const AddEvent = () => {
 
   return (
     <DashboardLayout>
+      {showSuccess && (
+        <SuccessMessageModel
+          message={successMessage}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
+      {showError && (
+        <ErrorMessageModel
+          isOpen={showError}
+          onClose={() => setShowError(false)}
+          onRetry={submitEvent}
+          title="Submission Failed"
+          message={errorMessage}
+        />
+      )}
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="space-y-8">
@@ -305,9 +328,10 @@ const AddEvent = () => {
             </button>
             <button
               type="submit"
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={isSubmitting}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>

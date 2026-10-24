@@ -4,10 +4,15 @@ import axios from "axios";
 import { classes } from "../../constants/Dashboard";
 import { BASE_URL } from "../../../src/Service/helper";
 import "react-datepicker/dist/react-datepicker.css";
+import SuccessMessageModel from "../../components/Models/SuccessMessageModel";
 import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
-import SuccessMessage from "../../components/Models/SuccessMessageModel";
 
 const AddAntyodayaParticipant = () => {
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [credentials, setCredentials] = useState({
     name: "",
     class: "",
@@ -22,10 +27,6 @@ const AddAntyodayaParticipant = () => {
   const [eventList, setEventList] = useState([]);
   const [participantList, setParticipantList] = useState([]);
   const [imageSize, setImageSize] = useState("");
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
   const WIDTH = 800;
 
   useEffect(() => {
@@ -190,7 +191,7 @@ const AddAntyodayaParticipant = () => {
       }
     }
 
-    setLoading(true);
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("name", credentials.name);
     formData.append("class", credentials.class);
@@ -204,6 +205,7 @@ const AddAntyodayaParticipant = () => {
     try {
       const res = await axios.post(`${BASE_URL}/addParticipants`, formData);
       if (res.data === "Participant Added" || res.status === 201) {
+        setSuccessMessage("Participant submitted successfully!");
         setShowSuccess(true);
         setCredentials({
           name: "",
@@ -241,7 +243,7 @@ const AddAntyodayaParticipant = () => {
       setShowError(true);
       console.error("error", err);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -335,6 +337,22 @@ const AddAntyodayaParticipant = () => {
 
   return (
     <DashboardLayout>
+      {showSuccess && (
+        <SuccessMessageModel
+          message={successMessage}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
+      {showError && (
+        <ErrorMessageModel
+          isOpen={showError}
+          onClose={() => setShowError(false)}
+          onRetry={() => setShowError(false)}
+          title="Submission Failed"
+          message={errorMessage}
+        />
+      )}
+
       <div className="m-2 md:m-10 mt-24 p-2 md:p-10 bg-white rounded-3xl">
         <form onSubmit={handleSubmit}>
           <div className="space-y-12">
@@ -569,11 +587,10 @@ const AddAntyodayaParticipant = () => {
                                     />
                                     <label
                                       htmlFor={`event-${event._id}`}
-                                      className={`text-sm ${
-                                        isQuotaFull && !isChecked
-                                          ? "text-gray-400 cursor-not-allowed"
-                                          : "text-gray-900 cursor-pointer"
-                                      }`}
+                                      className={`text-sm ${isQuotaFull && !isChecked
+                                        ? "text-gray-400 cursor-not-allowed"
+                                        : "text-gray-900 cursor-pointer"
+                                        }`}
                                     >
                                       {event.eventName}
                                     </label>
@@ -581,13 +598,12 @@ const AddAntyodayaParticipant = () => {
                                   {isDance &&
                                     (credentials.poc || credentials.school) && (
                                       <span
-                                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                          isQuotaFull
-                                            ? "bg-red-100 text-red-700"
-                                            : danceCount === 2
+                                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${isQuotaFull
+                                          ? "bg-red-100 text-red-700"
+                                          : danceCount === 2
                                             ? "bg-amber-100 text-amber-700"
                                             : "bg-emerald-100 text-emerald-700"
-                                        }`}
+                                          }`}
                                       >
                                         {isQuotaFull
                                           ? "POC quota full (3/3)"
@@ -616,26 +632,13 @@ const AddAntyodayaParticipant = () => {
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+              disabled={isSubmitting}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
             >
-              {loading ? "Saving..." : "Save"}
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
-        <ErrorMessageModel
-          isOpen={showError}
-          onClose={() => setShowError(false)}
-          onRetry={() => setShowError(false)}
-          title="Error"
-          message={errorMessage}
-        />
-        {showSuccess && (
-          <SuccessMessage
-            message="Participant submitted successfully!"
-            onClose={() => setShowSuccess(false)}
-          />
-        )}
       </div>
     </DashboardLayout>
   );

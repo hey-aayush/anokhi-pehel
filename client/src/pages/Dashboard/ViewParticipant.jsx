@@ -28,7 +28,7 @@ import { listKeys } from "../../queries/listQueries";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 
 const getAvailableSessions = (items) =>
-  [...new Set([...(Array.isArray(items) ? items : []).map((e) => Number(e.year)), 2024, new Date().getFullYear()].filter(Boolean))].sort((a, b) => b - a);
+  [...new Set((Array.isArray(items) ? items : []).map((e) => e.year).filter(Boolean))].sort((a, b) => b - a);
 
 const Participants = () => {
   const navigate = useNavigate();

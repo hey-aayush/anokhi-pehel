@@ -12,7 +12,7 @@ import {
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 const getAvailableSessions = (items) =>
-  [...new Set([...(Array.isArray(items) ? items : []).map((item) => Number(item.year)), 2024, new Date().getFullYear()].filter(Boolean))].sort((a, b) => b - a);
+  [...new Set((Array.isArray(items) ? items : []).map((item) => item.year).filter(Boolean))].sort((a, b) => b - a);
 
 const ViewPocList = () => {
   const [pocList, setPocList] = useState([]);
@@ -87,7 +87,7 @@ const ViewPocList = () => {
 
   if(selectedSession.length > 0){
     sortedPocList = sortedPocList.filter((poc) =>
-      selectedSession.includes(Number(poc.year))
+      selectedSession.includes(poc.year)
     );
   }
 

@@ -40,7 +40,7 @@ const Participants = () => {
     useState(false);
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
     useState(false);
-  const [selectedSession, setSelectedSession] = useState([new Date().getFullYear()]); // State to hold selected session
+  const [selectedSession, setSelectedSession] = useState([]); // State to hold selected session
   const initialUsers = 40;
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(initialUsers);

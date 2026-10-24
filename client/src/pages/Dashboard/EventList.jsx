@@ -26,7 +26,7 @@ const EventPage = () => {
   const [searchCoordinator, setSearchCoordinator] = useState(""); // Coordinator name filter state
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
       useState(false);
-  const [selectedSession, setSelectedSession] = useState([new Date().getFullYear()]);
+  const [selectedSession, setSelectedSession] = useState([]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const availableSessions = useMemo(() => getAvailableSessions(events), [events]);
   

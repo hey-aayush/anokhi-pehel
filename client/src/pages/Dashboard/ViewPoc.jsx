@@ -19,7 +19,7 @@ const ViewPocList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterBySessionDropdownOpen, setIsFilterBySessionDropdownOpen] =
     useState(false);
-  const [selectedSession, setSelectedSession] = useState([new Date().getFullYear()]);
+  const [selectedSession, setSelectedSession] = useState([]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
   const availableSessions = useMemo(() => getAvailableSessions(pocList), [pocList]);

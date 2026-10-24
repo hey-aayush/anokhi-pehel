@@ -14,8 +14,8 @@ import { FaEye } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { classes } from "../../constants/Dashboard";
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useMemo } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { BASE_URL } from "../../../src/Service/helper";
@@ -26,6 +26,9 @@ import Pagination from "../../components/Dashboard/Pagination.jsx";
 import { getAllParticipants, getEvents, getParticipantPage } from "../../Service/listApi";
 import { listKeys } from "../../queries/listQueries";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+
+const getAvailableSessions = (items) =>
+  [...new Set((Array.isArray(items) ? items : []).map((e) => e.year).filter(Boolean))].sort((a, b) => b - a);
 
 const Participants = () => {
   const navigate = useNavigate();
@@ -118,11 +121,13 @@ const Participants = () => {
   const { data, isPending, isError } = useQuery({
     queryKey: listKeys.participantPage(pageParams),
     queryFn: ({ signal }) => getParticipantPage(pageParams, signal),
+    placeholderData: keepPreviousData,
   });
   const { data: events = [] } = useQuery({
     queryKey: listKeys.events,
     queryFn: ({ signal }) => getEvents(signal),
   });
+  const availableSessions = useMemo(() => getAvailableSessions(events), [events]);
   const currentUsers = data?.items ?? [];
   const totalUsers = data?.total ?? 0;
   const totalPages = Math.ceil(totalUsers / usersPerPage);
@@ -315,7 +320,7 @@ const Participants = () => {
       {isPending && <Spinner />}
       {isError && <p role="alert">Unable to load participants. Please try again.</p>}
       <div className="mt-5 p-2 md:p-10 bg-white rounded-3xl">
-        <Header category="Antyodaya2k25" title="Participants" />
+        <Header category={selectedSession.length === 1 ? `Antyodaya ${selectedSession[0]}` : "Antyodaya"} title="Participants" />
         <div className="mx-auto max-w-screen-xl">
           <div className="bg-white  relative shadow-md sm:rounded-lg">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -491,7 +496,7 @@ const Participants = () => {
                     {isFilterBySessionDropdownOpen && (
                       <div className="absolute right-0 mt-7 p-2 z-10 w-44 bg-gray-200 rounded-md shadow">
                         <ul className="space-y-2 text-sm">
-                          {[2024, 2025].map((year) => (
+                          {availableSessions.map((year) => (
                             <li key={year} className="flex items-center">
                               <input
                                 id={year}

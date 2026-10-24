@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
 import { BASE_URL } from "../../../src/Service/helper";
@@ -14,6 +14,9 @@ import {
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Spinner from "../../components/Spinner";
 
+const getAvailableSessions = (items) =>
+  [...new Set((Array.isArray(items) ? items : []).map((e) => e.year).filter(Boolean))].sort((a, b) => b - a);
+
 const EventPage = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +28,7 @@ const EventPage = () => {
       useState(false);
   const [selectedSession, setSelectedSession] = useState([]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
+  const availableSessions = useMemo(() => getAvailableSessions(events), [events]);
   
 
   let navigate = useNavigate();
@@ -170,7 +174,7 @@ const EventPage = () => {
     <DashboardLayout>
       {loading && <Spinner />}
     <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
-        <Header category="Antyodaya2k25" title="Events" />
+        <Header category={selectedSession.length === 1 ? `Antyodaya ${selectedSession[0]}` : "Antyodaya"} title="Events" />
         <div>
             {user?.isAdmin === true && (
                 <Button
@@ -235,7 +239,7 @@ const EventPage = () => {
                     {isFilterBySessionDropdownOpen && (
                         <div className="absolute right-0 mt-2 p-3 z-20 w-48 bg-white rounded-lg shadow-xl border border-gray-100">
                             <ul className="space-y-2 text-sm">
-                                {[2024, 2025].map((year) => (
+                                {availableSessions.map((year) => (
                                     <li key={year} className="flex items-center">
                                         <input
                                             id={year}

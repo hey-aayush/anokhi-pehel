@@ -1,5 +1,5 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import Header from "../../components/Dashboard/Header";
 import { BASE_URL } from "../../../src/Service/helper";
@@ -11,6 +11,9 @@ import {
 } from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
+const getAvailableSessions = (items) =>
+  [...new Set((Array.isArray(items) ? items : []).map((item) => item.year).filter(Boolean))].sort((a, b) => b - a);
+
 const ViewPocList = () => {
   const [pocList, setPocList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +22,7 @@ const ViewPocList = () => {
   const [selectedSession, setSelectedSession] = useState([]);
   const [isActionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
+  const availableSessions = useMemo(() => getAvailableSessions(pocList), [pocList]);
   useEffect(() => {
     const fetchPocData = async () => {
       try {
@@ -136,7 +140,7 @@ const ViewPocList = () => {
   return (
     <DashboardLayout>
       <div className="m-2 md:m-5 mt-12 p-2 md:p-0 bg-white rounded-3xl flex flex-row justify-between items-center">
-        <Header category="Antyodaya2k25" title="Point of Contact of Schools" />
+        <Header category={selectedSession.length === 1 ? `Antyodaya ${selectedSession[0]}` : "Antyodaya"} title="Point of Contact of Schools" />
       </div>
       <div className="m-2 md:m-0 mt-0 p-2 md:p-7 bg-white rounded-3xl">
         <h2 className="text-center text-xl font-bold tracking-tight text-slate-900">
@@ -178,7 +182,7 @@ const ViewPocList = () => {
               {isFilterBySessionDropdownOpen && (
                 <div className="absolute right-0 mt-2 p-3 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-100">
                   <ul className="space-y-2 text-sm">
-                    {[2024, 2025].map((year) => (
+                    {availableSessions.map((year) => (
                       <li key={year} className="flex items-center">
                         <input
                           id={year}

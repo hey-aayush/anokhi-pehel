@@ -59,6 +59,7 @@ const AddStudent = () => {
             dob: "",
             address: "",
             photo: "",
+            aadhar: ""
           });
         } else if (
           res.data === "Student with this Aadhar number already exists"

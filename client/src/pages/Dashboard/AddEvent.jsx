@@ -24,9 +24,9 @@ const AddEvent = () => {
     festName: "Antyodaya2k26",
   });
 
-  
+
   // Send the topic data to the server using Axios
-    const submitEvent = () => {
+  const submitEvent = () => {
     setIsSubmitting(true);
     axios
       .post(`${BASE_URL}/addEvent`, credentials)
@@ -41,7 +41,8 @@ const AddEvent = () => {
             eventName: "",
             eventGroup: "",
             location: "",
-            time: "",
+            startTime: "",
+            endTime: "",
             coordinator: "",
             phone: "",
             regNumber: "",
@@ -54,7 +55,8 @@ const AddEvent = () => {
             eventName: "",
             eventGroup: "",
             location: "",
-            time: "",
+            startTime: "",
+            endTime: "",
             coordinator: "",
             phone: "",
             regNumber: "",

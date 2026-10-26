@@ -218,6 +218,9 @@ const AddAntyodayaParticipant = () => {
           events: [],
         });
         setImageSize("");
+
+        const fileInput = document.getElementById('imageInput');
+        fileInput.value = '';
         try {
           const currentYear = new Date().getFullYear();
           const updatedParticipants = await axios.get(
@@ -508,7 +511,7 @@ const AddAntyodayaParticipant = () => {
                   <input
                     type="file"
                     name="photo"
-                    id="photo"
+                    id="imageInput"
                     accept=".png, .jpg, .jpeg,capture=camera"
                     onChange={onPhotoChange}
                   />

@@ -61,6 +61,8 @@ const AddStudent = () => {
             photo: "",
             aadhar: ""
           });
+          const fileInput = document.getElementById('imageInput');
+          fileInput.value = '';
         } else if (
           res.data === "Student with this Aadhar number already exists"
         ) {
@@ -374,6 +376,7 @@ const AddStudent = () => {
                   <input
                     type="file"
                     name="photo"
+                    id="imageInput"
                     accept=".png, .jpg, .jpeg,capture=camera"
                     // Specify 'camera' to use the device's camera
                     onChange={onPhotoChange}

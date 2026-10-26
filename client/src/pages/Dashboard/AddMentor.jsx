@@ -85,6 +85,9 @@ const AddMentor = () => {
             instagram: "",
             isActive: true,
           });
+
+          const fileInput = document.getElementById('imageInput');
+          fileInput.value = '';
         }
       })
       .catch((err) => {
@@ -333,6 +336,7 @@ const AddMentor = () => {
                       <input
                         type="file"
                         name="photo"
+                        id="imageInput"
                         accept=".png, .jpg, .jpeg,capture=camera"
                         // Specify 'camera' to use the device's camera
                         onChange={onPhotoChange}

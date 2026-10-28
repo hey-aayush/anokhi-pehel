@@ -1,134 +1,50 @@
 import DashboardLayout from "../../components/Dashboard/DashboardLayout";
-import ErrorMessageModel from "../../components/Models/ErrorMessageModel";
 import { BASE_URL } from "../../Service/helper";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import {
+  ANTYODAYA_ACTIONS,
   FaUsers,
   FaCalendarAlt,
   FaSchool,
   FaTrophy,
   FaArrowRight,
-  FaUserPlus,
-  FaCalendarPlus,
-  FaClipboardList,
-  FaUserTie,
-  FaAddressBook,
-} from "react-icons/fa";
-
-const extractYear = (val) => {
-  if (!val) return null;
-
-  const match =
-    String(val).match(/\b2[kK](\d{2})\b/) ||
-    String(val).match(/\b(19\d{2}|20\d{2})\b/);
-
-  if (match) {
-    return match[1].length === 2 ? 2000 + Number(match[1]) : Number(match[1]);
-  }
-
-  const num = Number(val);
-  return !isNaN(num) && num >= 1990 && num <= 2100 ? num : null;
-};
+} from "../../constants/Dashboard/antyodaya";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
 
-  const [events, setEvents] = useState([]);
-  const [participants, setParticipants] = useState([]);
-  const [winnerList, setWinnerList] = useState([]);
-  const [poc, setPoc] = useState([]);
-
+  const [statsData, setStatsData] = useState({
+    participants: [],
+    pocs: [],
+    events: [],
+  });
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-
-  const addEvent = () => {
-    navigate("/addEvent");
-  };
-
-  const checkEvents = () => {
-    navigate("/checkEvents");
-  };
-
-  const addParticipants = () => {
-    navigate("/addParticipant");
-  };
-
-  const findParticipants = () => {
-    navigate("/viewParticipants");
-  };
-
-  const addPoc = () => {
-    navigate("/addPoc");
-  };
-
-  const viewPoc = () => {
-    navigate("/viewPoc");
-  };
-
-  const winners = () => {
-    navigate("/viewWinners");
-  };
-
-  const ACTIONS = [
-    {
-      title: "Add Participant",
-      description: "Register a new participant for events",
-      icon: FaUserPlus,
-      action: addParticipants,
-    },
-    {
-      title: "View Participants",
-      description: "Manage registered participants and details",
-      icon: FaUsers,
-      action: findParticipants,
-    },
-    {
-      title: "Add Event",
-      description: "Create and configure new festival events",
-      icon: FaCalendarPlus,
-      action: addEvent,
-      adminOnly: true,
-    },
-    {
-      title: "Check Events",
-      description: "View scheduled upcoming and past events",
-      icon: FaClipboardList,
-      action: checkEvents,
-    },
-    {
-      title: "Add School POC",
-      description: "Register a point of contact for a school",
-      icon: FaUserTie,
-      action: addPoc,
-    },
-    {
-      title: "View School POC",
-      description: "View and manage school contact information",
-      icon: FaAddressBook,
-      action: viewPoc,
-    },
-    {
-      title: "Winner List",
-      description: "View and export winners across all events",
-      icon: FaTrophy,
-      action: winners,
-    },
-  ];
 
   const allYears = useMemo(() => {
-    const years = [
-      ...events.map((e) => extractYear(e.year || e.festName)),
-      ...poc.map((p) => extractYear(p.year)),
-    ].filter(Boolean);
+    const years = new Set();
+    const allItems = [
+      ...(statsData.participants || []),
+      ...(statsData.pocs || []),
+      ...(statsData.events || []),
+    ];
 
-    return Array.from(new Set(years)).sort((a, b) => b - a);
-  }, [events, poc]);
+    allItems.forEach((item) => {
+      if (item._id) {
+        const y = Number(item._id);
+        if (!isNaN(y)) {
+          years.add(y);
+        }
+      }
+    });
+
+    return Array.from(years).sort((a, b) => b - a);
+  }, [statsData]);
 
   useEffect(() => {
     if (allYears.length > 0) {
@@ -147,21 +63,20 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
 
-      const [eventsRes, pocRes, partRes, winRes] = await Promise.all([
-        axios.get(`${BASE_URL}/getEvents`),
-        axios.get(`${BASE_URL}/pocList`),
-        axios.get(`${BASE_URL}/participantList`),
-        axios.get(`${BASE_URL}/getEventsWithWinners`),
-      ]);
+      const response = await axios.get(`${BASE_URL}/antyodaya-dashboard-stats`);
+      if (
+        !response?.data ||
+        typeof response.data !== "object" ||
+        !Array.isArray(response.data.participants)
+      ) {
+        throw new Error("Invalid response format received from server.");
+      }
 
-      setEvents(eventsRes.data || []);
-      setPoc(pocRes.data || []);
-      setParticipants(partRes.data || []);
-      setWinnerList(winRes.data || []);
+      const { participants = [], pocs = [], events = [] } = response.data;
+      setStatsData({ participants, pocs, events });
     } catch (err) {
-      console.error("Dashboard error:", err);
-      setError("Failed to fetch Antyodaya dashboard data. Please try again.");
-      setShowErrorModal(true);
+      console.error("Dashboard stats error:", err);
+      setError("Failed to fetch Antyodaya dashboard stats.");
     } finally {
       setLoading(false);
     }
@@ -171,66 +86,55 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const filtered = useMemo(() => {
+  const currentStats = useMemo(() => {
     const isAll = selectedYear === "all";
     const yr = Number(selectedYear);
 
+    const sumCount = (list = []) =>
+      list.reduce((sum, item) => {
+        if (isAll || Number(item._id) === yr) {
+          return sum + (item.count || 0);
+        }
+        return sum;
+      }, 0);
+
     return {
-      participants: isAll
-        ? participants
-        : participants.filter((p) => extractYear(p.year) === yr),
-      events: isAll
-        ? events
-        : events.filter((e) => extractYear(e.year || e.festName) === yr),
-      poc: isAll
-        ? poc
-        : poc.filter((p) => extractYear(p.year) === yr),
-      winners: isAll
-        ? winnerList
-        : winnerList.filter((w) => extractYear(w.year || w.festName) === yr),
+      participants: sumCount(statsData.participants),
+      events: sumCount(statsData.events),
+      schools: sumCount(statsData.pocs),
+      winners: 0,
     };
-  }, [participants, events, poc, winnerList, selectedYear]);
+  }, [statsData, selectedYear]);
 
   const stats = [
     {
       label: "Participants",
       icon: FaUsers,
-      count: filtered.participants.length,
+      count: currentStats.participants ?? 0,
       sub: selectedYear === "all" ? "All-time registered" : `Registered for ${selectedYear}`,
     },
     {
       label: "Events",
       icon: FaCalendarAlt,
-      count: filtered.events.length,
+      count: currentStats.events ?? 0,
       sub: selectedYear === "all" ? "Total active events" : `Competitions in ${selectedYear}`,
     },
     {
       label: "Schools",
       icon: FaSchool,
-      count: filtered.poc.length,
+      count: currentStats.schools ?? currentStats.pocs ?? 0,
       sub: selectedYear === "all" ? "Partner institutions" : `Connected POCs in ${selectedYear}`,
     },
     {
       label: "Winners",
       icon: FaTrophy,
-      count: 0,
+      count: currentStats.winners ?? 0,
       sub: selectedYear === "all" ? "Across all competitions" : `Awarded in ${selectedYear}`,
     },
   ];
 
   return (
     <DashboardLayout>
-      <ErrorMessageModel
-        isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
-        onRetry={() => {
-          setShowErrorModal(false);
-          fetchDashboardData();
-        }}
-        title="Dashboard Error"
-        message={error}
-      />
-
       <div className="m-3 sm:m-4 md:m-10 mt-20 sm:mt-24 p-4 sm:p-5 md:p-6 bg-white rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm">
         <div>
           <h1 className="text-base sm:text-lg md:text-xl font-bold text-slate-800">
@@ -263,7 +167,17 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {loading ? (
+        {error ? (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl md:rounded-3xl p-4 sm:p-5 text-xs flex items-center justify-between shadow-sm">
+            <span>{error}</span>
+            <button
+              onClick={fetchDashboardData}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[1, 2, 3, 4].map((item) => (
               <div
@@ -320,14 +234,14 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
-            {ACTIONS.filter(
+            {ANTYODAYA_ACTIONS.filter(
               (item) => !item.adminOnly || user?.isAdmin === true
             ).map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.title}
-                  onClick={item.action}
+                  onClick={() => navigate(item.path)}
                   className="flex items-center gap-3 sm:gap-3.5 rounded-xl md:rounded-2xl border border-slate-200 bg-slate-50/50 p-3 sm:p-4 text-left hover:bg-slate-100/80 cursor-pointer"
                 >
                   <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">

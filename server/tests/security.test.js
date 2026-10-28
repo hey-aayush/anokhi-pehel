@@ -220,6 +220,13 @@ describe("Router Security Configuration & Middleware Stacks", () => {
       deleteParticipantLayer.route.stack.some((fn) => fn.name === "requireAdmin" || fn.handle === requireAdmin),
       "DELETE /deleteParticipants must have requireAdmin"
     );
+
+    const statsLayer = getRouteLayer(antyodayaRouter, "/antyodaya-dashboard-stats", "GET");
+    assert.ok(statsLayer, "GET /antyodaya-dashboard-stats must exist");
+    assert.ok(
+      statsLayer.route.stack.some((fn) => fn.name === "verifyUser" || fn.handle === verifyUser),
+      "GET /antyodaya-dashboard-stats must have verifyUser"
+    );
   });
 
   test("Schedule mutation routes require admin privileges", () => {

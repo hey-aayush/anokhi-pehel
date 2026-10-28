@@ -6,7 +6,10 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const multer = require("multer");
 const POC = require("../models/PointOfContact");
-const { addParticipants } = require("../controller/antyodayaController");
+const {
+  addParticipants,
+  getAntyodayaDashboardStats,
+} = require("../controller/antyodayaController");
 const { verifyUser, requireAdmin } = require("../middlewares/auth.middlewares");
 const { listParticipants } = require("../controller/listController");
 
@@ -327,5 +330,7 @@ router.get("/getEventsWithWinners", async (req, res) => {
   }
 });
 
+// Antyodaya dashboard pre-aggregated statistics
+router.get("/antyodaya-dashboard-stats", verifyUser, getAntyodayaDashboardStats);
 
 module.exports = router;

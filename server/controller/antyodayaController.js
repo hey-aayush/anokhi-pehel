@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Event = require("../models/Event");
 const Participant = require("../models/AntyodayaParticipant");
+const POC = require("../models/PointOfContact");
 
 const addParticipants = async (req, res) => {
   try {
@@ -97,4 +98,52 @@ const addParticipants = async (req, res) => {
   }
 };
 
-module.exports = { addParticipants };
+const getAntyodayaDashboardStats = async (req, res) => {
+  try {
+    const [participants, pocs, events] = await Promise.all([
+      Participant.aggregate([
+        {
+          $group: {
+            _id: "$year",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      POC.aggregate([
+        {
+          $group: {
+            _id: "$year",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      Event.aggregate([
+        {
+          $group: {
+            _id: "$year",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      participants,
+      pocs,
+      events,
+    });
+  } catch (error) {
+    console.error("Error fetching Antyodaya dashboard stats:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error fetching Antyodaya dashboard stats",
+    });
+  }
+};
+
+module.exports = {
+  addParticipants,
+  getAntyodayaDashboardStats,
+};
+

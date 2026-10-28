@@ -2,7 +2,13 @@ const { test, describe } = require("node:test");
 const assert = require("node:assert");
 const { parseTargetDate } = require("../controller/attendanceController");
 const { parseTargetDate: parseTopicDate } = require("../controller/topicController");
-const { addParticipants } = require("../controller/antyodayaController");
+const {
+  addParticipants,
+  getAntyodayaDashboardStats,
+} = require("../controller/antyodayaController");
+const Event = require("../models/Event");
+const Participant = require("../models/AntyodayaParticipant");
+const POC = require("../models/PointOfContact");
 
 describe("Date Parsing Helpers", () => {
   test("parseTargetDate extracts YYYY-MM-DD from ISO timestamp", () => {
@@ -122,5 +128,84 @@ describe("Antyodaya Controller Validation", () => {
     await addParticipants(req, res);
     assert.strictEqual(statusCode, 400);
     assert.strictEqual(responseBody, "Maximum 2 events allowed per participant");
+  });
+
+  test("getAntyodayaDashboardStats returns pre-aggregated stats grouped by year and all-time total", async (t) => {
+    t.mock.method(Participant, "aggregate", () =>
+      Promise.resolve([
+        { _id: 2026, count: 5 },
+        { _id: 2024, count: 2 },
+      ])
+    );
+    t.mock.method(POC, "aggregate", () =>
+      Promise.resolve([
+        { _id: 2026, count: 3 },
+        { _id: 1900, count: 1 },
+      ])
+    );
+    t.mock.method(Event, "aggregate", () =>
+      Promise.resolve([
+        { _id: 2026, count: 4 },
+        { _id: 2025, count: 1 },
+      ])
+    );
+
+    let statusCode = null;
+    let responseBody = null;
+    const res = {
+      status(code) {
+        statusCode = code;
+        return this;
+      },
+      json(body) {
+        responseBody = body;
+        return this;
+      },
+    };
+
+    await getAntyodayaDashboardStats({}, res);
+
+    assert.strictEqual(statusCode, 200);
+    assert.strictEqual(responseBody.success, true);
+    assert.deepStrictEqual(responseBody.participants, [
+      { _id: 2026, count: 5 },
+      { _id: 2024, count: 2 },
+    ]);
+    assert.deepStrictEqual(responseBody.pocs, [
+      { _id: 2026, count: 3 },
+      { _id: 1900, count: 1 },
+    ]);
+    assert.deepStrictEqual(responseBody.events, [
+      { _id: 2026, count: 4 },
+      { _id: 2025, count: 1 },
+    ]);
+  });
+
+  test("getAntyodayaDashboardStats handles error gracefully", async (t) => {
+    t.mock.method(Participant, "aggregate", () =>
+      Promise.reject(new Error("Database failure"))
+    );
+
+    let statusCode = null;
+    let responseBody = null;
+    const res = {
+      status(code) {
+        statusCode = code;
+        return this;
+      },
+      json(body) {
+        responseBody = body;
+        return this;
+      },
+    };
+
+    await getAntyodayaDashboardStats({}, res);
+
+    assert.strictEqual(statusCode, 500);
+    assert.strictEqual(responseBody.success, false);
+    assert.strictEqual(
+      responseBody.message,
+      "Server error fetching Antyodaya dashboard stats"
+    );
   });
 });

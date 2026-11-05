@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { BRANCH } from "../../constants/Dashboard";
 import { apiGet, apiPost, getErrorMessage } from "../../Service/apiClient";
@@ -15,6 +15,8 @@ const JoinAsMentor = () => {
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [photo, setPhoto] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     apiGet("/settings")
@@ -30,9 +32,16 @@ const JoinAsMentor = () => {
     setFeedback(null);
     setSubmitting(true);
     try {
-      const { data } = await apiPost("/mentorApplications", form);
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => formData.append(key, value));
+      if (photo) {
+        formData.append("photo", photo);
+      }
+      const { data } = await apiPost("/mentorApplications", formData);
       setFeedback({ type: "success", text: data.message, applicationId: data.applicationId, emailSent: data.emailSent });
       setForm(emptyForm);
+      setPhoto(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       setFeedback({ type: "error", text: getErrorMessage(error) });
     } finally {
@@ -84,6 +93,10 @@ const JoinAsMentor = () => {
             </label>
             <label className="block font-medium text-gray-800" htmlFor="instagram">Instagram ID (optional)
               <input id="instagram" name="instagram" maxLength={100} value={form.instagram} onChange={onChange}
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2" />
+            </label>
+            <label className="block font-medium text-gray-800" htmlFor="photo">Profile Photo
+              <input ref={fileInputRef} id="photo" name="photo" type="file" required accept="image/png,image/jpeg,image/jpg" onChange={(e) => { setPhoto(e.target.files?.[0] || null) }}
                 className="mt-1 block w-full rounded-md border border-gray-300 p-2" />
             </label>
             <button type="submit" disabled={submitting} className="rounded-md bg-teal-600 px-5 py-2 text-white disabled:opacity-50">

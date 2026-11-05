@@ -29,9 +29,19 @@ describe("public mentor and contact forms", () => {
     fireEvent.change(screen.getByLabelText("Registration number"), { target: { value: "ABC123" } });
     fireEvent.change(screen.getByLabelText("Branch"), { target: { value: "Computer Science and Engineering" } });
     fireEvent.change(screen.getByLabelText(/Password/), { target: { value: "Strong123!" } });
-    fireEvent.click(screen.getByRole("button", { name: "Submit application" }));
 
-    await waitFor(() => expect(apiPost).toHaveBeenCalledWith("/mentorApplications", expect.objectContaining({ email: "applicant@example.com" })));
+    const file = new File(["dummy"], "profile.png", { type: "image/png" });
+    const photoInput = screen.getByLabelText(/Profile Photo/);
+    fireEvent.change(photoInput, { target: { files: [file] } });
+
+    fireEvent.submit(screen.getByRole("button", { name: "Submit application" }).closest("form"));
+
+    await waitFor(() => {
+      expect(apiPost).toHaveBeenCalledWith("/mentorApplications", expect.any(FormData));
+      const payload = apiPost.mock.calls[0][1];
+      expect(payload.get("email")).toBe("applicant@example.com");
+      expect(payload.get("photo")).toBe(file);
+    });
     expect(await screen.findByRole("alert")).toHaveTextContent("AP-2026-ABC123");
     expect(screen.getByRole("alert")).toHaveTextContent("emailed this ID");
   });

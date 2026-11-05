@@ -27,6 +27,9 @@ const mentorApplicationSchema = new mongoose.Schema({
     linkedin: String,
     instagram: String,
   },
+  photo: {
+    type: String
+  },
   status: {
     type: String,
     enum: ["pending", "in_review", "interviewed", "approved", "activated"],

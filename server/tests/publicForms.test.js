@@ -18,7 +18,7 @@ test("public form routes are rate limited and do not change the protected create
     const route = router.stack.find((layer) => layer.route?.path === path);
     assert.ok(route);
     assert.equal(route.route.methods.post, true);
-    assert.equal(route.route.stack.length, 2);
+    assert.equal(route.route.stack.length, path === "/mentorApplications" ? 3 : 2);
   }
 });
 
@@ -35,13 +35,17 @@ test("mentor application returns a pending ID and emails it without trusting req
   transporter.sendMail = async (options) => { mail = options; };
   try {
     const res = response();
-    await applyAsMentor({ body: {
-      name: "Applicant", email: "APPLICANT@example.com", phone: "1234567890",
-      regnumber: "ABC123", branch: "Computer Science", password: "Strong123!",
-      role: "Coordinator", isAdmin: true, isActive: true,
-    } }, res);
+    await applyAsMentor({
+      body: {
+        name: "Applicant", email: "APPLICANT@example.com", phone: "1234567890",
+        regnumber: "ABC123", branch: "Computer Science", password: "Strong123!",
+        role: "Coordinator", isAdmin: true, isActive: true,
+      },
+      file: { filename: "applicant-photo.png" },
+    }, res);
     assert.equal(res.statusCode, 201);
     assert.equal(submitted.email, "applicant@example.com");
+    assert.equal(submitted.photo, "applicant-photo.png");
     assert.equal(submitted.role, undefined);
     assert.equal(submitted.isAdmin, undefined);
     assert.equal(res.body.applicationId, "AP-2026-ABC123");

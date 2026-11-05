@@ -1,10 +1,28 @@
+const fs = require("fs");
+const path = require("path");
 const MentorApplication = require("../models/MentorApplication");
 const transporter = require("../config/mailer");
 const workflow = require("../services/mentorApplicationService");
 
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
 
-const readApplicationValues = (body = {}) => {
+const deleteUploadedFile = (file) => {
+  if (!file) return;
+  const filePath = file.path || (file.filename ? path.join("images", file.filename) : null);
+  if (filePath && fs.existsSync(filePath)) {
+    try {
+      fs.unlinkSync(filePath);
+    } catch {
+      // Ignore cleanup error
+    }
+  }
+};
+
+const readApplicationValues = (reqOrBody = {}) => {
+  const isReq = reqOrBody && (reqOrBody.body || reqOrBody.file !== undefined);
+  const body = isReq ? reqOrBody.body || {} : reqOrBody;
+  const file = isReq ? reqOrBody.file : undefined;
+
   const fields = ["name", "email", "phone", "regnumber", "branch", "password"];
   const values = Object.fromEntries(
     fields.map((field) => [field, typeof body[field] === "string" ? body[field].trim() : ""])
@@ -12,24 +30,36 @@ const readApplicationValues = (body = {}) => {
   values.email = values.email.toLowerCase();
   values.linkedin = typeof body.linkedin === "string" ? body.linkedin.trim() : "";
   values.instagram = typeof body.instagram === "string" ? body.instagram.trim() : "";
+  values.photo = file ? file.filename : (typeof body.photo === "string" ? body.photo.trim() : "");
+
   const invalid = fields.some((field) => !values[field]) ||
     values.name.length > 100 || values.email.length > 254 ||
     values.phone.length > 30 || values.regnumber.length > 50 ||
     values.branch.length > 100 || values.password.length > 72 ||
     values.linkedin.length > 100 || values.instagram.length > 100 ||
+    values.photo.length > 255 ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email) ||
     !passwordPattern.test(values.password);
   return invalid ? null : values;
 };
 
 const applyAsMentor = async (req, res) => {
-  const values = readApplicationValues(req.body);
-  if (!values) return res.status(400).json({ message: "Please provide valid application details and a strong password." });
+  const values = readApplicationValues(req);
+  if (!values) {
+    deleteUploadedFile(req?.file);
+    return res.status(400).json({ message: "Please provide valid application details and a strong password." });
+  }
 
   try {
     const result = await workflow.submit(values);
-    if (result.error === "closed") return res.status(403).json({ message: "Mentor applications are currently closed." });
-    if (result.error === "duplicate") return res.status(409).json({ message: "An application or account already exists with this email or registration number." });
+    if (result.error === "closed") {
+      deleteUploadedFile(req?.file);
+      return res.status(403).json({ message: "Mentor applications are currently closed." });
+    }
+    if (result.error === "duplicate") {
+      deleteUploadedFile(req?.file);
+      return res.status(409).json({ message: "An application or account already exists with this email or registration number." });
+    }
 
     const id = result.record.applicationId;
     let emailSent = false;
@@ -53,6 +83,7 @@ const applyAsMentor = async (req, res) => {
       message: "Application submitted. Keep your application ID for your records.",
     });
   } catch (error) {
+    deleteUploadedFile(req?.file);
     if (error.code === 11000) return res.status(409).json({ message: "An application or account already exists with this email or registration number." });
     return res.status(500).json({ message: "Unable to submit your application. Please try again." });
   }

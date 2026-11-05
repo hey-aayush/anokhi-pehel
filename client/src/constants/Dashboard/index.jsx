@@ -193,4 +193,5 @@ export const BRANCH = {
   ME: "Mechanical Engineering",
   ECM: "Engineering and Computational Mechanics",
   MSE: "Materials Engineering",
+  MNC: "Mathematics & Computing",
 };
